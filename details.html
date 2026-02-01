@@ -588,77 +588,6 @@
             font-weight: 800;
         }
 
-        /* CTA Button */
-        .cta-section {
-            text-align: center;
-            padding: 60px 40px;
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(138, 43, 226, 0.1));
-            border-radius: 30px;
-            border: 2px solid rgba(0, 255, 136, 0.3);
-            margin-bottom: 60px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-title {
-            font-size: 42px;
-            font-weight: 900;
-            margin-bottom: 30px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .cta-desc {
-            font-size: 20px;
-            color: var(--text-secondary);
-            margin-bottom: 40px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.8;
-        }
-
-        .btn-launch {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 25px 60px;
-            border-radius: 20px;
-            font-size: 22px;
-            font-weight: 900;
-            text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.4s ease;
-            box-shadow: 0 20px 40px rgba(0, 255, 136, 0.4);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-launch::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.7s ease;
-        }
-
-        .btn-launch:hover::before {
-            left: 100%;
-        }
-
-        .btn-launch:hover {
-            transform: translateY(-10px) scale(1.05);
-            box-shadow: 0 30px 60px rgba(0, 255, 136, 0.6);
-        }
-
         /* Footer */
         .footer {
             text-align: center;
@@ -666,6 +595,7 @@
             border-top: 2px solid rgba(255, 255, 255, 0.1);
             color: var(--text-secondary);
             font-size: 16px;
+            margin-top: 60px;
         }
 
         .footer-links {
@@ -729,7 +659,7 @@
                 font-size: 36px;
             }
             
-            .hero-section, .referral-section, .cta-section {
+            .hero-section, .referral-section {
                 padding: 40px 30px;
             }
             
@@ -752,15 +682,6 @@
                 font-size: 28px;
             }
             
-            .cta-title {
-                font-size: 32px;
-            }
-            
-            .btn-launch {
-                padding: 20px 40px;
-                font-size: 18px;
-            }
-            
             .connect-steps {
                 grid-template-columns: 1fr;
             }
@@ -771,7 +692,7 @@
         }
 
         @media (max-width: 480px) {
-            .hero-section, .referral-section, .cta-section {
+            .hero-section, .referral-section {
                 padding: 30px 20px;
             }
             
@@ -791,12 +712,6 @@
             
             .levels-grid {
                 grid-template-columns: 1fr;
-            }
-            
-            .btn-launch {
-                padding: 18px 30px;
-                font-size: 16px;
-                width: 100%;
             }
         }
 
@@ -975,22 +890,6 @@
             </div>
         </div>
 
-        <!-- CTA Section -->
-        <div class="cta-section">
-            <h2 class="cta-title">Ready to Join the Revolution?</h2>
-            <p class="cta-desc">
-                Don't miss this opportunity to be part of the next big thing in DeFi. Connect your wallet, 
-                purchase SIGMA SIX tokens, and start building your passive income through our revolutionary 
-                5-level referral system.
-            </p>
-            <a href="dashboard.html" class="btn-launch" id="launchBtn">
-                <i class="fas fa-rocket"></i> LAUNCH DASHBOARD
-            </a>
-            <p style="margin-top: 20px; color: var(--text-secondary); font-size: 14px;">
-                You will be redirected to the official SIGMA SIX Dashboard
-            </p>
-        </div>
-
         <!-- Footer -->
         <div class="footer">
             <p>© 2024 SIGMA SIX. All rights reserved. | Revolutionary DeFi Platform</p>
@@ -1052,16 +951,6 @@
             });
         });
 
-        // Launch Button Animation
-        const launchBtn = document.getElementById('launchBtn');
-        launchBtn.addEventListener('mouseenter', () => {
-            launchBtn.style.transform = 'translateY(-10px) scale(1.05)';
-        });
-        
-        launchBtn.addEventListener('mouseleave', () => {
-            launchBtn.style.transform = '';
-        });
-
         // Rainbow Animation for Header
         const header = document.querySelector('.header');
         let hue = 0;
@@ -1107,13 +996,6 @@
                     });
                 }
             });
-        });
-
-        // Redirect confirmation
-        launchBtn.addEventListener('click', (e) => {
-            if (!confirm('You will be redirected to the SIGMA SIX Dashboard. Continue?')) {
-                e.preventDefault();
-            }
         });
     </script>
 </body>
