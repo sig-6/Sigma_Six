@@ -24,6 +24,7 @@
             --usdt-gradient: linear-gradient(135deg, #26a17b, #50e3c2);
             --sig6-gradient: linear-gradient(135deg, #00ff88, #00b3ff);
             --ref-gradient: linear-gradient(135deg, #8a2be2, #9370db);
+            --explore-gradient: linear-gradient(135deg, #ff6b00, #ff416c, #8a2be2);
             --level1: linear-gradient(135deg, #ff416c, #ff4b2b);
             --level2: linear-gradient(135deg, #ff9500, #ffcc00);
             --level3: linear-gradient(135deg, #00ff88, #00b3ff);
@@ -1086,6 +1087,70 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        /* Explore Sigma Six Button - AT BOTTOM */
+        .explore-section {
+            text-align: center;
+            margin: 40px 0 10px;
+            animation: slideIn 0.6s ease 0.2s both;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-explore {
+            background: var(--explore-gradient);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 22px 45px;
+            font-weight: 900;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(255, 107, 0, 0.4),
+                        0 0 0 1px rgba(255, 255, 255, 0.1);
+            min-width: 280px;
+        }
+
+        .btn-explore::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s ease;
+        }
+
+        .btn-explore:hover::before {
+            left: 100%;
+        }
+
+        .btn-explore:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 25px 50px rgba(255, 107, 0, 0.6),
+                        0 0 20px rgba(255, 107, 0, 0.4);
+            letter-spacing: 2px;
+        }
+
+        .btn-explore .explore-icon {
+            font-size: 22px;
+            animation: explorePulse 2s infinite alternate;
+        }
+
+        @keyframes explorePulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.2); }
+        }
+
         /* Divider */
         .divider {
             display: flex;
@@ -1207,6 +1272,12 @@
                 font-size: 17px;
             }
             
+            .btn-explore {
+                padding: 20px 35px;
+                font-size: 17px;
+                min-width: 250px;
+            }
+            
             .section-title {
                 font-size: 20px;
             }
@@ -1252,6 +1323,12 @@
             
             .balance-card {
                 min-height: 150px;
+            }
+            
+            .btn-explore {
+                padding: 18px 30px;
+                font-size: 16px;
+                min-width: 220px;
             }
             
             .input-field {
@@ -1528,9 +1605,59 @@
                 <i class="fas fa-arrow-down"></i> SELL SIG6 TOKENS
             </button>
         </div>
+
+        <!-- NEW: Explore Sigma Six Button - AT BOTTOM -->
+        <div class="explore-section">
+            <button class="btn-explore" onclick="exploreSigmaSix()">
+                <i class="fas fa-rocket explore-icon"></i>
+                EXPLORE SIGMA SIX
+            </button>
+        </div>
     </div>
 
     <script>
+        // NEW: Explore Sigma Six Function
+        function exploreSigmaSix() {
+            const exploreBtn = document.querySelector('.btn-explore');
+            const originalText = exploreBtn.innerHTML;
+            
+            // Add animation effect
+            exploreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> REDIRECTING...';
+            exploreBtn.style.animation = 'balancePulse 0.5s ease';
+            
+            // Add ripple effect
+            const ripple = document.createElement('div');
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(255, 255, 255, 0.3)';
+            ripple.style.transform = 'scale(0)';
+            ripple.style.animation = 'ripple 0.6s linear';
+            exploreBtn.appendChild(ripple);
+            
+            // Redirect after animation
+            setTimeout(() => {
+                window.location.href = "details.html";
+            }, 800);
+            
+            // Reset button if redirect fails
+            setTimeout(() => {
+                exploreBtn.innerHTML = originalText;
+                exploreBtn.style.animation = '';
+            }, 3000);
+        }
+
+        // Ripple animation for explore button
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
         // Crypto Canvas Animation
         function initCryptoCanvas() {
             const canvas = document.getElementById('cryptoCanvas');
