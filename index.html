@@ -681,33 +681,17 @@
             font-weight: 800;
         }
 
+        /* HIDDEN: Referral Link Container (Only Copy Button Visible) */
         .referral-link-container {
             display: flex;
+            justify-content: center;
             gap: 15px;
             margin-bottom: 25px;
+            position: relative;
         }
 
         .referral-input {
-            flex: 1;
-            padding: 18px 22px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(138, 43, 226, 0.4);
-            border-radius: 16px;
-            color: var(--text);
-            font-size: 15px;
-            font-weight: 600;
-            font-family: 'SF Mono', monospace;
-            transition: all 0.3s ease;
-        }
-
-        .referral-input:focus {
-            outline: none;
-            border-color: #9370db;
-            box-shadow: 0 0 0 4px rgba(138, 43, 226, 0.2);
-        }
-
-        .referral-input:hover {
-            border-color: rgba(138, 43, 226, 0.6);
+            display: none; /* Hidden from user */
         }
 
         .btn-copy {
@@ -715,11 +699,10 @@
             color: white;
             border: none;
             border-radius: 16px;
-            padding: 0 30px;
+            padding: 18px 40px;
             font-weight: 800;
             cursor: pointer;
             transition: all 0.3s ease;
-            min-width: 140px;
             font-size: 16px;
             letter-spacing: 1px;
             display: flex;
@@ -727,6 +710,7 @@
             justify-content: center;
             gap: 10px;
             box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+            min-width: 200px;
         }
 
         .btn-copy:hover {
@@ -903,7 +887,7 @@
             font-family: 'SF Mono', monospace;
         }
 
-        /* Input Groups */
+        /* Input Groups with Beautiful Calculations */
         .input-group {
             margin-bottom: 35px;
         }
@@ -933,7 +917,9 @@
             background: rgba(255, 255, 255, 0.08);
         }
 
-        .calc-info {
+        /* Beautiful Calculation Display */
+        .calc-display {
+            display: none;
             font-size: 15px;
             color: var(--text-secondary);
             margin-top: 15px;
@@ -944,6 +930,47 @@
             border-left: 5px solid var(--primary);
             font-family: 'SF Mono', monospace;
             font-weight: 500;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .calc-display.show {
+            display: block;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .calc-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 10px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .calc-label {
+            color: var(--text-secondary);
+        }
+
+        .calc-value {
+            font-weight: 600;
+            color: white;
+        }
+
+        .calc-total {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .calc-unit {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 3px;
         }
 
         /* Buttons */
@@ -1184,13 +1211,10 @@
                 font-size: 20px;
             }
             
-            .referral-link-container {
-                flex-direction: column;
-            }
-            
             .btn-copy {
                 width: 100%;
                 padding: 18px;
+                min-width: auto;
             }
             
             .referral-rewards {
@@ -1261,23 +1285,6 @@
 
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-
-        /* Status Message */
-        .status-message {
-            font-size: 14px;
-            padding: 12px 20px;
-            border-radius: 12px;
-            margin-top: 15px;
-            text-align: center;
-            font-weight: 600;
-            display: none;
-        }
-
-        .status-success {
-            background: rgba(0, 255, 136, 0.1);
-            color: var(--primary);
-            border-left: 4px solid var(--primary);
         }
     </style>
 </head>
@@ -1388,18 +1395,19 @@
                         <i class="fas fa-user-friends"></i>
                         Referral Program
                     </div>
-                    <div class="referral-badge">EARN 15% COMMISSION</div>
+                    <div class="referral-badge">MULTI-LEVEL</div>
                 </div>
                 
                 <div class="referral-info">
-                    <strong>Share your referral link and earn 15% commission on every purchase made by your referrals.</strong> 
+                    <strong>Share your referral link and earn commissions on every purchase made by your referrals.</strong> 
                     Build your network and maximize your earnings through our 5-level referral system!
                 </div>
                 
+                <!-- HIDDEN: Only Copy Button is Visible -->
                 <div class="referral-link-container">
-                    <input type="text" id="refLink" class="referral-input" readonly placeholder="Your referral link will appear here">
+                    <input type="text" id="refLink" class="referral-input" readonly style="display: none;">
                     <button onclick="copyRefLink()" class="btn-copy">
-                        <i class="fas fa-copy"></i> COPY LINK
+                        <i class="fas fa-copy"></i> COPY REFERRAL LINK
                     </button>
                 </div>
                 
@@ -1444,7 +1452,7 @@
                     </div>
                     
                     <div class="total-reward">
-                        <div class="total-reward-label">Total Commission</div>
+                        <div class="total-reward-label">Total Potential</div>
                         <div class="total-reward-value">15%</div>
                     </div>
                 </div>
@@ -1458,9 +1466,27 @@
             <div class="input-container">
                 <input type="number" id="buyAmount" class="input-field" placeholder="Enter USDT amount" oninput="calculateBuy()">
             </div>
-            <div class="calc-info" id="buyCalc">
-                1% Tax: - | 10% ICO Bonus: - | Net SIG6: -
+            
+            <!-- Beautiful Buy Calculation Display -->
+            <div id="buyCalc" class="calc-display">
+                <div class="calc-row">
+                    <span class="calc-label">Amount to Buy:</span>
+                    <span class="calc-value"><span id="buyAmountDisplay">0</span><span class="calc-unit"> USDT</span></span>
+                </div>
+                <div class="calc-row">
+                    <span class="calc-label">Transaction Tax (1%):</span>
+                    <span class="calc-value">-<span id="buyTax">0</span><span class="calc-unit"> USDT</span></span>
+                </div>
+                <div class="calc-row">
+                    <span class="calc-label">Net Amount After Tax:</span>
+                    <span class="calc-value"><span id="buyNetAmount">0</span><span class="calc-unit"> USDT</span></span>
+                </div>
+                <div class="calc-row">
+                    <span class="calc-label">SIG6 Tokens You Get:</span>
+                    <span class="calc-value calc-total"><span id="buyTokens">0</span><span class="calc-unit"> SIG6</span></span>
+                </div>
             </div>
+            
             <button class="btn btn-buy" onclick="handleBuy()">
                 <i class="fas fa-arrow-up"></i> BUY SIG6 TOKENS
             </button>
@@ -1477,9 +1503,27 @@
             <div class="input-container">
                 <input type="number" id="sellAmount" class="input-field" placeholder="Enter SIG6 amount" oninput="calculateSell()">
             </div>
-            <div class="calc-info" id="sellCalc">
-                1% Tax: - | You Receive: - USDT
+            
+            <!-- Beautiful Sell Calculation Display -->
+            <div id="sellCalc" class="calc-display">
+                <div class="calc-row">
+                    <span class="calc-label">Amount to Sell:</span>
+                    <span class="calc-value"><span id="sellAmountDisplay">0</span><span class="calc-unit"> SIG6</span></span>
+                </div>
+                <div class="calc-row">
+                    <span class="calc-label">Current Sell Value:</span>
+                    <span class="calc-value"><span id="sellValue">0</span><span class="calc-unit"> USDT</span></span>
+                </div>
+                <div class="calc-row">
+                    <span class="calc-label">Transaction Tax (1%):</span>
+                    <span class="calc-value">-<span id="sellTax">0</span><span class="calc-unit"> USDT</span></span>
+                </div>
+                <div class="calc-row">
+                    <span class="calc-label">You Will Receive:</span>
+                    <span class="calc-value calc-total"><span id="sellReceive">0</span><span class="calc-unit"> USDT</span></span>
+                </div>
             </div>
+            
             <button class="btn btn-sell" onclick="handleSell()">
                 <i class="fas fa-arrow-down"></i> SELL SIG6 TOKENS
             </button>
@@ -1640,10 +1684,30 @@
             }, 3000);
         }
 
-        // Your existing contract code
-        const CONTRACT_ADDRESS = "0x59388E9BC0a1c1f87E281EC7fdFB2BD6733c42e6";
+        // UPDATED CONTRACT ADDRESS AND ABI
+        const CONTRACT_ADDRESS = "0x21F7bd5619b1d263296a526F95F97d2Ff084a8eA";
         const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; 
-        const USDT_ABI = ["function approve(address spender, uint256 amount) public returns (bool)", "function balanceOf(address account) public view returns (uint256)"];
+        
+        // UPDATED ABI with all required functions
+        const CONTRACT_ABI = [
+            "function buy(uint256 _usdtAmount, address _referrer) public",
+            "function sell(uint256 _sigmaAmount) public",
+            "function getPrices() public view returns (uint256 currentBuy, uint256 currentSell)",
+            "function balanceOf(address account) public view returns (uint256)",
+            "function buyPrice() public view returns (uint256)",
+            "function creatorWallet() public view returns (address)",
+            "function decimals() public view returns (uint8)",
+            "function name() public view returns (string)",
+            "function symbol() public view returns (string)",
+            "function totalSupply() public view returns (uint256)",
+            "function usdt() public view returns (address)"
+        ];
+        
+        const USDT_ABI = [
+            "function approve(address spender, uint256 amount) public returns (bool)",
+            "function balanceOf(address account) public view returns (uint256)",
+            "function decimals() public view returns (uint8)"
+        ];
 
         let provider, signer, contract, usdtContract;
         let currentBuyPrice = 0;
@@ -1674,22 +1738,17 @@
         }
 
         function initContracts() {
-            const miniABI = [
-                "function buy(uint256 _usdtAmount, address _referrer) public",
-                "function sell(uint256 _sigmaAmount) public",
-                "function getPrices() public view returns (uint256 buyPrice, uint256 sellPrice)",
-                "function balanceOf(address account) public view returns (uint256)"
-            ];
-            contract = new ethers.Contract(CONTRACT_ADDRESS, miniABI, signer);
+            // Initialize contracts with updated addresses and ABIs
+            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
             usdtContract = new ethers.Contract(USDT_ADDRESS, USDT_ABI, signer);
         }
 
-        // Setup beautiful referral link
+        // Setup beautiful referral link (hidden from user)
         function setupReferral(addr) {
             const currentUrl = window.location.origin + window.location.pathname;
             const refLink = `${currentUrl}?ref=${addr}`;
             
-            // Set referral link in input field
+            // Set referral link in hidden input field
             document.getElementById('refLink').value = refLink;
             
             // Show referral section with beautiful animation
@@ -1719,7 +1778,7 @@
             }
         }
 
-        // Copy referral link
+        // Copy referral link (hidden from user)
         function copyRefLink() {
             const copyText = document.getElementById("refLink");
             copyText.select();
@@ -1727,12 +1786,12 @@
             
             const copyBtn = document.querySelector('.btn-copy');
             const originalText = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<i class="fas fa-check"></i> COPIED!';
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> LINK COPIED!';
             copyBtn.style.background = 'linear-gradient(135deg, #50e3c2, #26a17b)';
             
             // Show success message
             const refStatus = document.getElementById('refStatus');
-            refStatus.textContent = '✅ Referral link copied to clipboard! Share it to earn 15% commission.';
+            refStatus.textContent = '✅ Referral link copied to clipboard!';
             refStatus.className = 'referral-status active';
             
             setTimeout(() => {
@@ -1751,23 +1810,39 @@
             
             try {
                 const addr = await signer.getAddress();
+                
+                // Get POL balance
                 const pol = await provider.getBalance(addr);
+                
+                // Get USDT balance (USDT has 6 decimals)
                 const usdt = await usdtContract.balanceOf(addr);
+                const usdtDecimals = await usdtContract.decimals();
+                
+                // Get SIG6 balance (typically 18 decimals)
                 const sig6 = await contract.balanceOf(addr);
+                const sig6Decimals = await contract.decimals();
                 
                 // Format numbers with proper precision
                 const polFormatted = parseFloat(ethers.formatEther(pol)).toFixed(4);
-                const usdtFormatted = parseFloat(ethers.formatUnits(usdt, 6)).toFixed(2);
-                const sig6Formatted = parseFloat(ethers.formatUnits(sig6, 18)).toFixed(2);
+                const usdtFormatted = parseFloat(ethers.formatUnits(usdt, usdtDecimals)).toFixed(2);
+                const sig6Formatted = parseFloat(ethers.formatUnits(sig6, sig6Decimals)).toFixed(2);
                 
                 document.getElementById('polBal').innerText = polFormatted;
                 document.getElementById('usdtBal').innerText = usdtFormatted;
                 document.getElementById('sig6Bal').innerText = sig6Formatted;
                 document.getElementById('sig6Total').innerText = sig6Formatted;
 
-                const prices = await contract.getPrices();
-                currentBuyPrice = Number(ethers.formatUnits(prices[0], 6));
-                currentSellPrice = Number(ethers.formatUnits(prices[1], 6));
+                // Get prices from contract
+                try {
+                    const prices = await contract.getPrices();
+                    currentBuyPrice = Number(ethers.formatUnits(prices[0], usdtDecimals));
+                    currentSellPrice = Number(ethers.formatUnits(prices[1], usdtDecimals));
+                } catch (e) {
+                    // Fallback to buyPrice() if getPrices() fails
+                    const buyPrice = await contract.buyPrice();
+                    currentBuyPrice = Number(ethers.formatUnits(buyPrice, usdtDecimals));
+                    currentSellPrice = currentBuyPrice * 0.5; // Default to 50% of buy price
+                }
 
                 document.getElementById('buyUsdt').innerText = currentBuyPrice.toFixed(4);
                 document.getElementById('sellUsdt').innerText = currentSellPrice.toFixed(4);
@@ -1787,24 +1862,54 @@
             }
         }
 
+        // Calculate buy with beautiful display (NO ICO BONUS)
         function calculateBuy() {
-            const val = document.getElementById('buyAmount').value;
-            if(!val || val <= 0) return;
+            const val = parseFloat(document.getElementById('buyAmount').value);
+            const buyCalc = document.getElementById('buyCalc');
+            
+            if(!val || val <= 0) {
+                buyCalc.classList.remove('show');
+                return;
+            }
+            
+            // Show calculation display
+            buyCalc.classList.add('show');
+            
+            // Calculate values
             const tax = val * 0.01;
-            const netUsdt = val - tax;
-            const tokens = netUsdt / currentBuyPrice;
-            const icoBonus = tokens * 0.10;
-            const total = tokens + icoBonus;
-            document.getElementById('buyCalc').innerHTML = `1% Tax: -${tax.toFixed(2)} USDT | Bonus: +${icoBonus.toFixed(2)} SIG6 | Total: <b>${total.toFixed(2)}</b>`;
+            const netAmount = val - tax;
+            const tokens = netAmount / currentBuyPrice;
+            
+            // Update display
+            document.getElementById('buyAmountDisplay').textContent = val.toFixed(2);
+            document.getElementById('buyTax').textContent = tax.toFixed(2);
+            document.getElementById('buyNetAmount').textContent = netAmount.toFixed(2);
+            document.getElementById('buyTokens').textContent = tokens.toFixed(2);
         }
 
+        // Calculate sell with beautiful display
         function calculateSell() {
-            const val = document.getElementById('sellAmount').value;
-            if(!val || val <= 0) return;
+            const val = parseFloat(document.getElementById('sellAmount').value);
+            const sellCalc = document.getElementById('sellCalc');
+            
+            if(!val || val <= 0) {
+                sellCalc.classList.remove('show');
+                return;
+            }
+            
+            // Show calculation display
+            sellCalc.classList.add('show');
+            
+            // Calculate values
             const rawUsdt = val * currentSellPrice;
             const tax = rawUsdt * 0.01;
             const netUsdt = rawUsdt - tax;
-            document.getElementById('sellCalc').innerHTML = `1% Tax: -${tax.toFixed(4)} USDT | You Receive: <b>${netUsdt.toFixed(4)} USDT</b>`;
+            
+            // Update display
+            document.getElementById('sellAmountDisplay').textContent = val.toFixed(2);
+            document.getElementById('sellValue').textContent = rawUsdt.toFixed(4);
+            document.getElementById('sellTax').textContent = tax.toFixed(4);
+            document.getElementById('sellReceive').textContent = netUsdt.toFixed(4);
         }
 
         async function handleBuy() {
@@ -1815,7 +1920,9 @@
                     return;
                 }
                 
-                const amountWei = ethers.parseUnits(amount, 6);
+                // Get USDT decimals
+                const usdtDecimals = await usdtContract.decimals();
+                const amountWei = ethers.parseUnits(amount, usdtDecimals);
                 
                 // Get referrer from URL if exists
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1825,6 +1932,7 @@
                 const originalText = buyBtn.innerHTML;
                 buyBtn.innerHTML = '<div class="loading"></div> APPROVING...';
                 
+                // Approve USDT spending
                 const txApprove = await usdtContract.approve(CONTRACT_ADDRESS, amountWei);
                 await txApprove.wait();
                 
@@ -1844,7 +1952,7 @@
                 // Show referral success if used
                 if (referrer !== "0x0000000000000000000000000000000000000000") {
                     const refStatus = document.getElementById('refStatus');
-                    refStatus.textContent = '✅ Transaction successful! Your referrer will earn 5% commission.';
+                    refStatus.textContent = '✅ Transaction successful! Referral applied.';
                     refStatus.className = 'referral-status active';
                     
                     setTimeout(() => {
@@ -1854,6 +1962,10 @@
                 
                 alert("Buy Successful!");
                 refreshData();
+                
+                // Clear input and hide calculation
+                document.getElementById('buyAmount').value = '';
+                document.getElementById('buyCalc').classList.remove('show');
             } catch (e) { 
                 alert("Error: " + e.message); 
                 document.querySelector('.btn-buy').innerHTML = '<i class="fas fa-arrow-up"></i> BUY SIG6 TOKENS';
@@ -1868,7 +1980,9 @@
                     return;
                 }
                 
-                const amountWei = ethers.parseUnits(amount, 18);
+                // Get SIG6 decimals (typically 18)
+                const sig6Decimals = await contract.decimals();
+                const amountWei = ethers.parseUnits(amount, sig6Decimals);
                 
                 const sellBtn = document.querySelector('.btn-sell');
                 const originalText = sellBtn.innerHTML;
@@ -1888,6 +2002,10 @@
                 
                 alert("Sell Successful!");
                 refreshData();
+                
+                // Clear input and hide calculation
+                document.getElementById('sellAmount').value = '';
+                document.getElementById('sellCalc').classList.remove('show');
             } catch (e) { 
                 alert("Error: " + e.message); 
                 document.querySelector('.btn-sell').innerHTML = '<i class="fas fa-arrow-down"></i> SELL SIG6 TOKENS';
