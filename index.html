@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIGMA SIX | Premium DApp</title>
+    <title>SIGMA SIX | Official DApp</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #00ffcc; --bg: #0a0b10; --card: #161821; --text: #ffffff; --border: #2d2f3e; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
-        .container { width: 100%; max-width: 460px; }
+        .container { width: 100%; max-width: 450px; }
         .card { background: var(--card); border-radius: 24px; padding: 24px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-        .header h1 { color: var(--primary); text-align: center; margin: 0 0 5px 0; font-size: 26px; letter-spacing: 2px; }
+        .header h1 { color: var(--primary); text-align: center; margin: 0; font-size: 26px; letter-spacing: 2px; }
         .header p { text-align: center; font-size: 11px; color: #666; margin-bottom: 20px; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .stat-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
@@ -41,7 +41,7 @@
     <div class="card">
         <div class="header">
             <h1>SIGMA SIX</h1>
-            <p>Algorithmically Stable • 5-Level Rewards</p>
+            <p>Stable Algorithm • 5-Level Rewards</p>
         </div>
 
         <div class="stats-grid">
@@ -62,7 +62,7 @@
         <div class="calc-box">
             <div class="row"><span id="out-label">Total USDT to Pay:</span> <span id="out-amt" style="color:var(--primary); font-weight:800">0.00 USDT</span></div>
             <div class="row"><span>Admin Tax (1%):</span> <span id="tax-amt" style="color:#ff4d4d">0.0000</span></div>
-            <div class="row" id="ico-row"><span>ICO Reward:</span> <span style="color:#ffd700">+10% One-time Bonus</span></div>
+            <div class="row" id="upline-display"><span style="color:#888;">Upline Address:</span> <span id="upline-addr" style="font-size:10px; color:#aaa;">None</span></div>
         </div>
 
         <button class="btn btn-primary" id="mainBtn" onclick="action()">APPROVE USDT</button>
@@ -89,8 +89,20 @@
     const U_ADDR = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
     let mode = 'buy', buyR = 0.0112, sellR = 0.0111, signer, addr, provider;
 
+    // Save Referral Upline from URL even if page refreshes
+    function handleUpline() {
+        const params = new URLSearchParams(window.location.search);
+        let ref = params.get('ref');
+        if (ref && ethers.isAddress(ref)) {
+            localStorage.setItem('sigma_ref', ref);
+        }
+        let currentRef = localStorage.getItem('sigma_ref') || "0x0000000000000000000000000000000000000000";
+        document.getElementById('upline-addr').innerText = currentRef.slice(0,10) + "...";
+        return currentRef;
+    }
+
     async function connect() {
-        if (!window.ethereum) return alert("Please install MetaMask");
+        if (!window.ethereum) return alert("Please open this in MetaMask Browser");
         provider = new ethers.BrowserProvider(window.ethereum);
         const acc = await provider.send("eth_requestAccounts", []);
         addr = acc[0]; signer = await provider.getSigner();
@@ -105,30 +117,34 @@
         const uc = new ethers.Contract(U_ADDR, ["function balanceOf(address) view returns (uint256)", "function allowance(address,address) view returns (uint256)"], provider);
         const sc = new ethers.Contract(S_ADDR, ["function balanceOf(address) view returns (uint256)", "function buyRate() view returns (uint256)", "function getSellRate() view returns (uint256)"], provider);
         
-        const [pb, ub, sb, br, sr, alw] = await Promise.all([
-            provider.getBalance(addr),
-            uc.balanceOf(addr),
-            sc.balanceOf(addr),
-            sc.buyRate(),
-            sc.getSellRate(),
-            uc.allowance(addr, S_ADDR)
-        ]);
+        try {
+            const [pb, ub, sb, br, sr, alw] = await Promise.all([
+                provider.getBalance(addr),
+                uc.balanceOf(addr),
+                sc.balanceOf(addr),
+                sc.buyRate(),
+                sc.getSellRate(),
+                uc.allowance(addr, S_ADDR)
+            ]);
 
-        document.getElementById('bal-pol').innerText = parseFloat(ethers.formatEther(pb)).toFixed(3) + " POL";
-        document.getElementById('bal-usdt').innerText = parseFloat(ethers.formatUnits(ub, 6)).toFixed(3) + " USDT";
-        document.getElementById('bal-sig').innerText = parseFloat(ethers.formatEther(sb)).toFixed(2) + " SIG6";
-        
-        buyR = parseFloat(ethers.formatUnits(br, 6));
-        sellR = parseFloat(ethers.formatUnits(sr, 6));
-        document.getElementById('brate').innerText = buyR.toFixed(4);
-        document.getElementById('srate').innerText = sellR.toFixed(4);
+            document.getElementById('bal-pol').innerText = parseFloat(ethers.formatEther(pb)).toFixed(3) + " POL";
+            document.getElementById('bal-usdt').innerText = parseFloat(ethers.formatUnits(ub, 6)).toFixed(3) + " USDT";
+            document.getElementById('bal-sig').innerText = parseFloat(ethers.formatEther(sb)).toFixed(2) + " SIG6";
+            
+            buyR = parseFloat(ethers.formatUnits(br, 6));
+            sellR = parseFloat(ethers.formatUnits(sr, 6));
+            document.getElementById('brate').innerText = buyR.toFixed(4);
+            document.getElementById('srate').innerText = sellR.toFixed(4);
 
-        if(mode === 'buy') {
-            document.getElementById('mainBtn').innerText = alw > 0 ? "BUY SIGMA" : "APPROVE USDT";
-        } else {
-            document.getElementById('mainBtn').innerText = "SELL SIGMA";
-        }
-        calc();
+            const requiredUsdt = (parseFloat(document.getElementById('amt').value || 0) * buyR) * 1.01;
+            const currentAlw = parseFloat(ethers.formatUnits(alw, 6));
+
+            if(mode === 'buy') {
+                document.getElementById('mainBtn').innerText = (currentAlw >= requiredUsdt && requiredUsdt > 0) ? "BUY SIGMA" : "APPROVE USDT";
+            } else {
+                document.getElementById('mainBtn').innerText = "SELL SIGMA";
+            }
+        } catch (e) { console.error(e); }
     }
 
     function calc() {
@@ -148,47 +164,56 @@
             document.getElementById('out-amt').innerText = final.toFixed(4) + " USDT";
         }
         document.getElementById('tax-amt').innerText = tax.toFixed(4) + " USDT";
+        sync();
     }
 
     function setMode(m) {
         mode = m;
         document.getElementById('t-buy').className = m === 'buy' ? 'tab active' : 'tab';
         document.getElementById('t-sell').className = m === 'sell' ? 'tab active' : 'tab';
-        document.getElementById('ico-row').style.display = m === 'buy' ? 'flex' : 'none';
         sync();
     }
 
     async function action() {
         if (!signer) return connect();
         const v = document.getElementById('amt').value;
+        if (!v || v <= 0) return alert("Enter amount");
         const msg = document.getElementById('status-msg');
+        
         try {
             if (mode === 'buy') {
                 const uc = new ethers.Contract(U_ADDR, ["function approve(address,uint256) returns (bool)", "function allowance(address,address) view returns (uint256)"], signer);
-                if ((await uc.allowance(addr, S_ADDR)) == 0) {
-                    msg.innerText = "Processing Approval...";
-                    await (await uc.approve(S_ADDR, ethers.MaxUint256)).wait();
-                    msg.innerText = "Approval Done!";
+                const requiredUsdt = (parseFloat(v) * buyR) * 1.01;
+                const alw = await uc.allowance(addr, S_ADDR);
+                
+                if (parseFloat(ethers.formatUnits(alw, 6)) < requiredUsdt) {
+                    msg.innerText = "Approving USDT...";
+                    const tx = await uc.approve(S_ADDR, ethers.MaxUint256);
+                    await tx.wait();
+                    msg.innerText = "Approval Success!";
+                    sync();
                 } else {
                     const sc = new ethers.Contract(S_ADDR, ["function buySigma(uint256,address)"], signer);
-                    const ref = new URLSearchParams(window.location.search).get('ref') || "0x0000000000000000000000000000000000000000";
+                    const upline = handleUpline();
                     msg.innerText = "Buying SIGMA...";
-                    await (await sc.buySigma(ethers.parseEther(v), ref)).wait();
+                    const tx = await sc.buySigma(ethers.parseEther(v), upline);
+                    await tx.wait();
                     msg.innerText = "Purchase Successful!";
+                    sync();
                 }
             } else {
                 const sc = new ethers.Contract(S_ADDR, ["function sellSigma(uint256)"], signer);
                 msg.innerText = "Selling SIGMA...";
-                await (await sc.sellSigma(ethers.parseEther(v))).wait();
+                const tx = await sc.sellSigma(ethers.parseEther(v));
+                await tx.wait();
                 msg.innerText = "Sale Successful!";
+                sync();
             }
-            sync();
-        } catch (e) { 
-            msg.innerText = "Error: " + (e.reason || "Transaction Failed");
-        }
+        } catch (e) { msg.innerText = "Error: " + (e.reason || "Check Balance/Gas"); }
     }
 
     function updateRefLink() {
+        // This will now use the GitHub URL automatically
         const link = window.location.origin + window.location.pathname + "?ref=" + addr;
         document.getElementById('ref-link').value = link;
     }
@@ -210,6 +235,8 @@
         }
         calc();
     }
+
+    window.onload = handleUpline;
 </script>
 </body>
 </html>
