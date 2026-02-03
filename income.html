@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGMA SIX | Income Report</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00ffcc;
+            --secondary: #9d4edd;
+            --bg: #0a0b10;
+            --card: #161821;
+            --text: #ffffff;
+            --border: #2d2f3e;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff4d4d;
+            --gradient: linear-gradient(90deg, #00ffcc, #9d4edd, #ff2a6d, #00ffcc);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Rainbow Border Top */
+        .rainbow-border {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+            background-size: 400% 400%;
+            animation: rainbow 8s ease infinite;
+            z-index: 1000;
+        }
+        
+        /* Crypto Live Animation Background */
+        .crypto-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.15;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 255, 204, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(157, 78, 221, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 40% 80%, rgba(255, 42, 109, 0.15) 0%, transparent 40%);
+        }
+        
+        /* Floating Crypto Icons Animation */
+        .floating-icons {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .floating-icon {
+            position: absolute;
+            font-size: 20px;
+            color: rgba(0, 255, 204, 0.3);
+            animation: float 20s infinite linear;
+        }
+        
+        .floating-icon:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
+        .floating-icon:nth-child(2) { top: 20%; left: 85%; animation-delay: 2s; color: rgba(157, 78, 221, 0.3); }
+        .floating-icon:nth-child(3) { top: 40%; left: 15%; animation-delay: 4s; color: rgba(255, 42, 109, 0.3); }
+        .floating-icon:nth-child(4) { top: 60%; left: 90%; animation-delay: 6s; }
+        .floating-icon:nth-child(5) { top: 80%; left: 10%; animation-delay: 8s; color: rgba(157, 78, 221, 0.3); }
+        .floating-icon:nth-child(6) { top: 30%; left: 70%; animation-delay: 10s; }
+        .floating-icon:nth-child(7) { top: 70%; left: 50%; animation-delay: 12s; color: rgba(255, 42, 109, 0.3); }
+        
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg); 
+                opacity: 0.3;
+            }
+            25% { 
+                transform: translateY(-20px) rotate(90deg); 
+                opacity: 0.6;
+            }
+            50% { 
+                transform: translateY(0) rotate(180deg); 
+                opacity: 0.3;
+            }
+            75% { 
+                transform: translateY(20px) rotate(270deg); 
+                opacity: 0.6;
+            }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+        
+        .header h1 {
+            background: var(--gradient);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            animation: rainbow 8s ease infinite;
+            line-height: 1.2;
+        }
+        
+        .header p {
+            color: #aaa;
+            font-size: clamp(14px, 3vw, 16px);
+            letter-spacing: 1px;
+            line-height: 1.4;
+        }
+        
+        .connect-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-weight: 800;
+            font-size: clamp(12px, 3vw, 14px);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(0, 255, 204, 0.3);
+            z-index: 1001;
+            white-space: nowrap;
+            max-width: 200px;
+        }
+        
+        .connect-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 255, 204, 0.5);
+        }
+        
+        .connect-btn.connected {
+            background: rgba(0, 255, 204, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .main-card {
+            background: rgba(22, 24, 33, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .main-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+            background-size: 400% 400%;
+            animation: rainbow 8s ease infinite;
+        }
+        
+        .card-title {
+            color: var(--primary);
+            font-size: clamp(18px, 4vw, 24px);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(45, 47, 62, 0.5);
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-box:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .stat-label {
+            font-size: clamp(12px, 3vw, 14px);
+            color: #888;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-value {
+            font-size: clamp(20px, 4vw, 28px);
+            font-weight: 700;
+            color: var(--primary);
+            word-break: break-word;
+        }
+        
+        .stat-value.positive {
+            color: var(--success);
+        }
+        
+        .stat-value.negative {
+            color: var(--danger);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin: 0 -5px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        th {
+            background: rgba(157, 78, 221, 0.1);
+            color: var(--secondary);
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 700;
+            font-size: clamp(11px, 2.5vw, 14px);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid rgba(45, 47, 62, 0.5);
+            font-size: clamp(12px, 3vw, 14px);
+            vertical-align: top;
+        }
+        
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 16px;
+            font-size: clamp(10px, 2.5vw, 12px);
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-active {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--success);
+        }
+        
+        .status-lapsed {
+            background: rgba(255, 77, 77, 0.1);
+            color: var(--danger);
+        }
+        
+        .amount-positive {
+            color: var(--success);
+            font-weight: 700;
+            font-size: clamp(12px, 3vw, 14px);
+        }
+        
+        .amount-negative {
+            color: var(--danger);
+            font-weight: 700;
+            font-size: clamp(12px, 3vw, 14px);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--primary);
+            font-size: clamp(14px, 3vw, 16px);
+        }
+        
+        .loading i {
+            font-size: clamp(20px, 4vw, 24px);
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 30px 20px;
+            color: #888;
+            font-size: clamp(14px, 3vw, 16px);
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            background: rgba(0, 255, 204, 0.1);
+            border: 1px solid rgba(0, 255, 204, 0.3);
+            transition: all 0.3s;
+            font-size: clamp(12px, 3vw, 14px);
+        }
+        
+        .back-btn:hover {
+            background: rgba(0, 255, 204, 0.2);
+            transform: translateX(-5px);
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(90deg, var(--secondary), #7b2cbf);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 600;
+            font-size: clamp(12px, 3vw, 14px);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        
+        .refresh-btn:hover {
+            background: linear-gradient(90deg, #7b2cbf, var(--secondary));
+            transform: translateY(-2px);
+        }
+        
+        .header-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        @media (min-width: 480px) {
+            .header-actions {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+        
+        .token-badge {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 10px;
+            font-size: clamp(10px, 2.5vw, 11px);
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        
+        .badge-sig6 {
+            background: rgba(0, 255, 204, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(0, 255, 204, 0.3);
+        }
+        
+        .badge-usdt {
+            background: rgba(157, 78, 221, 0.1);
+            color: var(--secondary);
+            border: 1px solid rgba(157, 78, 221, 0.3);
+        }
+        
+        /* Mobile-specific optimizations */
+        .mobile-collapse {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .connect-btn {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 0 auto 15px auto;
+                width: 100%;
+                max-width: 100%;
+                justify-content: center;
+            }
+            
+            .main-card {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            th, td {
+                padding: 8px 6px;
+            }
+            
+            .mobile-collapse {
+                display: table-cell;
+            }
+            
+            /* Hide some columns on very small screens */
+            @media (max-width: 480px) {
+                th:nth-child(4), 
+                td:nth-child(4),
+                th:nth-child(7),
+                td:nth-child(7) {
+                    display: none;
+                }
+                
+                .stats-row {
+                    grid-template-columns: 1fr;
+                }
+            }
+            
+            /* Medium screens */
+            @media (min-width: 481px) and (max-width: 768px) {
+                th:nth-child(7),
+                td:nth-child(7) {
+                    display: none;
+                }
+            }
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Rainbow Border -->
+    <div class="rainbow-border"></div>
+    
+    <!-- Crypto Background Animation -->
+    <div class="crypto-bg"></div>
+    
+    <!-- Floating Crypto Icons -->
+    <div class="floating-icons">
+        <div class="floating-icon">₿</div>
+        <div class="floating-icon">Ξ</div>
+        <div class="floating-icon">S</div>
+        <div class="floating-icon">Σ</div>
+        <div class="floating-icon">$</div>
+        <div class="floating-icon">◈</div>
+        <div class="floating-icon">✦</div>
+    </div>
+    
+    <!-- Connect Button -->
+    <button class="connect-btn" id="connectBtn" onclick="connect()">
+        <i class="fas fa-wallet"></i> <span id="btn-text">Connect MetaMask</span>
+    </button>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <div class="header-actions">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <button class="refresh-btn" onclick="loadIncomeData()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+        
+        <div class="header">
+            <h1>INCOME REPORT</h1>
+            <p>Track your rewards & commissions from SIGMA SIX</p>
+        </div>
+        
+        <!-- Stats Overview -->
+        <div class="main-card">
+            <h2 class="card-title"><i class="fas fa-chart-line"></i> Income Overview</h2>
+            
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-label"><i class="fas fa-coins"></i> Total SIG6 Income</div>
+                    <div id="total-sig6" class="stat-value positive">0.0000 SIG6</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label"><i class="fas fa-exclamation-triangle"></i> Lapsed Income</div>
+                    <div id="lapsed-income" class="stat-value negative">0.00 USDT</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label"><i class="fas fa-history"></i> Total Transactions</div>
+                    <div id="total-transactions" class="stat-value">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Active Rewards Table -->
+        <div class="main-card">
+            <h2 class="card-title"><i class="fas fa-check-circle"></i> Active Rewards History</h2>
+            
+            <div class="table-container">
+                <table id="rewards-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Income</th>
+                            <th>Details</th>
+                            <th class="mobile-collapse">From</th>
+                            <th>Level</th>
+                            <th>Amount</th>
+                            <th class="mobile-collapse">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rewards-body">
+                        <tr>
+                            <td colspan="7" class="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading rewards data... Please connect wallet
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Lapsed Income Table -->
+        <div class="main-card">
+            <h2 class="card-title"><i class="fas fa-exclamation-triangle"></i> Lapsed Income History</h2>
+            
+            <div class="table-container">
+                <table id="lapsed-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Income</th>
+                            <th>Details</th>
+                            <th class="mobile-collapse">From</th>
+                            <th>Amount</th>
+                            <th>Reason</th>
+                            <th class="mobile-collapse">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lapsed-body">
+                        <tr>
+                            <td colspan="7" class="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading lapsed income data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SIGMA_CONTRACT_ADDRESS = "0x0f77a0d1FC8d04573402398A2ae19f367b4ef4aC";
+        const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
+        
+        let signer, provider, userAddress;
+        let sigmaContract;
+        
+        // Contract ABI for events
+        const sigmaABI = [
+            // Events
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "user",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "string",
+                        "name": "reason",
+                        "type": "string"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "IncomeLapsed",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "user",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "level",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "string",
+                        "name": "rewardType",
+                        "type": "string"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "RewardReport",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "user",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "referrer",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "MemberJoined",
+                "type": "event"
+            }
+        ];
+        
+        async function connect() {
+            if (!window.ethereum) {
+                alert("Please install MetaMask to use this feature");
+                return;
+            }
+            
+            try {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                const accounts = await provider.send("eth_requestAccounts", []);
+                userAddress = accounts[0];
+                
+                signer = await provider.getSigner();
+                sigmaContract = new ethers.Contract(SIGMA_CONTRACT_ADDRESS, sigmaABI, provider);
+                
+                // Update connect button
+                const connectBtn = document.getElementById('connectBtn');
+                const shortAddress = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
+                document.getElementById('btn-text').textContent = shortAddress;
+                connectBtn.classList.add('connected');
+                
+                // Load income data
+                loadIncomeData();
+                
+            } catch (error) {
+                console.error("Connection error:", error);
+                alert("Failed to connect wallet: " + error.message);
+            }
+        }
+        
+        async function loadIncomeData() {
+            if (!userAddress) {
+                alert("Please connect your wallet first");
+                return;
+            }
+            
+            try {
+                // Show loading state
+                document.getElementById('rewards-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Loading rewards data...
+                        </td>
+                    </tr>
+                `;
+                
+                document.getElementById('lapsed-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Loading lapsed income data...
+                        </td>
+                    </tr>
+                `;
+                
+                // Get current block number
+                const currentBlock = await provider.getBlockNumber();
+                const fromBlock = Math.max(currentBlock - 1000000, 0); // Last ~1M blocks
+                
+                // Fetch RewardReport events for this user
+                const rewardFilter = sigmaContract.filters.RewardReport(userAddress);
+                const rewardEvents = await sigmaContract.queryFilter(rewardFilter, fromBlock, currentBlock);
+                
+                // Also fetch events where user is the "from" (referrer)
+                const rewardFilter2 = sigmaContract.filters.RewardReport(null, userAddress);
+                const rewardEvents2 = await sigmaContract.queryFilter(rewardFilter2, fromBlock, currentBlock);
+                
+                // Combine both event arrays
+                const allRewardEvents = [...rewardEvents, ...rewardEvents2];
+                
+                // Fetch IncomeLapsed events
+                const lapsedFilter = sigmaContract.filters.IncomeLapsed(userAddress);
+                const lapsedEvents = await sigmaContract.queryFilter(lapsedFilter, fromBlock, currentBlock);
+                
+                // Process and display data
+                displayRewardsData(allRewardEvents);
+                displayLapsedData(lapsedEvents);
+                updateStats(allRewardEvents, lapsedEvents);
+                
+            } catch (error) {
+                console.error("Error loading income data:", error);
+                document.getElementById('rewards-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="no-data">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Error loading data: ${error.message}
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('lapsed-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="no-data">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Error loading data: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function displayRewardsData(events) {
+            const tbody = document.getElementById('rewards-body');
+            
+            if (!events || events.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="no-data">
+                            <i class="fas fa-inbox"></i>
+                            No rewards found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            let totalSIG6 = 0;
+            
+            // Sort events by timestamp (newest first)
+            events.sort((a, b) => b.args.timestamp - a.args.timestamp);
+            
+            // Remove duplicates (same transaction hash)
+            const uniqueEvents = [];
+            const seenHashes = new Set();
+            
+            events.forEach(event => {
+                if (!seenHashes.has(event.transactionHash)) {
+                    seenHashes.add(event.transactionHash);
+                    uniqueEvents.push(event);
+                }
+            });
+            
+            uniqueEvents.forEach((event, index) => {
+                const args = event.args;
+                let amount, tokenType, displayAmount, tokenBadge;
+                
+                // Determine token type and decimals
+                if (args.rewardType === "ICO_REWARD" || 
+                    args.rewardType === "TEAM_REFERRAL" || 
+                    args.rewardType === "TEAM_REFERRAL_CAPPED") {
+                    // SIG6 TOKENS (18 decimals)
+                    amount = parseFloat(ethers.formatUnits(args.amount, 18));
+                    tokenType = "SIG6";
+                    displayAmount = amount.toFixed(4);
+                    tokenBadge = '<span class="token-badge badge-sig6">SIG6</span>';
+                    totalSIG6 += amount;
+                } else {
+                    // USDT (6 decimals)
+                    amount = parseFloat(ethers.formatUnits(args.amount, 6));
+                    tokenType = "USDT";
+                    displayAmount = amount.toFixed(2);
+                    tokenBadge = '<span class="token-badge badge-usdt">USDT</span>';
+                }
+                
+                // Determine income name based on rewardType
+                let incomeName = "Commission";
+                let description = "Referral commission";
+                let badgeColor = "status-active";
+                
+                if (args.rewardType === "ICO_REWARD") {
+                    incomeName = "ICO Bonus";
+                    description = "10% first purchase bonus";
+                } else if (args.rewardType === "TEAM_REFERRAL") {
+                    incomeName = `Level ${args.level}`;
+                    description = `Level ${args.level} commission`;
+                } else if (args.rewardType === "TEAM_REFERRAL_CAPPED") {
+                    incomeName = `Level ${args.level} (Capped)`;
+                    description = `Capped commission`;
+                }
+                
+                const date = new Date(Number(args.timestamp) * 1000);
+                const dateStr = date.toLocaleDateString('en-GB', { 
+                    day: '2-digit', 
+                    month: 'short' 
+                });
+                const timeStr = date.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                
+                // Format from address for mobile
+                let fromAddress = "System";
+                if (args.from && args.from !== "0x0000000000000000000000000000000000000000") {
+                    fromAddress = args.from.slice(0,6) + "..." + args.from.slice(-4);
+                }
+                
+                // Check if user is receiver or giver
+                const isReceiver = args.user.toLowerCase() === userAddress.toLowerCase();
+                const amountClass = isReceiver ? "amount-positive" : "amount-negative";
+                const amountIcon = isReceiver ? '<i class="fas fa-plus-circle"></i> ' : '<i class="fas fa-minus-circle"></i> ';
+                
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                            <div style="font-weight:600; color:${isReceiver ? 'var(--primary)' : 'var(--danger)'}; font-size: 14px;">
+                                ${incomeName}
+                            </div>
+                            <div style="font-size:11px; color:#888; margin-top:3px">
+                                ${tokenBadge}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size:12px;">${description}</div>
+                            <div style="font-size:11px; color:#888; margin-top:3px">${args.rewardType}</div>
+                        </td>
+                        <td class="mobile-collapse" style="font-family:monospace; font-size:11px">
+                            ${fromAddress}
+                        </td>
+                        <td>
+                            <span class="status-badge ${badgeColor}">${args.level}</span>
+                        </td>
+                        <td class="${amountClass}">
+                            <div>${amountIcon} ${displayAmount}</div>
+                            <div style="font-size:10px; color:#888">${tokenType}</div>
+                        </td>
+                        <td class="mobile-collapse" style="font-size:11px; color:#aaa">
+                            <div>${dateStr}</div>
+                            <div>${timeStr}</div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+            
+            // Update total stats
+            document.getElementById('total-sig6').textContent = totalSIG6.toFixed(4) + " SIG6";
+        }
+        
+        function displayLapsedData(events) {
+            const tbody = document.getElementById('lapsed-body');
+            
+            if (!events || events.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="no-data">
+                            <i class="fas fa-inbox"></i>
+                            No lapsed income found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            let totalLapsed = 0;
+            
+            // Sort events by timestamp (newest first)
+            events.sort((a, b) => b.args.timestamp - a.args.timestamp);
+            
+            events.forEach((event, index) => {
+                const args = event.args;
+                const amount = parseFloat(ethers.formatUnits(args.amount, 6));
+                totalLapsed += amount;
+                
+                // Determine income name based on reason
+                let incomeName = "Commission";
+                let description = "Income lapsed";
+                
+                if (args.reason.includes("LOW_BALANCE")) {
+                    incomeName = "Low Balance";
+                    description = "Upline < 10 SIG6";
+                } else if (args.reason.includes("2X_CAP")) {
+                    incomeName = "Capped";
+                    description = "Exceeded 2x cap";
+                }
+                
+                const date = new Date(Number(args.timestamp) * 1000);
+                const dateStr = date.toLocaleDateString('en-GB', { 
+                    day: '2-digit', 
+                    month: 'short' 
+                });
+                const timeStr = date.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                            <div style="font-weight:600; color:var(--danger); font-size: 14px;">
+                                ${incomeName}
+                            </div>
+                            <span class="token-badge badge-usdt">USDT</span>
+                        </td>
+                        <td>
+                            <div style="font-size:12px;">${description}</div>
+                            <div style="font-size:11px; color:#888; margin-top:3px">${args.reason}</div>
+                        </td>
+                        <td class="mobile-collapse" style="font-family:monospace; font-size:11px">
+                            ${args.from.slice(0,6)}...${args.from.slice(-4)}
+                        </td>
+                        <td class="amount-negative">
+                            <div><i class="fas fa-minus-circle"></i> ${amount.toFixed(2)}</div>
+                            <div style="font-size:10px; color:#888">USDT</div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-lapsed" style="font-size:11px">${args.reason}</span>
+                        </td>
+                        <td class="mobile-collapse" style="font-size:11px; color:#aaa">
+                            <div>${dateStr}</div>
+                            <div>${timeStr}</div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+            
+            // Update lapsed income
+            document.getElementById('lapsed-income').textContent = totalLapsed.toFixed(2) + " USDT";
+        }
+        
+        function updateStats(rewardEvents, lapsedEvents) {
+            // Calculate totals
+            let totalSIG6 = 0;
+            let totalLapsed = 0;
+            
+            rewardEvents.forEach(event => {
+                const args = event.args;
+                const isReceiver = args.user.toLowerCase() === userAddress.toLowerCase();
+                
+                if (isReceiver && (args.rewardType === "ICO_REWARD" || 
+                    args.rewardType.includes("REFERRAL"))) {
+                    totalSIG6 += parseFloat(ethers.formatUnits(args.amount, 18));
+                }
+            });
+            
+            lapsedEvents.forEach(event => {
+                totalLapsed += parseFloat(ethers.formatUnits(event.args.amount, 6));
+            });
+            
+            // Update stats display
+            document.getElementById('total-sig6').textContent = totalSIG6.toFixed(4) + " SIG6";
+            document.getElementById('lapsed-income').textContent = totalLapsed.toFixed(2) + " USDT";
+            document.getElementById('total-transactions').textContent = 
+                (rewardEvents.length + lapsedEvents.length);
+        }
+        
+        // Auto-refresh every 30 seconds
+        function startAutoRefresh() {
+            setInterval(() => {
+                if (userAddress) {
+                    loadIncomeData();
+                }
+            }, 30000);
+        }
+        
+        // Initialize when page loads
+        window.onload = function() {
+            startAutoRefresh();
+            
+            // Check if wallet is already connected
+            if (window.ethereum && window.ethereum.selectedAddress) {
+                connect();
+            }
+        };
+    </script>
+</body>
+</html>
