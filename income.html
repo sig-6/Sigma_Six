@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         :root {
             --primary: #00ffcc;
@@ -179,6 +180,102 @@
             background: rgba(0, 255, 204, 0.1);
             color: var(--primary);
             border: 1px solid var(--primary);
+        }
+        
+        .filters-section {
+            background: rgba(22, 24, 33, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 15px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .filters-title {
+            color: var(--secondary);
+            font-size: clamp(16px, 4vw, 20px);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-label {
+            color: #aaa;
+            font-size: clamp(12px, 3vw, 14px);
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .date-input, .type-select, .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(157, 78, 221, 0.3);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .date-input:focus, .type-select:focus, .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .apply-btn {
+            background: linear-gradient(90deg, var(--secondary), #7b2cbf);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: clamp(12px, 3vw, 14px);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            margin-top: 20px;
+        }
+        
+        .apply-btn:hover {
+            background: linear-gradient(90deg, #7b2cbf, var(--secondary));
+            transform: translateY(-2px);
+        }
+        
+        .reset-btn {
+            background: rgba(255, 77, 77, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: clamp(12px, 3vw, 14px);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            margin-top: 20px;
+        }
+        
+        .reset-btn:hover {
+            background: rgba(255, 77, 77, 0.2);
+            transform: translateY(-2px);
         }
         
         .main-card {
@@ -452,6 +549,10 @@
                 margin-bottom: 15px;
             }
             
+            .filters-section {
+                padding: 12px;
+            }
+            
             th, td {
                 padding: 8px 6px;
             }
@@ -502,6 +603,12 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--secondary);
         }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
@@ -543,6 +650,48 @@
             <p>Track your rewards & commissions from SIGMA SIX</p>
         </div>
         
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <h2 class="filters-title"><i class="fas fa-filter"></i> Filter Income Data</h2>
+            
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label"><i class="far fa-calendar"></i> Start Date</label>
+                    <input type="date" id="startDate" class="date-input">
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label"><i class="far fa-calendar"></i> End Date</label>
+                    <input type="date" id="endDate" class="date-input">
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-tag"></i> Income Type</label>
+                    <select id="incomeType" class="type-select">
+                        <option value="all">All Types</option>
+                        <option value="ICO_REWARD">ICO Bonus</option>
+                        <option value="TEAM_REFERRAL">Team Referral</option>
+                        <option value="TEAM_REFERRAL_CAPPED">Capped Referral</option>
+                        <option value="lapsed">Lapsed Income</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-search"></i> Search Wallet</label>
+                    <input type="text" id="searchWallet" class="search-input" placeholder="Enter wallet address...">
+                </div>
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="apply-btn" onclick="applyFilters()">
+                    <i class="fas fa-check"></i> Apply Filters
+                </button>
+                <button class="reset-btn" onclick="resetFilters()">
+                    <i class="fas fa-times"></i> Reset Filters
+                </button>
+            </div>
+        </div>
+        
         <!-- Stats Overview -->
         <div class="main-card">
             <h2 class="card-title"><i class="fas fa-chart-line"></i> Income Overview</h2>
@@ -574,10 +723,10 @@
                             <th>#</th>
                             <th>Income</th>
                             <th>Details</th>
-                            <th class="mobile-collapse">From</th>
+                            <th class="mobile-collapse">From Wallet</th>
                             <th>Level</th>
                             <th>Amount</th>
-                            <th class="mobile-collapse">Date</th>
+                            <th class="mobile-collapse">Date & Time</th>
                         </tr>
                     </thead>
                     <tbody id="rewards-body">
@@ -603,10 +752,10 @@
                             <th>#</th>
                             <th>Income</th>
                             <th>Details</th>
-                            <th class="mobile-collapse">From</th>
+                            <th class="mobile-collapse">From Wallet</th>
                             <th>Amount</th>
                             <th>Reason</th>
-                            <th class="mobile-collapse">Date</th>
+                            <th class="mobile-collapse">Date & Time</th>
                         </tr>
                     </thead>
                     <tbody id="lapsed-body">
@@ -622,12 +771,16 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         const SIGMA_CONTRACT_ADDRESS = "0x0f77a0d1FC8d04573402398A2ae19f367b4ef4aC";
-        const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
         
         let signer, provider, userAddress;
         let sigmaContract;
+        
+        // Global variables to store filtered data
+        let allRewardEvents = [];
+        let allLapsedEvents = [];
         
         // Contract ABI for events
         const sigmaABI = [
@@ -798,7 +951,7 @@
                 const currentBlock = await provider.getBlockNumber();
                 const fromBlock = Math.max(currentBlock - 1000000, 0); // Last ~1M blocks
                 
-                // Fetch RewardReport events for this user
+                // Fetch RewardReport events for this user (as receiver)
                 const rewardFilter = sigmaContract.filters.RewardReport(userAddress);
                 const rewardEvents = await sigmaContract.queryFilter(rewardFilter, fromBlock, currentBlock);
                 
@@ -806,17 +959,21 @@
                 const rewardFilter2 = sigmaContract.filters.RewardReport(null, userAddress);
                 const rewardEvents2 = await sigmaContract.queryFilter(rewardFilter2, fromBlock, currentBlock);
                 
-                // Combine both event arrays
-                const allRewardEvents = [...rewardEvents, ...rewardEvents2];
+                // Combine both event arrays (to show when you give referrals)
+                const combinedRewardEvents = [...rewardEvents, ...rewardEvents2];
                 
                 // Fetch IncomeLapsed events
                 const lapsedFilter = sigmaContract.filters.IncomeLapsed(userAddress);
                 const lapsedEvents = await sigmaContract.queryFilter(lapsedFilter, fromBlock, currentBlock);
                 
+                // Store all data globally
+                allRewardEvents = combinedRewardEvents;
+                allLapsedEvents = lapsedEvents;
+                
                 // Process and display data
                 displayRewardsData(allRewardEvents);
-                displayLapsedData(lapsedEvents);
-                updateStats(allRewardEvents, lapsedEvents);
+                displayLapsedData(allLapsedEvents);
+                updateStats(allRewardEvents, allLapsedEvents);
                 
             } catch (error) {
                 console.error("Error loading income data:", error);
@@ -856,9 +1013,10 @@
             
             let html = '';
             let totalSIG6 = 0;
+            let totalUSDT = 0;
             
             // Sort events by timestamp (newest first)
-            events.sort((a, b) => b.args.timestamp - a.args.timestamp);
+            events.sort((a, b) => Number(b.args.timestamp) - Number(a.args.timestamp));
             
             // Remove duplicates (same transaction hash)
             const uniqueEvents = [];
@@ -875,22 +1033,27 @@
                 const args = event.args;
                 let amount, tokenType, displayAmount, tokenBadge;
                 
+                // Fix: Handle BigInt conversion safely
+                const timestamp = Number(args.timestamp);
+                const amountBigInt = BigInt(args.amount);
+                
                 // Determine token type and decimals
                 if (args.rewardType === "ICO_REWARD" || 
                     args.rewardType === "TEAM_REFERRAL" || 
                     args.rewardType === "TEAM_REFERRAL_CAPPED") {
                     // SIG6 TOKENS (18 decimals)
-                    amount = parseFloat(ethers.formatUnits(args.amount, 18));
+                    amount = parseFloat(ethers.formatUnits(amountBigInt.toString(), 18));
                     tokenType = "SIG6";
                     displayAmount = amount.toFixed(4);
                     tokenBadge = '<span class="token-badge badge-sig6">SIG6</span>';
                     totalSIG6 += amount;
                 } else {
                     // USDT (6 decimals)
-                    amount = parseFloat(ethers.formatUnits(args.amount, 6));
+                    amount = parseFloat(ethers.formatUnits(amountBigInt.toString(), 6));
                     tokenType = "USDT";
                     displayAmount = amount.toFixed(2);
                     tokenBadge = '<span class="token-badge badge-usdt">USDT</span>';
+                    totalUSDT += amount;
                 }
                 
                 // Determine income name based on rewardType
@@ -903,20 +1066,22 @@
                     description = "10% first purchase bonus";
                 } else if (args.rewardType === "TEAM_REFERRAL") {
                     incomeName = `Level ${args.level}`;
-                    description = `Level ${args.level} commission`;
+                    description = `Level ${args.level} team commission`;
                 } else if (args.rewardType === "TEAM_REFERRAL_CAPPED") {
                     incomeName = `Level ${args.level} (Capped)`;
                     description = `Capped commission`;
                 }
                 
-                const date = new Date(Number(args.timestamp) * 1000);
+                const date = new Date(timestamp * 1000);
                 const dateStr = date.toLocaleDateString('en-GB', { 
                     day: '2-digit', 
-                    month: 'short' 
+                    month: 'short',
+                    year: 'numeric'
                 });
                 const timeStr = date.toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
+                    second: '2-digit',
                     hour12: true
                 });
                 
@@ -947,7 +1112,9 @@
                             <div style="font-size:11px; color:#888; margin-top:3px">${args.rewardType}</div>
                         </td>
                         <td class="mobile-collapse" style="font-family:monospace; font-size:11px">
-                            ${fromAddress}
+                            <a href="#" onclick="searchByWallet('${args.from}'); return false;" style="color:var(--primary); text-decoration:none">
+                                ${fromAddress}
+                            </a>
                         </td>
                         <td>
                             <span class="status-badge ${badgeColor}">${args.level}</span>
@@ -966,7 +1133,7 @@
             
             tbody.innerHTML = html;
             
-            // Update total stats
+            // Update total SIG6 in stats
             document.getElementById('total-sig6').textContent = totalSIG6.toFixed(4) + " SIG6";
         }
         
@@ -989,11 +1156,12 @@
             let totalLapsed = 0;
             
             // Sort events by timestamp (newest first)
-            events.sort((a, b) => b.args.timestamp - a.args.timestamp);
+            events.sort((a, b) => Number(b.args.timestamp) - Number(a.args.timestamp));
             
             events.forEach((event, index) => {
                 const args = event.args;
-                const amount = parseFloat(ethers.formatUnits(args.amount, 6));
+                const amountBigInt = BigInt(args.amount);
+                const amount = parseFloat(ethers.formatUnits(amountBigInt.toString(), 6));
                 totalLapsed += amount;
                 
                 // Determine income name based on reason
@@ -1008,14 +1176,17 @@
                     description = "Exceeded 2x cap";
                 }
                 
-                const date = new Date(Number(args.timestamp) * 1000);
+                const timestamp = Number(args.timestamp);
+                const date = new Date(timestamp * 1000);
                 const dateStr = date.toLocaleDateString('en-GB', { 
                     day: '2-digit', 
-                    month: 'short' 
+                    month: 'short',
+                    year: 'numeric'
                 });
                 const timeStr = date.toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
+                    second: '2-digit',
                     hour12: true
                 });
                 
@@ -1033,7 +1204,9 @@
                             <div style="font-size:11px; color:#888; margin-top:3px">${args.reason}</div>
                         </td>
                         <td class="mobile-collapse" style="font-family:monospace; font-size:11px">
-                            ${args.from.slice(0,6)}...${args.from.slice(-4)}
+                            <a href="#" onclick="searchByWallet('${args.from}'); return false;" style="color:var(--primary); text-decoration:none">
+                                ${args.from.slice(0,6)}...${args.from.slice(-4)}
+                            </a>
                         </td>
                         <td class="amount-negative">
                             <div><i class="fas fa-minus-circle"></i> ${amount.toFixed(2)}</div>
@@ -1052,7 +1225,7 @@
             
             tbody.innerHTML = html;
             
-            // Update lapsed income
+            // Update lapsed income in stats
             document.getElementById('lapsed-income').textContent = totalLapsed.toFixed(2) + " USDT";
         }
         
@@ -1067,12 +1240,14 @@
                 
                 if (isReceiver && (args.rewardType === "ICO_REWARD" || 
                     args.rewardType.includes("REFERRAL"))) {
-                    totalSIG6 += parseFloat(ethers.formatUnits(args.amount, 18));
+                    const amountBigInt = BigInt(args.amount);
+                    totalSIG6 += parseFloat(ethers.formatUnits(amountBigInt.toString(), 18));
                 }
             });
             
             lapsedEvents.forEach(event => {
-                totalLapsed += parseFloat(ethers.formatUnits(event.args.amount, 6));
+                const amountBigInt = BigInt(event.args.amount);
+                totalLapsed += parseFloat(ethers.formatUnits(amountBigInt.toString(), 6));
             });
             
             // Update stats display
@@ -1080,6 +1255,98 @@
             document.getElementById('lapsed-income').textContent = totalLapsed.toFixed(2) + " USDT";
             document.getElementById('total-transactions').textContent = 
                 (rewardEvents.length + lapsedEvents.length);
+        }
+        
+        function applyFilters() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const incomeType = document.getElementById('incomeType').value;
+            const searchWallet = document.getElementById('searchWallet').value.toLowerCase().trim();
+            
+            let filteredRewards = [...allRewardEvents];
+            let filteredLapsed = [...allLapsedEvents];
+            
+            // Filter by date range
+            if (startDate) {
+                const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
+                filteredRewards = filteredRewards.filter(event => 
+                    Number(event.args.timestamp) >= startTimestamp
+                );
+                filteredLapsed = filteredLapsed.filter(event => 
+                    Number(event.args.timestamp) >= startTimestamp
+                );
+            }
+            
+            if (endDate) {
+                const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000) + 86400; // Add 1 day
+                filteredRewards = filteredRewards.filter(event => 
+                    Number(event.args.timestamp) <= endTimestamp
+                );
+                filteredLapsed = filteredLapsed.filter(event => 
+                    Number(event.args.timestamp) <= endTimestamp
+                );
+            }
+            
+            // Filter by income type
+            if (incomeType !== 'all') {
+                if (incomeType === 'lapsed') {
+                    filteredRewards = [];
+                } else {
+                    filteredRewards = filteredRewards.filter(event => 
+                        event.args.rewardType === incomeType
+                    );
+                }
+                
+                if (incomeType !== 'lapsed') {
+                    filteredLapsed = [];
+                }
+            }
+            
+            // Filter by wallet address
+            if (searchWallet) {
+                filteredRewards = filteredRewards.filter(event => 
+                    event.args.user.toLowerCase().includes(searchWallet) ||
+                    event.args.from.toLowerCase().includes(searchWallet)
+                );
+                
+                filteredLapsed = filteredLapsed.filter(event => 
+                    event.args.user.toLowerCase().includes(searchWallet) ||
+                    event.args.from.toLowerCase().includes(searchWallet)
+                );
+            }
+            
+            // Display filtered data
+            if (incomeType === 'lapsed') {
+                displayRewardsData([]);
+            } else {
+                displayRewardsData(filteredRewards);
+            }
+            
+            if (incomeType !== 'lapsed' && incomeType !== 'all') {
+                displayLapsedData([]);
+            } else {
+                displayLapsedData(filteredLapsed);
+            }
+            
+            // Update stats with filtered data
+            updateStats(filteredRewards, filteredLapsed);
+        }
+        
+        function resetFilters() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('incomeType').value = 'all';
+            document.getElementById('searchWallet').value = '';
+            
+            // Display all data
+            displayRewardsData(allRewardEvents);
+            displayLapsedData(allLapsedEvents);
+            updateStats(allRewardEvents, allLapsedEvents);
+        }
+        
+        function searchByWallet(walletAddress) {
+            document.getElementById('searchWallet').value = walletAddress;
+            applyFilters();
         }
         
         // Auto-refresh every 30 seconds
@@ -1093,6 +1360,14 @@
         
         // Initialize when page loads
         window.onload = function() {
+            // Set default dates (last 30 days)
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 30);
+            
+            document.getElementById('startDate').valueAsDate = startDate;
+            document.getElementById('endDate').valueAsDate = endDate;
+            
             startAutoRefresh();
             
             // Check if wallet is already connected
