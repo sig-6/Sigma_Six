@@ -609,6 +609,11 @@
             gap: 10px;
             flex-wrap: wrap;
         }
+        
+        /* For multi-line stat values */
+        .multi-line-stat {
+            line-height: 1.3;
+        }
     </style>
 </head>
 <body>
@@ -703,7 +708,7 @@
                 </div>
                 <div class="stat-box">
                     <div class="stat-label"><i class="fas fa-exclamation-triangle"></i> Lapsed Income</div>
-                    <div id="lapsed-income" class="stat-value negative">0.00 USDT</div>
+                    <div id="lapsed-income" class="stat-value negative multi-line-stat">0.00 USDT</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label"><i class="fas fa-history"></i> Total Transactions</div>
@@ -1153,7 +1158,8 @@
             }
             
             let html = '';
-            let totalLapsed = 0;
+            let totalLapsedSIG6 = 0;
+            let totalLapsedUSDT = 0;
             
             // Sort events by timestamp (newest first)
             events.sort((a, b) => Number(b.args.timestamp) - Number(a.args.timestamp));
@@ -1161,19 +1167,48 @@
             events.forEach((event, index) => {
                 const args = event.args;
                 const amountBigInt = BigInt(args.amount);
-                const amount = parseFloat(ethers.formatUnits(amountBigInt.toString(), 6));
-                totalLapsed += amount;
+                
+                // Determine token type based on reason
+                let amount, displayAmount, tokenType, tokenBadge;
+                
+                // Check if this is SIG6 or USDT based on reason
+                // SIG6 related lapsed income will have SIG6 or LOW_BALANCE_SKIP in reason
+                if (args.reason.includes("SIG6") || args.reason.includes("LOW_BALANCE_SKIP") || 
+                    args.reason.includes("BALANCE_CHECK") || args.reason.includes("low_balance")) {
+                    // SIG6 TOKENS (18 decimals)
+                    amount = parseFloat(ethers.formatUnits(amountBigInt.toString(), 18));
+                    tokenType = "SIG6";
+                    displayAmount = amount.toFixed(4);
+                    tokenBadge = '<span class="token-badge badge-sig6">SIG6</span>';
+                    totalLapsedSIG6 += amount;
+                } else {
+                    // USDT (6 decimals)
+                    amount = parseFloat(ethers.formatUnits(amountBigInt.toString(), 6));
+                    tokenType = "USDT";
+                    displayAmount = amount.toFixed(2);
+                    tokenBadge = '<span class="token-badge badge-usdt">USDT</span>';
+                    totalLapsedUSDT += amount;
+                }
                 
                 // Determine income name based on reason
                 let incomeName = "Commission";
                 let description = "Income lapsed";
                 
-                if (args.reason.includes("LOW_BALANCE")) {
+                if (args.reason.includes("LOW_BALANCE_SKIP") || args.reason.includes("low_balance")) {
                     incomeName = "Low Balance";
-                    description = "Upline < 10 SIG6";
+                    description = "Upline < 10 SIG6 LOW_BALANCE_SKIP";
                 } else if (args.reason.includes("2X_CAP")) {
                     incomeName = "Capped";
                     description = "Exceeded 2x cap";
+                } else if (args.reason.includes("BALANCE_CHECK")) {
+                    incomeName = "Balance Check";
+                    description = "Insufficient SIG6 balance";
+                } else if (args.reason.includes("SIG6")) {
+                    incomeName = "SIG6 Requirement";
+                    description = "Minimum SIG6 requirement not met";
+                } else if (args.reason.includes("CAP")) {
+                    incomeName = "Capped";
+                    description = "Commission cap exceeded";
                 }
                 
                 const timestamp = Number(args.timestamp);
@@ -1190,6 +1225,12 @@
                     hour12: true
                 });
                 
+                // Format from address for mobile
+                let fromAddress = "System";
+                if (args.from && args.from !== "0x0000000000000000000000000000000000000000") {
+                    fromAddress = args.from.slice(0,6) + "..." + args.from.slice(-4);
+                }
+                
                 html += `
                     <tr>
                         <td>${index + 1}</td>
@@ -1197,7 +1238,7 @@
                             <div style="font-weight:600; color:var(--danger); font-size: 14px;">
                                 ${incomeName}
                             </div>
-                            <span class="token-badge badge-usdt">USDT</span>
+                            ${tokenBadge}
                         </td>
                         <td>
                             <div style="font-size:12px;">${description}</div>
@@ -1205,12 +1246,12 @@
                         </td>
                         <td class="mobile-collapse" style="font-family:monospace; font-size:11px">
                             <a href="#" onclick="searchByWallet('${args.from}'); return false;" style="color:var(--primary); text-decoration:none">
-                                ${args.from.slice(0,6)}...${args.from.slice(-4)}
+                                ${fromAddress}
                             </a>
                         </td>
                         <td class="amount-negative">
-                            <div><i class="fas fa-minus-circle"></i> ${amount.toFixed(2)}</div>
-                            <div style="font-size:10px; color:#888">USDT</div>
+                            <div><i class="fas fa-minus-circle"></i> ${displayAmount}</div>
+                            <div style="font-size:10px; color:#888">${tokenType}</div>
                         </td>
                         <td>
                             <span class="status-badge status-lapsed" style="font-size:11px">${args.reason}</span>
@@ -1226,13 +1267,14 @@
             tbody.innerHTML = html;
             
             // Update lapsed income in stats
-            document.getElementById('lapsed-income').textContent = totalLapsed.toFixed(2) + " USDT";
+            updateLapsedStats(totalLapsedSIG6, totalLapsedUSDT);
         }
         
         function updateStats(rewardEvents, lapsedEvents) {
             // Calculate totals
             let totalSIG6 = 0;
-            let totalLapsed = 0;
+            let totalLapsedSIG6 = 0;
+            let totalLapsedUSDT = 0;
             
             rewardEvents.forEach(event => {
                 const args = event.args;
@@ -1245,16 +1287,42 @@
                 }
             });
             
+            // Calculate lapsed amounts separately
             lapsedEvents.forEach(event => {
                 const amountBigInt = BigInt(event.args.amount);
-                totalLapsed += parseFloat(ethers.formatUnits(amountBigInt.toString(), 6));
+                const reason = event.args.reason;
+                
+                // Check token type based on reason
+                if (reason.includes("SIG6") || reason.includes("LOW_BALANCE_SKIP") || 
+                    reason.includes("BALANCE_CHECK") || reason.includes("low_balance")) {
+                    totalLapsedSIG6 += parseFloat(ethers.formatUnits(amountBigInt.toString(), 18));
+                } else {
+                    totalLapsedUSDT += parseFloat(ethers.formatUnits(amountBigInt.toString(), 6));
+                }
             });
             
             // Update stats display
             document.getElementById('total-sig6').textContent = totalSIG6.toFixed(4) + " SIG6";
-            document.getElementById('lapsed-income').textContent = totalLapsed.toFixed(2) + " USDT";
+            updateLapsedStats(totalLapsedSIG6, totalLapsedUSDT);
             document.getElementById('total-transactions').textContent = 
                 (rewardEvents.length + lapsedEvents.length);
+        }
+        
+        function updateLapsedStats(sig6Amount, usdtAmount) {
+            const lapsedIncomeElement = document.getElementById('lapsed-income');
+            
+            if (usdtAmount > 0 && sig6Amount > 0) {
+                lapsedIncomeElement.innerHTML = `
+                    <div>${usdtAmount.toFixed(2)} USDT</div>
+                    <div style="font-size:16px; margin-top:5px">${sig6Amount.toFixed(4)} SIG6</div>
+                `;
+            } else if (usdtAmount > 0) {
+                lapsedIncomeElement.textContent = usdtAmount.toFixed(2) + " USDT";
+            } else if (sig6Amount > 0) {
+                lapsedIncomeElement.textContent = sig6Amount.toFixed(4) + " SIG6";
+            } else {
+                lapsedIncomeElement.textContent = "0.00";
+            }
         }
         
         function applyFilters() {
