@@ -479,6 +479,33 @@
             font-size: 14px;
         }
         
+        .balance-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .balance-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .balance-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .balance-inr {
+            font-size: 12px;
+            color: #ffaa00;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        
         /* Menu Card */
         .menu-card {
             background: rgba(22, 24, 33, 0.8);
@@ -655,13 +682,13 @@
                 <div class="stats-grid">
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-up"></i> BUY RATE</div>
-                        <div id="brate" class="stat-value">0.0576 USDT</div>
-                        <div id="brate-inr" class="stat-value-inr">≈ ₹5.18 INR</div>
+                        <div id="brate" class="stat-value">0.0 USDT</div>
+                        <div id="brate-inr" class="stat-value-inr">≈ ₹0.00 INR</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-down"></i> SELL RATE</div>
-                        <div id="srate" class="stat-value">0.0573 USDT</div>
-                        <div id="srate-inr" class="stat-value-inr">≈ ₹5.16 INR</div>
+                        <div id="srate" class="stat-value">0.0 USDT</div>
+                        <div id="srate-inr" class="stat-value-inr">≈ ₹0.00 INR</div>
                     </div>
                 </div>
                 
@@ -690,7 +717,7 @@
                         <span id="out-amt" style="color:var(--primary); font-weight:800">0.0000 USDT</span>
                     </div>
                     <div class="row">
-                        <span>Admin Tax (1%):</span> 
+                        <span id="tax-label">Buy Tax 1%:</span> 
                         <span id="tax-amt" style="color:#ff4d4d">0.0000 USDT</span>
                     </div>
                     <div class="row">
@@ -738,9 +765,25 @@
                 </div>
                 
                 <div class="balance-footer">
-                    <div class="row"><span><i class="fas fa-wallet"></i> USDT Balance:</span> <span id="bal-usdt">0.000</span></div>
-                    <div class="row"><span><i class="fas fa-coins"></i> SIG6 Balance:</span> <span id="bal-sig">0.000</span></div>
-                    <div class="row"><span><i class="fas fa-gas-pump"></i> POL Balance:</span> <span id="bal-pol">0.000</span></div>
+                    <div class="balance-item">
+                        <span><i class="fas fa-wallet"></i> USDT Balance:</span>
+                        <div class="balance-info">
+                            <span id="bal-usdt">0.000</span>
+                        </div>
+                    </div>
+                    <div class="balance-item">
+                        <span><i class="fas fa-coins"></i> SIG6 Balance:</span>
+                        <div class="balance-info">
+                            <span id="bal-sig">0.000</span>
+                            <span id="bal-sig-inr" class="balance-inr">₹0.00 INR</span>
+                        </div>
+                    </div>
+                    <div class="balance-item">
+                        <span><i class="fas fa-gas-pump"></i> POL Balance:</span>
+                        <div class="balance-info">
+                            <span id="bal-pol">0.000</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -801,7 +844,7 @@
             return currentRef;
         }
 
-        // Update INR values
+        // Update INR values using Buy Rate
         function updateINRValues() {
             const buyRateElement = document.getElementById('brate');
             const sellRateElement = document.getElementById('srate');
@@ -810,6 +853,7 @@
                 const buyRate = parseFloat(buyRateElement.innerText) || buyR;
                 const sellRate = parseFloat(sellRateElement.innerText) || sellR;
                 
+                // Buy Rate se INR calculate karo
                 document.getElementById('brate-inr').innerText = `≈ ₹${(buyRate * USDT_TO_INR).toFixed(2)} INR`;
                 document.getElementById('srate-inr').innerText = `≈ ₹${(sellRate * USDT_TO_INR).toFixed(2)} INR`;
             }
@@ -821,6 +865,27 @@
                 const outAmt = parseFloat(outAmtText) || 0;
                 document.getElementById('inr-amt').innerText = `${(outAmt * USDT_TO_INR).toFixed(2)} INR`;
             }
+        }
+
+        // Update SIG6 balance INR value using Buy Rate (Current Market Value)
+        function updateSigmaINRValue() {
+            const sigBalanceElement = document.getElementById('bal-sig');
+            const sigINRElement = document.getElementById('bal-sig-inr');
+            
+            if (sigBalanceElement && sigINRElement) {
+                const sigText = sigBalanceElement.innerText;
+                const sigBalance = parseFloat(sigText) || 0;
+                
+                // Buy Rate se calculate karo (Current Market Value)
+                const inrValue = (sigBalance * buyR * USDT_TO_INR).toFixed(2);
+                sigINRElement.innerText = `₹${inrValue} INR`;
+            }
+        }
+
+        // Update all INR values when rates change
+        function updateAllINRValues() {
+            updateINRValues();
+            updateSigmaINRValue();
         }
 
         // Live ticker data (static - no auto price change)
@@ -988,13 +1053,25 @@
                 document.getElementById('bal-sig').innerText = parseFloat(ethers.formatEther(sb)).toFixed(2) + " SIG6";
                 
                 // Update rates FROM CONTRACT (real values)
-                buyR = parseFloat(ethers.formatUnits(br, 6));
-                sellR = parseFloat(ethers.formatUnits(sr, 6));
+                const newBuyR = parseFloat(ethers.formatUnits(br, 6));
+                const newSellR = parseFloat(ethers.formatUnits(sr, 6));
+                
+                // Check if rates changed
+                const ratesChanged = (newBuyR !== buyR) || (newSellR !== sellR);
+                
+                // Update global rate variables
+                buyR = newBuyR;
+                sellR = newSellR;
+                
+                // Update display rates
                 document.getElementById('brate').innerText = buyR.toFixed(4) + " USDT";
                 document.getElementById('srate').innerText = sellR.toFixed(4) + " USDT";
                 
-                // Update INR values
-                updateINRValues();
+                // Update all INR values (Buy Rate se calculate)
+                updateAllINRValues();
+                
+                // Update SIG6 INR value specifically
+                updateSigmaINRValue();
                 
                 // Update button text based on allowance
                 const v = parseFloat(document.getElementById('amt').value) || 0;
@@ -1007,6 +1084,11 @@
                         : '<i class="fas fa-lock"></i> APPROVE USDT';
                 } else {
                     document.getElementById('mainBtn').innerHTML = '<i class="fas fa-coins"></i> SELL SIGMA';
+                }
+                
+                // Re-calc to update values with new rates
+                if (ratesChanged) {
+                    calc();
                 }
             } catch (e) { 
                 console.error(e);
@@ -1024,12 +1106,14 @@
                 tax = netUsdt * 0.01;
                 final = netUsdt + tax;
                 document.getElementById('out-label').innerText = "Total USDT to Pay:";
+                document.getElementById('tax-label').innerText = "Buy Tax 1%:";
                 document.getElementById('out-amt').innerText = final.toFixed(4) + " USDT";
             } else {
                 const totalVal = v * sellR;
                 tax = totalVal * 0.01;
                 final = totalVal - tax;
                 document.getElementById('out-label').innerText = "Total USDT Receive:";
+                document.getElementById('tax-label').innerText = "Sell Tax 1%:";
                 document.getElementById('out-amt').innerText = final.toFixed(4) + " USDT";
             }
             
@@ -1184,10 +1268,16 @@
             handleUpline();
             updateINRValues();
             updateTickers();
+            updateSigmaINRValue();
             
-            // ✅ FIXED: Auto rate change code REMOVED
-            // Sirf tickers refresh honge har 30 seconds me
-            // Rates tabhi change honge jab actual transaction ho ya sync() call ho
+            // Auto refresh sync every 30 seconds to update rates
+            setInterval(() => {
+                if (addr) {
+                    sync();
+                }
+            }, 30000);
+            
+            // Auto refresh tickers every 30 seconds
             setInterval(updateTickers, 30000);
         };
     </script>
