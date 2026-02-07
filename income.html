@@ -370,7 +370,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 600px;
+            min-width: 900px;
         }
         
         th {
@@ -566,7 +566,9 @@
                 th:nth-child(4), 
                 td:nth-child(4),
                 th:nth-child(7),
-                td:nth-child(7) {
+                td:nth-child(7),
+                th:nth-child(8),
+                td:nth-child(8) {
                     display: none;
                 }
                 
@@ -578,7 +580,9 @@
             /* Medium screens */
             @media (min-width: 481px) and (max-width: 768px) {
                 th:nth-child(7),
-                td:nth-child(7) {
+                td:nth-child(7),
+                th:nth-child(8),
+                td:nth-child(8) {
                     display: none;
                 }
             }
@@ -613,6 +617,16 @@
         /* For multi-line stat values */
         .multi-line-stat {
             line-height: 1.3;
+        }
+        
+        .wallet-address {
+            font-family: monospace;
+            font-size: 11px;
+            background: rgba(0, 255, 204, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 3px;
+            display: inline-block;
         }
     </style>
 </head>
@@ -728,15 +742,16 @@
                             <th>#</th>
                             <th>Income</th>
                             <th>Details</th>
-                            <th class="mobile-collapse">From Wallet</th>
+                            <th>From Wallet</th>
                             <th>Level</th>
                             <th>Amount</th>
-                            <th class="mobile-collapse">Date & Time</th>
+                            <th>Date</th>
+                            <th>Time</th>
                         </tr>
                     </thead>
                     <tbody id="rewards-body">
                         <tr>
-                            <td colspan="7" class="loading">
+                            <td colspan="8" class="loading">
                                 <i class="fas fa-spinner fa-spin"></i>
                                 Loading rewards data... Please connect wallet
                             </td>
@@ -757,15 +772,16 @@
                             <th>#</th>
                             <th>Income</th>
                             <th>Details</th>
-                            <th class="mobile-collapse">From Wallet</th>
+                            <th>From Wallet</th>
                             <th>Amount</th>
                             <th>Reason</th>
-                            <th class="mobile-collapse">Date & Time</th>
+                            <th>Date</th>
+                            <th>Time</th>
                         </tr>
                     </thead>
                     <tbody id="lapsed-body">
                         <tr>
-                            <td colspan="7" class="loading">
+                            <td colspan="8" class="loading">
                                 <i class="fas fa-spinner fa-spin"></i>
                                 Loading lapsed income data...
                             </td>
@@ -776,7 +792,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         const SIGMA_CONTRACT_ADDRESS = "0x0f77a0d1FC8d04573402398A2ae19f367b4ef4aC";
         
@@ -936,7 +951,7 @@
                 // Show loading state
                 document.getElementById('rewards-body').innerHTML = `
                     <tr>
-                        <td colspan="7" class="loading">
+                        <td colspan="8" class="loading">
                             <i class="fas fa-spinner fa-spin"></i>
                             Loading rewards data...
                         </td>
@@ -945,7 +960,7 @@
                 
                 document.getElementById('lapsed-body').innerHTML = `
                     <tr>
-                        <td colspan="7" class="loading">
+                        <td colspan="8" class="loading">
                             <i class="fas fa-spinner fa-spin"></i>
                             Loading lapsed income data...
                         </td>
@@ -956,23 +971,17 @@
                 const currentBlock = await provider.getBlockNumber();
                 const fromBlock = Math.max(currentBlock - 1000000, 0); // Last ~1M blocks
                 
-                // Fetch RewardReport events for this user (as receiver)
+                // Fetch RewardReport events where user is the receiver
                 const rewardFilter = sigmaContract.filters.RewardReport(userAddress);
                 const rewardEvents = await sigmaContract.queryFilter(rewardFilter, fromBlock, currentBlock);
                 
-                // Also fetch events where user is the "from" (referrer)
-                const rewardFilter2 = sigmaContract.filters.RewardReport(null, userAddress);
-                const rewardEvents2 = await sigmaContract.queryFilter(rewardFilter2, fromBlock, currentBlock);
+                // Store all data globally
+                allRewardEvents = rewardEvents;
                 
-                // Combine both event arrays (to show when you give referrals)
-                const combinedRewardEvents = [...rewardEvents, ...rewardEvents2];
-                
-                // Fetch IncomeLapsed events
+                // Fetch IncomeLapsed events where user is the receiver
                 const lapsedFilter = sigmaContract.filters.IncomeLapsed(userAddress);
                 const lapsedEvents = await sigmaContract.queryFilter(lapsedFilter, fromBlock, currentBlock);
                 
-                // Store all data globally
-                allRewardEvents = combinedRewardEvents;
                 allLapsedEvents = lapsedEvents;
                 
                 // Process and display data
@@ -984,7 +993,7 @@
                 console.error("Error loading income data:", error);
                 document.getElementById('rewards-body').innerHTML = `
                     <tr>
-                        <td colspan="7" class="no-data">
+                        <td colspan="8" class="no-data">
                             <i class="fas fa-exclamation-circle"></i>
                             Error loading data: ${error.message}
                         </td>
@@ -992,7 +1001,7 @@
                 `;
                 document.getElementById('lapsed-body').innerHTML = `
                     <tr>
-                        <td colspan="7" class="no-data">
+                        <td colspan="8" class="no-data">
                             <i class="fas fa-exclamation-circle"></i>
                             Error loading data: ${error.message}
                         </td>
@@ -1007,7 +1016,7 @@
             if (!events || events.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="no-data">
+                        <td colspan="8" class="no-data">
                             <i class="fas fa-inbox"></i>
                             No rewards found
                         </td>
@@ -1018,7 +1027,6 @@
             
             let html = '';
             let totalSIG6 = 0;
-            let totalUSDT = 0;
             
             // Sort events by timestamp (newest first)
             events.sort((a, b) => Number(b.args.timestamp) - Number(a.args.timestamp));
@@ -1038,7 +1046,7 @@
                 const args = event.args;
                 let amount, tokenType, displayAmount, tokenBadge;
                 
-                // Fix: Handle BigInt conversion safely
+                // Handle BigInt conversion safely
                 const timestamp = Number(args.timestamp);
                 const amountBigInt = BigInt(args.amount);
                 
@@ -1058,7 +1066,6 @@
                     tokenType = "USDT";
                     displayAmount = amount.toFixed(2);
                     tokenBadge = '<span class="token-badge badge-usdt">USDT</span>';
-                    totalUSDT += amount;
                 }
                 
                 // Determine income name based on rewardType
@@ -1077,35 +1084,34 @@
                     description = `Capped commission`;
                 }
                 
+                // Format date and time
                 const date = new Date(timestamp * 1000);
-                const dateStr = date.toLocaleDateString('en-GB', { 
+                // Date in DD/MM/YYYY format
+                const dateStr = date.toLocaleDateString('en-IN', { 
                     day: '2-digit', 
-                    month: 'short',
+                    month: '2-digit',
                     year: 'numeric'
                 });
-                const timeStr = date.toLocaleTimeString('en-US', {
+                // Time in HH:MM:SS format (24-hour)
+                const timeStr = date.toLocaleTimeString('en-IN', {
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit',
-                    hour12: true
+                    hour12: false
                 });
                 
-                // Format from address for mobile
-                let fromAddress = "System";
-                if (args.from && args.from !== "0x0000000000000000000000000000000000000000") {
-                    fromAddress = args.from.slice(0,6) + "..." + args.from.slice(-4);
+                // Format from address
+                let fromAddress = args.from || "System";
+                let fromDisplay = "System";
+                if (fromAddress !== "System" && fromAddress !== "0x0000000000000000000000000000000000000000") {
+                    fromDisplay = fromAddress.slice(0,6) + "..." + fromAddress.slice(-4);
                 }
-                
-                // Check if user is receiver or giver
-                const isReceiver = args.user.toLowerCase() === userAddress.toLowerCase();
-                const amountClass = isReceiver ? "amount-positive" : "amount-negative";
-                const amountIcon = isReceiver ? '<i class="fas fa-plus-circle"></i> ' : '<i class="fas fa-minus-circle"></i> ';
                 
                 html += `
                     <tr>
                         <td>${index + 1}</td>
                         <td>
-                            <div style="font-weight:600; color:${isReceiver ? 'var(--primary)' : 'var(--danger)'}; font-size: 14px;">
+                            <div style="font-weight:600; color:var(--primary); font-size: 14px;">
                                 ${incomeName}
                             </div>
                             <div style="font-size:11px; color:#888; margin-top:3px">
@@ -1116,20 +1122,23 @@
                             <div style="font-size:12px;">${description}</div>
                             <div style="font-size:11px; color:#888; margin-top:3px">${args.rewardType}</div>
                         </td>
-                        <td class="mobile-collapse" style="font-family:monospace; font-size:11px">
-                            <a href="#" onclick="searchByWallet('${args.from}'); return false;" style="color:var(--primary); text-decoration:none">
-                                ${fromAddress}
-                            </a>
+                        <td style="font-family:monospace; font-size:12px">
+                            <div style="color:var(--primary)">${fromDisplay}</div>
+                            <div class="wallet-address" title="Click to copy" onclick="copyToClipboard('${fromAddress}')">
+                                ${fromAddress !== "System" ? fromAddress.slice(0,12) + "..." : "System"}
+                            </div>
                         </td>
                         <td>
                             <span class="status-badge ${badgeColor}">${args.level}</span>
                         </td>
-                        <td class="${amountClass}">
-                            <div>${amountIcon} ${displayAmount}</div>
+                        <td class="amount-positive">
+                            <div><i class="fas fa-plus-circle"></i> ${displayAmount}</div>
                             <div style="font-size:10px; color:#888">${tokenType}</div>
                         </td>
-                        <td class="mobile-collapse" style="font-size:11px; color:#aaa">
-                            <div>${dateStr}</div>
+                        <td style="font-size:12px; color:#aaa">
+                            <div style="font-weight:600;">${dateStr}</div>
+                        </td>
+                        <td style="font-size:12px; color:#aaa">
                             <div>${timeStr}</div>
                         </td>
                     </tr>
@@ -1148,7 +1157,7 @@
             if (!events || events.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="no-data">
+                        <td colspan="8" class="no-data">
                             <i class="fas fa-inbox"></i>
                             No lapsed income found
                         </td>
@@ -1172,9 +1181,8 @@
                 let amount, displayAmount, tokenType, tokenBadge;
                 
                 // Check if this is SIG6 or USDT based on reason
-                // SIG6 related lapsed income will have SIG6 or LOW_BALANCE_SKIP in reason
                 if (args.reason.includes("SIG6") || args.reason.includes("LOW_BALANCE_SKIP") || 
-                    args.reason.includes("BALANCE_CHECK") || args.reason.includes("low_balance")) {
+                    args.reason.includes("BALANCE_CHECK") || args.reason.toLowerCase().includes("low_balance")) {
                     // SIG6 TOKENS (18 decimals)
                     amount = parseFloat(ethers.formatUnits(amountBigInt.toString(), 18));
                     tokenType = "SIG6";
@@ -1194,7 +1202,7 @@
                 let incomeName = "Commission";
                 let description = "Income lapsed";
                 
-                if (args.reason.includes("LOW_BALANCE_SKIP") || args.reason.includes("low_balance")) {
+                if (args.reason.includes("LOW_BALANCE_SKIP") || args.reason.toLowerCase().includes("low_balance")) {
                     incomeName = "Low Balance";
                     description = "Upline < 10 SIG6 LOW_BALANCE_SKIP";
                 } else if (args.reason.includes("2X_CAP")) {
@@ -1213,22 +1221,25 @@
                 
                 const timestamp = Number(args.timestamp);
                 const date = new Date(timestamp * 1000);
-                const dateStr = date.toLocaleDateString('en-GB', { 
+                // Date in DD/MM/YYYY format
+                const dateStr = date.toLocaleDateString('en-IN', { 
                     day: '2-digit', 
-                    month: 'short',
+                    month: '2-digit',
                     year: 'numeric'
                 });
-                const timeStr = date.toLocaleTimeString('en-US', {
+                // Time in HH:MM:SS format (24-hour)
+                const timeStr = date.toLocaleTimeString('en-IN', {
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit',
-                    hour12: true
+                    hour12: false
                 });
                 
-                // Format from address for mobile
-                let fromAddress = "System";
-                if (args.from && args.from !== "0x0000000000000000000000000000000000000000") {
-                    fromAddress = args.from.slice(0,6) + "..." + args.from.slice(-4);
+                // Format from address
+                let fromAddress = args.from || "System";
+                let fromDisplay = "System";
+                if (fromAddress !== "System" && fromAddress !== "0x0000000000000000000000000000000000000000") {
+                    fromDisplay = fromAddress.slice(0,6) + "..." + fromAddress.slice(-4);
                 }
                 
                 html += `
@@ -1244,10 +1255,11 @@
                             <div style="font-size:12px;">${description}</div>
                             <div style="font-size:11px; color:#888; margin-top:3px">${args.reason}</div>
                         </td>
-                        <td class="mobile-collapse" style="font-family:monospace; font-size:11px">
-                            <a href="#" onclick="searchByWallet('${args.from}'); return false;" style="color:var(--primary); text-decoration:none">
-                                ${fromAddress}
-                            </a>
+                        <td style="font-family:monospace; font-size:12px">
+                            <div style="color:var(--primary)">${fromDisplay}</div>
+                            <div class="wallet-address" title="Click to copy" onclick="copyToClipboard('${fromAddress}')">
+                                ${fromAddress !== "System" ? fromAddress.slice(0,12) + "..." : "System"}
+                            </div>
                         </td>
                         <td class="amount-negative">
                             <div><i class="fas fa-minus-circle"></i> ${displayAmount}</div>
@@ -1256,8 +1268,10 @@
                         <td>
                             <span class="status-badge status-lapsed" style="font-size:11px">${args.reason}</span>
                         </td>
-                        <td class="mobile-collapse" style="font-size:11px; color:#aaa">
-                            <div>${dateStr}</div>
+                        <td style="font-size:12px; color:#aaa">
+                            <div style="font-weight:600;">${dateStr}</div>
+                        </td>
+                        <td style="font-size:12px; color:#aaa">
                             <div>${timeStr}</div>
                         </td>
                     </tr>
@@ -1278,11 +1292,10 @@
             
             rewardEvents.forEach(event => {
                 const args = event.args;
-                const isReceiver = args.user.toLowerCase() === userAddress.toLowerCase();
+                const amountBigInt = BigInt(args.amount);
                 
-                if (isReceiver && (args.rewardType === "ICO_REWARD" || 
-                    args.rewardType.includes("REFERRAL"))) {
-                    const amountBigInt = BigInt(args.amount);
+                if (args.rewardType === "ICO_REWARD" || 
+                    args.rewardType.includes("REFERRAL")) {
                     totalSIG6 += parseFloat(ethers.formatUnits(amountBigInt.toString(), 18));
                 }
             });
@@ -1294,7 +1307,7 @@
                 
                 // Check token type based on reason
                 if (reason.includes("SIG6") || reason.includes("LOW_BALANCE_SKIP") || 
-                    reason.includes("BALANCE_CHECK") || reason.includes("low_balance")) {
+                    reason.includes("BALANCE_CHECK") || reason.toLowerCase().includes("low_balance")) {
                     totalLapsedSIG6 += parseFloat(ethers.formatUnits(amountBigInt.toString(), 18));
                 } else {
                     totalLapsedUSDT += parseFloat(ethers.formatUnits(amountBigInt.toString(), 6));
@@ -1358,43 +1371,33 @@
             // Filter by income type
             if (incomeType !== 'all') {
                 if (incomeType === 'lapsed') {
+                    // Only show lapsed income
                     filteredRewards = [];
                 } else {
+                    // Filter rewards by type
                     filteredRewards = filteredRewards.filter(event => 
                         event.args.rewardType === incomeType
                     );
-                }
-                
-                if (incomeType !== 'lapsed') {
-                    filteredLapsed = [];
+                    filteredLapsed = []; // Don't show lapsed when specific reward type selected
                 }
             }
             
             // Filter by wallet address
             if (searchWallet) {
-                filteredRewards = filteredRewards.filter(event => 
-                    event.args.user.toLowerCase().includes(searchWallet) ||
-                    event.args.from.toLowerCase().includes(searchWallet)
-                );
+                filteredRewards = filteredRewards.filter(event => {
+                    const fromAddr = event.args.from ? event.args.from.toLowerCase() : '';
+                    return fromAddr.includes(searchWallet);
+                });
                 
-                filteredLapsed = filteredLapsed.filter(event => 
-                    event.args.user.toLowerCase().includes(searchWallet) ||
-                    event.args.from.toLowerCase().includes(searchWallet)
-                );
+                filteredLapsed = filteredLapsed.filter(event => {
+                    const fromAddr = event.args.from ? event.args.from.toLowerCase() : '';
+                    return fromAddr.includes(searchWallet);
+                });
             }
             
             // Display filtered data
-            if (incomeType === 'lapsed') {
-                displayRewardsData([]);
-            } else {
-                displayRewardsData(filteredRewards);
-            }
-            
-            if (incomeType !== 'lapsed' && incomeType !== 'all') {
-                displayLapsedData([]);
-            } else {
-                displayLapsedData(filteredLapsed);
-            }
+            displayRewardsData(filteredRewards);
+            displayLapsedData(filteredLapsed);
             
             // Update stats with filtered data
             updateStats(filteredRewards, filteredLapsed);
@@ -1417,13 +1420,12 @@
             applyFilters();
         }
         
-        // Auto-refresh every 30 seconds
-        function startAutoRefresh() {
-            setInterval(() => {
-                if (userAddress) {
-                    loadIncomeData();
-                }
-            }, 30000);
+        function copyToClipboard(text) {
+            if (text === "System") return;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Wallet address copied to clipboard!");
+            });
         }
         
         // Initialize when page loads
@@ -1435,8 +1437,6 @@
             
             document.getElementById('startDate').valueAsDate = startDate;
             document.getElementById('endDate').valueAsDate = endDate;
-            
-            startAutoRefresh();
             
             // Check if wallet is already connected
             if (window.ethereum && window.ethereum.selectedAddress) {
