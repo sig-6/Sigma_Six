@@ -627,6 +627,7 @@
             border-radius: 4px;
             margin-top: 3px;
             display: inline-block;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -650,7 +651,7 @@
     
     <!-- Connect Button -->
     <button class="connect-btn" id="connectBtn" onclick="connect()">
-        <i class="fas fa-wallet"></i> <span id="btn-text">Connect MetaMask</span>
+        <i class="fas fa-wallet"></i> <span id="btn-text">Connect Wallet</span>
     </button>
     
     <!-- Main Container -->
@@ -914,7 +915,7 @@
         
         async function connect() {
             if (!window.ethereum) {
-                alert("Please install MetaMask to use this feature");
+                alert("Please install a Web3 wallet like MetaMask to use this feature");
                 return;
             }
             
