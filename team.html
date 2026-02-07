@@ -475,6 +475,8 @@
             border: 1px solid rgba(45, 47, 62, 0.5);
             -webkit-overflow-scrolling: touch;
             position: relative;
+            max-height: 600px;
+            overflow-y: auto;
         }
         
         table {
@@ -485,6 +487,9 @@
         
         thead {
             background: linear-gradient(90deg, rgba(0, 255, 204, 0.1), rgba(157, 78, 221, 0.1));
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
         
         th {
@@ -649,44 +654,17 @@
             transform: translateX(-5px);
         }
         
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .page-btn {
-            padding: 8px 15px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text);
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-width: 40px;
-            text-align: center;
-        }
-        
-        .page-btn:hover {
+        /* Search Results Count */
+        .results-count {
             background: rgba(0, 255, 204, 0.1);
-            border-color: var(--primary);
-        }
-        
-        .page-btn.active {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: #000;
-            border: none;
-        }
-        
-        .page-btn.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+            color: var(--primary);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: inline-block;
+            border: 1px solid rgba(0, 255, 204, 0.3);
         }
         
         /* Responsive Design */
@@ -744,6 +722,10 @@
             .wallet-address {
                 font-size: 11px;
                 padding: 6px 10px;
+            }
+            
+            .table-responsive {
+                max-height: 500px;
             }
         }
         
@@ -850,7 +832,7 @@
     
     <!-- Connect Button -->
     <button class="connect-btn" id="connectBtn" onclick="connectWallet()">
-        <i class="fas fa-wallet"></i> <span id="btn-text">Connect MetaMask</span>
+        <i class="fas fa-wallet"></i> <span id="btn-text">Connect Wallet</span>
     </button>
     
     <!-- Main Container -->
@@ -947,6 +929,11 @@
                     <i class="fas fa-exchange-alt"></i> Toggle View
                 </button>
             </div>
+            
+            <!-- Search Results Count -->
+            <div class="results-count" id="results-count" style="display: none;">
+                <i class="fas fa-search"></i> <span id="results-text">0 results found</span>
+            </div>
         </div>
         
         <!-- Direct Referrals Table -->
@@ -956,10 +943,10 @@
                     <i class="fas fa-user-friends"></i> DIRECT REFERRALS (Level 1)
                 </div>
                 <div class="card-actions">
-                    <button class="action-btn" onclick="sortBy('balance')">
+                    <button class="action-btn" onclick="sortTable('balance')">
                         <i class="fas fa-sort-amount-down"></i> Sort by Balance
                     </button>
-                    <button class="action-btn" onclick="sortBy('date')">
+                    <button class="action-btn" onclick="sortTable('date')">
                         <i class="fas fa-sort-numeric-down"></i> Sort by Date
                     </button>
                 </div>
@@ -973,13 +960,14 @@
                             <th>Wallet Address</th>
                             <th>Total SIG6 Balance</th>
                             <th>Join Date</th>
+                            <th>Join Time</th>
                             <th>Days Active</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="direct-body">
                         <tr>
-                            <td colspan="6" class="loading">
+                            <td colspan="7" class="loading">
                                 <i class="fas fa-spinner fa-spin"></i><br>
                                 Loading direct referrals... Please connect wallet
                             </td>
@@ -987,19 +975,23 @@
                     </tbody>
                 </table>
             </div>
-            
-            <div class="pagination" id="direct-pagination"></div>
         </div>
         
         <!-- Complete Downline Table -->
-        <div class="main-card fade-in" id="downline-section">
+        <div class="main-card fade-in" id="downline-section" style="display: none;">
             <div class="card-header">
                 <div class="card-title">
-                    <i class="fas fa-sitemap"></i> COMPETE DOWNLINE NETWORK
+                    <i class="fas fa-sitemap"></i> COMPLETE DOWNLINE NETWORK
                 </div>
                 <div class="card-actions">
                     <button class="action-btn" onclick="exportNetwork()">
                         <i class="fas fa-network-wired"></i> Export Network
+                    </button>
+                    <button class="action-btn" onclick="sortTable('balance')">
+                        <i class="fas fa-sort-amount-down"></i> Sort by Balance
+                    </button>
+                    <button class="action-btn" onclick="sortTable('date')">
+                        <i class="fas fa-sort-numeric-down"></i> Sort by Date
                     </button>
                 </div>
             </div>
@@ -1013,13 +1005,14 @@
                             <th>Level</th>
                             <th>Total SIG6 Holdings</th>
                             <th>Join Date</th>
+                            <th>Join Time</th>
                             <th>Direct Upline</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="downline-body">
                         <tr>
-                            <td colspan="7" class="loading">
+                            <td colspan="8" class="loading">
                                 <i class="fas fa-spinner fa-spin"></i><br>
                                 Loading downline network...
                             </td>
@@ -1027,8 +1020,6 @@
                     </tbody>
                 </table>
             </div>
-            
-            <div class="pagination" id="downline-pagination"></div>
         </div>
     </div>
 
@@ -1041,8 +1032,7 @@
         let completeDownline = [];
         let filteredDownline = [];
         let currentView = 'direct';
-        let currentPage = 1;
-        const itemsPerPage = 10;
+        let currentSort = { field: 'date', order: 'desc' };
         
         // Contract ABI for team functions
         const sigmaABI = [
@@ -1170,7 +1160,7 @@
         
         async function connectWallet() {
             if (!window.ethereum) {
-                alert("Please install MetaMask to use this feature");
+                alert("Please install a Web3 wallet like MetaMask to use this feature");
                 return;
             }
             
@@ -1206,7 +1196,7 @@
                 // Show loading state
                 document.getElementById('direct-body').innerHTML = `
                     <tr>
-                        <td colspan="6" class="loading">
+                        <td colspan="7" class="loading">
                             <i class="fas fa-spinner fa-spin"></i><br>
                             Loading team data...
                         </td>
@@ -1215,7 +1205,7 @@
                 
                 document.getElementById('downline-body').innerHTML = `
                     <tr>
-                        <td colspan="7" class="loading">
+                        <td colspan="8" class="loading">
                             <i class="fas fa-spinner fa-spin"></i><br>
                             Loading downline network...
                         </td>
@@ -1233,17 +1223,24 @@
                         getJoinEvents(address)
                     ]);
                     
+                    const joinTimestamp = joinEvents.length > 0 ? Number(joinEvents[0].args.timestamp) : Math.floor(Date.now() / 1000);
+                    const joinDate = new Date(joinTimestamp * 1000);
+                    
                     directReferrals.push({
                         address: address,
                         balance: parseFloat(ethers.formatUnits(balance, 18)),
-                        joinDate: joinEvents.length > 0 ? new Date(Number(joinEvents[0].args.timestamp) * 1000) : new Date(),
-                        joinTimestamp: joinEvents.length > 0 ? Number(joinEvents[0].args.timestamp) : Date.now() / 1000
+                        joinDate: joinDate,
+                        joinTimestamp: joinTimestamp
                     });
                 }
                 
                 // Build complete downline (up to 5 levels)
                 completeDownline = [];
                 await buildDownlineNetwork(userAddress, 1);
+                
+                // Sort by join date (newest first) by default
+                directReferrals.sort((a, b) => b.joinTimestamp - a.joinTimestamp);
+                completeDownline.sort((a, b) => b.joinTimestamp - a.joinTimestamp);
                 
                 // Update UI
                 updateStats();
@@ -1276,13 +1273,16 @@
                         getJoinEvents(memberAddress)
                     ]);
                     
+                    const joinTimestamp = joinEvents.length > 0 ? Number(joinEvents[0].args.timestamp) : Math.floor(Date.now() / 1000);
+                    const joinDate = new Date(joinTimestamp * 1000);
+                    
                     const memberData = {
                         address: memberAddress,
                         level: currentLevel,
                         balance: parseFloat(ethers.formatUnits(balance, 18)),
                         upline: uplineAddress,
-                        joinDate: joinEvents.length > 0 ? new Date(Number(joinEvents[0].args.timestamp) * 1000) : new Date(),
-                        joinTimestamp: joinEvents.length > 0 ? Number(joinEvents[0].args.timestamp) : Date.now() / 1000
+                        joinDate: joinDate,
+                        joinTimestamp: joinTimestamp
                     };
                     
                     completeDownline.push(memberData);
@@ -1305,11 +1305,7 @@
                 const joinFilter = sigmaContract.filters.MemberJoined(memberAddress);
                 const joinEvents = await sigmaContract.queryFilter(joinFilter, fromBlock, currentBlock);
                 
-                // Also check events where member is referrer
-                const referrerFilter = sigmaContract.filters.MemberJoined(null, memberAddress);
-                const referrerEvents = await sigmaContract.queryFilter(referrerFilter, fromBlock, currentBlock);
-                
-                return [...joinEvents, ...referrerEvents];
+                return joinEvents;
             } catch (error) {
                 console.error("Error getting join events:", error);
                 return [];
@@ -1330,38 +1326,45 @@
         
         function updateDirectTable() {
             const tbody = document.getElementById('direct-body');
+            const resultsDiv = document.getElementById('results-count');
+            const resultsText = document.getElementById('results-text');
             
             if (directReferrals.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="empty-state">
+                        <td colspan="7" class="empty-state">
                             <i class="fas fa-user-friends"></i><br>
                             No direct referrals found
                         </td>
                     </tr>
                 `;
-                updatePagination('direct', 0);
+                resultsDiv.style.display = 'none';
                 return;
             }
             
-            // Sort by join date (newest first)
-            const sortedDirects = [...directReferrals].sort((a, b) => b.joinTimestamp - a.joinTimestamp);
-            
-            updatePagination('direct', sortedDirects.length);
-            
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const pageItems = sortedDirects.slice(startIndex, endIndex);
+            // Show results count
+            resultsDiv.style.display = 'block';
+            resultsText.textContent = `${directReferrals.length} direct referral${directReferrals.length !== 1 ? 's' : ''} found`;
             
             let html = '';
             
-            pageItems.forEach((member, index) => {
-                const globalIndex = startIndex + index + 1;
+            directReferrals.forEach((member, index) => {
                 const daysActive = Math.floor((Date.now() - member.joinDate.getTime()) / (1000 * 60 * 60 * 24));
+                const dateStr = member.joinDate.toLocaleDateString('en-IN', { 
+                    day: '2-digit', 
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+                const timeStr = member.joinDate.toLocaleTimeString('en-IN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                });
                 
                 html += `
                     <tr>
-                        <td>${globalIndex}</td>
+                        <td>${index + 1}</td>
                         <td>
                             <div class="wallet-address" title="${member.address}">
                                 ${member.address.slice(0,8)}...${member.address.slice(-6)}
@@ -1380,10 +1383,10 @@
                             </div>
                         </td>
                         <td>
-                            <div style="font-weight:600">${member.joinDate.toLocaleDateString()}</div>
-                            <div style="font-size:12px; color:#888">
-                                ${member.joinDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                            </div>
+                            <div style="font-weight:600">${dateStr}</div>
+                        </td>
+                        <td>
+                            <div style="color:#aaa">${timeStr}</div>
                         </td>
                         <td>
                             <span class="level-badge level-1">${daysActive} Days</span>
@@ -1402,37 +1405,46 @@
         
         function updateDownlineTable() {
             const tbody = document.getElementById('downline-body');
-            filteredDownline = [...completeDownline];
+            const resultsDiv = document.getElementById('results-count');
+            const resultsText = document.getElementById('results-text');
             
             if (filteredDownline.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="empty-state">
+                        <td colspan="8" class="empty-state">
                             <i class="fas fa-sitemap"></i><br>
                             No downline members found
                         </td>
                     </tr>
                 `;
-                updatePagination('downline', 0);
+                resultsDiv.style.display = 'none';
                 return;
             }
             
-            updatePagination('downline', filteredDownline.length);
-            
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const pageItems = filteredDownline.slice(startIndex, endIndex);
+            // Show results count
+            resultsDiv.style.display = 'block';
+            resultsText.textContent = `${filteredDownline.length} downline member${filteredDownline.length !== 1 ? 's' : ''} found`;
             
             let html = '';
             
-            pageItems.forEach((member, index) => {
-                const globalIndex = startIndex + index + 1;
+            filteredDownline.forEach((member, index) => {
                 const daysActive = Math.floor((Date.now() - member.joinDate.getTime()) / (1000 * 60 * 60 * 24));
                 const levelClass = `level-${member.level}`;
+                const dateStr = member.joinDate.toLocaleDateString('en-IN', { 
+                    day: '2-digit', 
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+                const timeStr = member.joinDate.toLocaleTimeString('en-IN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                });
                 
                 html += `
                     <tr>
-                        <td>${globalIndex}</td>
+                        <td>${index + 1}</td>
                         <td>
                             <div class="wallet-address" title="${member.address}">
                                 ${member.address.slice(0,8)}...${member.address.slice(-6)}
@@ -1454,10 +1466,10 @@
                             </div>
                         </td>
                         <td>
-                            <div style="font-weight:600">${member.joinDate.toLocaleDateString()}</div>
-                            <div style="font-size:12px; color:#888">
-                                ${member.joinDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                            </div>
+                            <div style="font-weight:600">${dateStr}</div>
+                        </td>
+                        <td>
+                            <div style="color:#aaa">${timeStr}</div>
                         </td>
                         <td>
                             <div class="wallet-address" title="${member.upline}" style="font-size:12px; padding:4px 8px">
@@ -1476,72 +1488,18 @@
             tbody.innerHTML = html;
         }
         
-        function updatePagination(tableType, totalItems) {
-            const totalPages = Math.ceil(totalItems / itemsPerPage);
-            const paginationDiv = document.getElementById(`${tableType}-pagination`);
-            
-            if (totalPages <= 1) {
-                paginationDiv.innerHTML = '';
-                return;
-            }
-            
-            let html = `
-                <button class="page-btn ${currentPage === 1 ? 'disabled' : ''}" 
-                        onclick="changePage('${tableType}', ${currentPage - 1})" 
-                        ${currentPage === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-            `;
-            
-            const maxPagesToShow = 5;
-            let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-            let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-            
-            if (endPage - startPage + 1 < maxPagesToShow) {
-                startPage = Math.max(1, endPage - maxPagesToShow + 1);
-            }
-            
-            for (let i = startPage; i <= endPage; i++) {
-                html += `
-                    <button class="page-btn ${i === currentPage ? 'active' : ''}" 
-                            onclick="changePage('${tableType}', ${i})">
-                        ${i}
-                    </button>
-                `;
-            }
-            
-            html += `
-                <button class="page-btn ${currentPage === totalPages ? 'disabled' : ''}" 
-                        onclick="changePage('${tableType}', ${currentPage + 1})" 
-                        ${currentPage === totalPages ? 'disabled' : ''}>
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            `;
-            
-            paginationDiv.innerHTML = html;
-        }
-        
-        function changePage(tableType, newPage) {
-            currentPage = newPage;
-            
-            if (tableType === 'direct') {
-                updateDirectTable();
-            } else {
-                updateDownlineTable();
-            }
-        }
-        
         function applyFilters() {
             const fromDate = document.getElementById('from-date').value;
             const toDate = document.getElementById('to-date').value;
             const levelFilter = document.getElementById('level-filter').value;
-            const walletSearch = document.getElementById('wallet-search').value.toLowerCase();
+            const walletSearch = document.getElementById('wallet-search').value.toLowerCase().trim();
             
-            // Filter downline
+            // Apply filters to complete downline
             filteredDownline = completeDownline.filter(member => {
                 // Date filter
                 if (fromDate) {
                     const filterDate = new Date(fromDate);
+                    filterDate.setHours(0, 0, 0, 0);
                     if (member.joinDate < filterDate) return false;
                 }
                 
@@ -1564,8 +1522,15 @@
                 return true;
             });
             
-            currentPage = 1;
-            updateDownlineTable();
+            // Apply sorting
+            sortData(currentView === 'direct' ? directReferrals : filteredDownline);
+            
+            // Update the current view
+            if (currentView === 'direct') {
+                updateDirectTable();
+            } else {
+                updateDownlineTable();
+            }
         }
         
         function resetFilters() {
@@ -1575,8 +1540,16 @@
             document.getElementById('wallet-search').value = '';
             
             filteredDownline = [...completeDownline];
-            currentPage = 1;
-            updateDownlineTable();
+            currentSort = { field: 'date', order: 'desc' };
+            
+            // Reset to default sort
+            sortData(currentView === 'direct' ? directReferrals : filteredDownline);
+            
+            if (currentView === 'direct') {
+                updateDirectTable();
+            } else {
+                updateDownlineTable();
+            }
         }
         
         function toggleView() {
@@ -1587,36 +1560,46 @@
                 directSection.style.display = 'none';
                 downlineSection.style.display = 'block';
                 currentView = 'downline';
+                applyFilters(); // Apply current filters to downline
             } else {
                 directSection.style.display = 'block';
                 downlineSection.style.display = 'none';
                 currentView = 'direct';
+                applyFilters(); // Apply current filters to direct
             }
+        }
+        
+        function sortTable(criteria) {
+            currentSort.field = criteria;
+            currentSort.order = currentSort.order === 'desc' ? 'asc' : 'desc';
             
-            currentPage = 1;
             if (currentView === 'direct') {
+                sortData(directReferrals);
                 updateDirectTable();
             } else {
+                sortData(filteredDownline);
                 updateDownlineTable();
             }
         }
         
-        function sortBy(criteria) {
-            if (currentView === 'direct') {
-                if (criteria === 'balance') {
-                    directReferrals.sort((a, b) => b.balance - a.balance);
-                } else if (criteria === 'date') {
-                    directReferrals.sort((a, b) => b.joinTimestamp - a.joinTimestamp);
+        function sortData(data) {
+            data.sort((a, b) => {
+                let comparison = 0;
+                
+                switch(currentSort.field) {
+                    case 'balance':
+                        comparison = b.balance - a.balance;
+                        break;
+                    case 'date':
+                        comparison = b.joinTimestamp - a.joinTimestamp;
+                        break;
+                    default:
+                        comparison = b.joinTimestamp - a.joinTimestamp;
                 }
-                updateDirectTable();
-            } else {
-                if (criteria === 'balance') {
-                    filteredDownline.sort((a, b) => b.balance - a.balance);
-                } else if (criteria === 'date') {
-                    filteredDownline.sort((a, b) => b.joinTimestamp - a.joinTimestamp);
-                }
-                updateDownlineTable();
-            }
+                
+                // Apply order
+                return currentSort.order === 'desc' ? comparison : -comparison;
+            });
         }
         
         function copyAddress(address) {
@@ -1643,27 +1626,33 @@
             let csvContent = "data:text/csv;charset=utf-8,";
             
             if (currentView === 'direct') {
-                csvContent += "Serial No,Wallet Address,SIG6 Balance,Join Date,Days Active\n";
+                csvContent += "Serial No,Wallet Address,SIG6 Balance,Join Date,Join Time,Days Active\n";
                 directReferrals.forEach((member, index) => {
                     const daysActive = Math.floor((Date.now() - member.joinDate.getTime()) / (1000 * 60 * 60 * 24));
+                    const dateStr = member.joinDate.toLocaleDateString('en-IN');
+                    const timeStr = member.joinDate.toLocaleTimeString('en-IN', {hour12: false});
                     const row = [
                         index + 1,
                         member.address,
                         member.balance.toFixed(2),
-                        member.joinDate.toLocaleDateString(),
+                        dateStr,
+                        timeStr,
                         daysActive
                     ].join(',');
                     csvContent += row + "\n";
                 });
             } else {
-                csvContent += "Serial No,Wallet Address,Level,SIG6 Holdings,Join Date,Direct Upline,Status\n";
+                csvContent += "Serial No,Wallet Address,Level,SIG6 Holdings,Join Date,Join Time,Direct Upline,Status\n";
                 filteredDownline.forEach((member, index) => {
+                    const dateStr = member.joinDate.toLocaleDateString('en-IN');
+                    const timeStr = member.joinDate.toLocaleTimeString('en-IN', {hour12: false});
                     const row = [
                         index + 1,
                         member.address,
                         `Level ${member.level}`,
                         member.balance.toFixed(2),
-                        member.joinDate.toLocaleDateString(),
+                        dateStr,
+                        timeStr,
                         member.upline,
                         member.balance > 10 ? 'Active' : 'Inactive'
                     ].join(',');
@@ -1674,7 +1663,8 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `sigma_team_${currentView}_report.csv`);
+            const dateStr = new Date().toISOString().split('T')[0];
+            link.setAttribute("download", `sigma_team_${currentView}_report_${dateStr}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
