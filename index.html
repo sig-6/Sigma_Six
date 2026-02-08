@@ -37,6 +37,203 @@
             transition: opacity 0.3s ease;
         }
         
+        /* Professional Crypto Background with Criss-Cross Lines */
+        .crypto-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                linear-gradient(90deg, 
+                    rgba(0, 255, 204, 0.03) 1px, 
+                    transparent 1px
+                ) 0 0 / 50px 50px,
+                linear-gradient(0deg, 
+                    rgba(157, 78, 221, 0.03) 1px, 
+                    transparent 1px
+                ) 0 0 / 50px 50px;
+            animation: bgMove 20s linear infinite;
+        }
+        
+        @keyframes bgMove {
+            0% { background-position: 0 0, 0 0; }
+            100% { background-position: 100px 100px, 100px 100px; }
+        }
+        
+        /* Animated Criss-Cross Lines Overlay */
+        .crypto-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.15;
+        }
+        
+        .crypto-line {
+            position: absolute;
+            background: linear-gradient(90deg, 
+                transparent, 
+                var(--primary), 
+                var(--secondary), 
+                transparent);
+            height: 1px;
+            width: 200%;
+            animation: lineMove 15s linear infinite;
+        }
+        
+        /* Create criss-cross pattern */
+        .crypto-line:nth-child(1) { 
+            top: 10%; 
+            left: -100%; 
+            transform: rotate(45deg); 
+            animation-delay: 0s;
+            height: 1px;
+        }
+        
+        .crypto-line:nth-child(2) { 
+            top: 20%; 
+            left: -100%; 
+            transform: rotate(-45deg); 
+            animation-delay: 2s;
+            height: 1px;
+        }
+        
+        .crypto-line:nth-child(3) { 
+            top: 30%; 
+            left: -100%; 
+            transform: rotate(60deg); 
+            animation-delay: 4s;
+            height: 1px;
+        }
+        
+        .crypto-line:nth-child(4) { 
+            top: 40%; 
+            left: -100%; 
+            transform: rotate(-60deg); 
+            animation-delay: 6s;
+            height: 1px;
+        }
+        
+        .crypto-line:nth-child(5) { 
+            top: 50%; 
+            left: -100%; 
+            transform: rotate(30deg); 
+            animation-delay: 8s;
+            height: 1px;
+        }
+        
+        .crypto-line:nth-child(6) { 
+            top: 60%; 
+            left: -100%; 
+            transform: rotate(-30deg); 
+            animation-delay: 10s;
+            height: 1px;
+        }
+        
+        .crypto-line:nth-child(7) { 
+            top: 70%; 
+            left: -100%; 
+            transform: rotate(75deg); 
+            animation-delay: 12s;
+            height: 1px;
+        }
+        
+        .crypto-line:nth-child(8) { 
+            top: 80%; 
+            left: -100%; 
+            transform: rotate(-75deg); 
+            animation-delay: 14s;
+            height: 1px;
+        }
+        
+        /* Thicker lines for better visibility */
+        .crypto-line:nth-child(9) { 
+            top: 15%; 
+            left: -100%; 
+            transform: rotate(15deg); 
+            animation-delay: 1s;
+            height: 2px;
+            opacity: 0.2;
+        }
+        
+        .crypto-line:nth-child(10) { 
+            top: 25%; 
+            left: -100%; 
+            transform: rotate(-15deg); 
+            animation-delay: 3s;
+            height: 2px;
+            opacity: 0.2;
+        }
+        
+        @keyframes lineMove {
+            0% { 
+                left: -100%; 
+                background: linear-gradient(90deg, 
+                    transparent, 
+                    var(--primary), 
+                    var(--secondary), 
+                    transparent);
+            }
+            50% {
+                background: linear-gradient(90deg, 
+                    transparent, 
+                    var(--secondary), 
+                    var(--primary), 
+                    transparent);
+            }
+            100% { 
+                left: 100%; 
+                background: linear-gradient(90deg, 
+                    transparent, 
+                    var(--primary), 
+                    var(--secondary), 
+                    transparent);
+            }
+        }
+        
+        /* Floating Crypto Particles */
+        .crypto-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: particleFloat 20s linear infinite;
+            opacity: 0.3;
+        }
+        
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.5;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+        
         /* Rainbow Light Effect */
         .rainbow-border {
             position: fixed;
@@ -593,6 +790,22 @@
     </style>
 </head>
 <body>
+    <!-- Professional Crypto Background -->
+    <div class="crypto-bg"></div>
+    <div class="crypto-lines">
+        <div class="crypto-line"></div>
+        <div class="crypto-line"></div>
+        <div class="crypto-line"></div>
+        <div class="crypto-line"></div>
+        <div class="crypto-line"></div>
+        <div class="crypto-line"></div>
+        <div class="crypto-line"></div>
+        <div class="crypto-line"></div>
+        <div class="crypto-line"></div>
+        <div class="crypto-line"></div>
+    </div>
+    <div class="crypto-particles" id="cryptoParticles"></div>
+    
     <!-- Rainbow Border -->
     <div class="rainbow-border"></div>
     <div class="rainbow-glow"></div>
@@ -627,8 +840,8 @@
             </div>
             <div class="ticker-item">
                 <span class="ticker-symbol">SIG6</span>
-                <span class="ticker-price">$0.0576</span>
-                <span class="ticker-change positive">+0.89%</span>
+                <span class="ticker-price" id="ticker-sig6-price">$0.0576</span>
+                <span class="ticker-change positive" id="ticker-sig6-change">+0.89%</span>
             </div>
             <!-- Duplicate for seamless looping -->
             <div class="ticker-item">
@@ -658,8 +871,8 @@
             </div>
             <div class="ticker-item">
                 <span class="ticker-symbol">SIG6</span>
-                <span class="ticker-price">$0.0576</span>
-                <span class="ticker-change positive">+0.89%</span>
+                <span class="ticker-price" id="ticker-sig6-price-dup">$0.0576</span>
+                <span class="ticker-change positive" id="ticker-sig6-change-dup">+0.89%</span>
             </div>
         </div>
     </div>
@@ -668,8 +881,8 @@
     <div class="container">
         <!-- Left Panel -->
         <div class="left-panel">
-            <button class="connect-btn" id="connectBtn" onclick="connect()">
-                <i class="fas fa-wallet"></i> Connect MetaMask
+            <button class="connect-btn" id="connectBtn" onclick="connectWallet()">
+                <i class="fas fa-wallet"></i> Connect Wallet
             </button>
             
             <div class="main-card">
@@ -681,13 +894,13 @@
                 <div class="stats-grid">
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-up"></i> BUY RATE</div>
-                        <div id="brate" class="stat-value">0.0 USDT</div>
-                        <div id="brate-inr" class="stat-value-inr">≈ ₹0.00 INR</div>
+                        <div id="brate" class="stat-value">0.0576 USDT</div>
+                        <div id="brate-inr" class="stat-value-inr">≈ ₹5.18 INR</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-down"></i> SELL RATE</div>
-                        <div id="srate" class="stat-value">0.0 USDT</div>
-                        <div id="srate-inr" class="stat-value-inr">≈ ₹0.00 INR</div>
+                        <div id="srate" class="stat-value">0.0573 USDT</div>
+                        <div id="srate-inr" class="stat-value-inr">≈ ₹5.16 INR</div>
                     </div>
                 </div>
                 
@@ -838,6 +1051,22 @@
         let mode = 'buy', buyR = 0.0576, sellR = 0.0573, signer, addr, provider;
         const USDT_TO_INR = 90.0;
         
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('cryptoParticles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 20}s`;
+                particle.style.backgroundColor = i % 3 === 0 ? 'var(--primary)' : 
+                                                i % 3 === 1 ? 'var(--secondary)' : 
+                                                '#ff2a6d';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
         // Save Referral Upline from URL even if page refreshes
         function handleUpline() {
             const params = new URLSearchParams(window.location.search);
@@ -850,7 +1079,7 @@
             return currentRef;
         }
 
-        // Update INR values using Buy Rate
+        // Update INR values using current rates
         function updateINRValues() {
             const buyRateElement = document.getElementById('brate');
             const sellRateElement = document.getElementById('srate');
@@ -871,7 +1100,7 @@
             }
         }
 
-        // Update SIG6 balance INR value
+        // Update SIG6 balance INR value - USING SELL RATE
         function updateSigmaINRValue() {
             const sigBalanceElement = document.getElementById('bal-sig');
             const sigINRElement = document.getElementById('bal-sig-inr');
@@ -879,7 +1108,8 @@
             if (sigBalanceElement && sigINRElement) {
                 const sigText = sigBalanceElement.innerText;
                 const sigBalance = parseFloat(sigText) || 0;
-                const inrValue = (sigBalance * buyR * USDT_TO_INR).toFixed(2);
+                // Using sell rate for SIG6 balance value in INR
+                const inrValue = (sigBalance * sellR * USDT_TO_INR).toFixed(2);
                 sigINRElement.innerText = `₹${inrValue} INR`;
             }
         }
@@ -893,13 +1123,27 @@
         // Live ticker data
         function updateTickers() {
             const changePercent = 0.89; // Static change for SIG6
+            
+            // Format price to 4 decimals for SIG6
+            const sig6Price = buyR.toFixed(4);
+            
+            // Update ticker price display
+            document.querySelectorAll('[id^="ticker-sig6-price"]').forEach(el => {
+                el.innerText = `$${sig6Price}`;
+            });
+            
+            // Update ticker change display
+            document.querySelectorAll('[id^="ticker-sig6-change"]').forEach(el => {
+                el.innerText = `+${changePercent.toFixed(2)}%`;
+            });
+            
             const tickers = [
                 { symbol: 'BTC', price: 68421.50, change: 2.34 },
                 { symbol: 'ETH', price: 3812.75, change: 1.78 },
                 { symbol: 'USDT', price: 1.00, change: 0.00 },
                 { symbol: 'SOL', price: 142.60, change: -0.85 },
                 { symbol: 'BNB', price: 585.30, change: 0.92 },
-                { symbol: 'SIG6', price: buyR, change: changePercent }
+                { symbol: 'SIG6', price: parseFloat(sig6Price), change: changePercent }
             ];
             
             const wrapper = document.querySelector('.ticker-wrapper');
@@ -910,11 +1154,12 @@
                     tickers.forEach(ticker => {
                         const changeClass = ticker.change > 0 ? 'positive' : (ticker.change < 0 ? 'negative' : '');
                         const changeSign = ticker.change > 0 ? '+' : '';
+                        const decimals = ticker.symbol === 'SIG6' ? 4 : 2;
                         
                         tickerHTML += `
                             <div class="ticker-item">
                                 <span class="ticker-symbol">${ticker.symbol}</span>
-                                <span class="ticker-price">$${ticker.price.toFixed(ticker.symbol === 'SIG6' ? 4 : 2)}</span>
+                                <span class="ticker-price">$${ticker.price.toFixed(decimals)}</span>
                                 <span class="ticker-change ${changeClass}">${changeSign}${Math.abs(ticker.change).toFixed(2)}%</span>
                             </div>
                         `;
@@ -950,13 +1195,19 @@
             });
         }
 
-        async function connect() {
-            if (!window.ethereum) return alert("Please open this in MetaMask Browser");
+        // Connect Wallet Function
+        async function connectWallet() {
+            if (!window.ethereum) {
+                alert("Please install MetaMask to use this DApp!");
+                window.open("https://metamask.io/download/", "_blank");
+                return;
+            }
             
             try {
+                // Request account access
                 provider = new ethers.BrowserProvider(window.ethereum);
-                const acc = await provider.send("eth_requestAccounts", []);
-                addr = acc[0]; 
+                const accounts = await provider.send("eth_requestAccounts", []);
+                addr = accounts[0];
                 signer = await provider.getSigner();
                 
                 // Update connect button
@@ -972,13 +1223,47 @@
                 document.getElementById('status-msg').innerText = "Wallet Connected Successfully!";
                 document.getElementById('status-msg').style.color = "#00ff88";
                 
-                // Start real-time features
+                // Start syncing data
                 await sync();
                 
-            } catch (err) {
-                console.error(err);
-                document.getElementById('status-msg').innerText = "Connection Failed: " + (err.message || "Unknown error");
-                document.getElementById('status-msg').style.color = "#ff4d4d";
+                // Listen for account changes
+                window.ethereum.on('accountsChanged', async (accounts) => {
+                    if (accounts.length > 0) {
+                        addr = accounts[0];
+                        signer = await provider.getSigner();
+                        connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
+                        updateRefLink();
+                        await sync();
+                    } else {
+                        // User disconnected
+                        connectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
+                        connectBtn.classList.remove('connected');
+                        document.getElementById('ref-ui').style.display = 'none';
+                        document.getElementById('status-msg').innerText = "Wallet Disconnected";
+                        document.getElementById('status-msg').style.color = "#ffaa00";
+                    }
+                });
+                
+                // Listen for chain changes
+                window.ethereum.on('chainChanged', () => {
+                    window.location.reload();
+                });
+                
+            } catch (error) {
+                console.error("Connection error:", error);
+                
+                if (error.code === 4001) {
+                    // User rejected the connection request
+                    document.getElementById('status-msg').innerText = "Connection rejected by user";
+                    document.getElementById('status-msg').style.color = "#ff4d4d";
+                } else if (error.code === -32002) {
+                    // Request already pending
+                    document.getElementById('status-msg').innerText = "Connection request already pending in MetaMask";
+                    document.getElementById('status-msg').style.color = "#ffaa00";
+                } else {
+                    document.getElementById('status-msg').innerText = "Connection failed: " + error.message;
+                    document.getElementById('status-msg').style.color = "#ff4d4d";
+                }
             }
         }
 
@@ -1062,9 +1347,13 @@
                 ]);
 
                 // Update balances
-                document.getElementById('bal-pol').innerText = parseFloat(ethers.formatEther(pb)).toFixed(3) + " POL";
-                document.getElementById('bal-usdt').innerText = parseFloat(ethers.formatUnits(ub, 6)).toFixed(3) + " USDT";
-                document.getElementById('bal-sig').innerText = parseFloat(ethers.formatEther(sb)).toFixed(2) + " SIG6";
+                const polBalance = parseFloat(ethers.formatEther(pb)).toFixed(3);
+                const usdtBalance = parseFloat(ethers.formatUnits(ub, 6)).toFixed(3);
+                const sigBalance = parseFloat(ethers.formatEther(sb)).toFixed(2);
+                
+                document.getElementById('bal-pol').innerText = polBalance + " POL";
+                document.getElementById('bal-usdt').innerText = usdtBalance + " USDT";
+                document.getElementById('bal-sig').innerText = sigBalance + " SIG6";
                 
                 // Update rates FROM CONTRACT (real values)
                 const newBuyR = parseFloat(ethers.formatUnits(br, 6));
@@ -1083,7 +1372,6 @@
                 
                 // Update all INR values
                 updateAllINRValues();
-                updateSigmaINRValue();
                 
                 // Update tickers with new price
                 updateTickers();
@@ -1152,7 +1440,7 @@
         }
 
         async function action() {
-            if (!signer) return connect();
+            if (!signer) return connectWallet();
             
             const v = document.getElementById('amt').value;
             if (!v || v <= 0) {
@@ -1279,14 +1567,38 @@
 
         // Initialize on page load
         window.onload = async function() {
+            // Create background particles
+            createParticles();
+            
             handleUpline();
             updateINRValues();
             updateTickers();
             updateSigmaINRValue();
             
-            // If wallet already connected, initialize real data
-            if (window.ethereum && window.ethereum.selectedAddress) {
-                await connect();
+            // Check if wallet is already connected
+            if (window.ethereum) {
+                try {
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    const accounts = await provider.send("eth_accounts", []);
+                    
+                    if (accounts.length > 0) {
+                        addr = accounts[0];
+                        signer = await provider.getSigner();
+                        
+                        // Update UI for already connected wallet
+                        const connectBtn = document.getElementById('connectBtn');
+                        connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
+                        connectBtn.classList.add('connected');
+                        
+                        document.getElementById('ref-ui').style.display = 'block';
+                        updateRefLink();
+                        
+                        // Sync data
+                        await sync();
+                    }
+                } catch (error) {
+                    console.error("Auto-connect error:", error);
+                }
             }
             
             // Auto refresh sync every 30 seconds
