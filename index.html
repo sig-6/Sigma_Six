@@ -420,42 +420,91 @@
             border: 1px solid var(--primary);
         }
         
-        /* Network Warning Message - IMPROVED FOR MOBILE */
+        /* Network Warning Message - COMPLETELY REDESIGNED FOR BETTER VISIBILITY */
         .network-warning {
-            background: rgba(255, 170, 0, 0.15);
-            border: 1px solid var(--warning);
-            border-radius: 12px;
-            padding: 14px 16px;
-            margin: 5px 0 10px 0;
-            color: var(--warning);
-            font-weight: 600;
-            font-size: 15px;
+            background: rgba(255, 170, 0, 0.25);
+            border: 2px solid var(--warning);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin: 10px 0 15px 0;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 16px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            animation: pulse 2s infinite;
+            gap: 15px;
+            animation: warningPulse 1.5s ease-in-out infinite;
             width: 100%;
             word-break: break-word;
-            line-height: 1.4;
+            line-height: 1.5;
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            letter-spacing: 0.3px;
+        }
+        
+        @keyframes warningPulse {
+            0% {
+                background: rgba(255, 170, 0, 0.25);
+                border-color: var(--warning);
+                box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
+            }
+            50% {
+                background: rgba(255, 170, 0, 0.4);
+                border-color: #ffbb33;
+                box-shadow: 0 0 30px rgba(255, 170, 0, 0.5);
+            }
+            100% {
+                background: rgba(255, 170, 0, 0.25);
+                border-color: var(--warning);
+                box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .network-warning {
+                padding: 16px 18px;
+                font-size: 15px;
+                gap: 12px;
+                margin: 8px 0 12px 0;
+            }
         }
         
         @media (max-width: 480px) {
             .network-warning {
-                padding: 12px 14px;
+                padding: 14px 16px;
                 font-size: 14px;
                 gap: 10px;
+                border-radius: 14px;
             }
         }
         
         .network-warning i {
-            font-size: 20px;
+            font-size: 24px;
+            color: var(--warning);
+            filter: drop-shadow(0 0 5px rgba(255, 170, 0, 0.5));
             flex-shrink: 0;
         }
         
         @media (max-width: 480px) {
             .network-warning i {
-                font-size: 18px;
+                font-size: 20px;
             }
+        }
+        
+        .network-warning span {
+            flex: 1;
+            color: #ffffff;
+        }
+        
+        /* Add a blinking effect to the text */
+        .network-warning span {
+            animation: textBlink 2s ease-in-out infinite;
+        }
+        
+        @keyframes textBlink {
+            0% { opacity: 1; }
+            50% { opacity: 0.9; }
+            100% { opacity: 1; }
         }
         
         /* Main Card */
@@ -884,7 +933,7 @@
         
         .contract-info {
             flex: 1;
-            min-width: 0; /* Prevents overflow on mobile */
+            min-width: 0;
         }
         
         .contract-label {
@@ -1106,7 +1155,7 @@
         }
         
         .menu-btn div {
-            min-width: 0; /* Prevents overflow */
+            min-width: 0;
         }
         
         .menu-btn div div:last-child {
@@ -1250,10 +1299,10 @@
                 <i class="fas fa-wallet"></i> Connect Wallet
             </button>
             
-            <!-- Network Warning Message (hidden by default) - IMPROVED FOR MOBILE -->
+            <!-- Network Warning Message - COMPLETELY REDESIGNED FOR BETTER VISIBILITY -->
             <div id="network-warning" class="network-warning" style="display: none;">
                 <i class="fas fa-exclamation-triangle"></i>
-                <span>Please connect to Polygon Network!</span>
+                <span>⚠️ PLEASE CONNECT TO POLYGON NETWORK! ⚠️</span>
             </div>
             
             <div class="main-card">
@@ -1467,8 +1516,15 @@
                 const warningEl = document.getElementById('network-warning');
                 if (isWalletConnected && !isPolygonNetwork) {
                     warningEl.style.display = 'flex';
+                    // Also update status message
+                    document.getElementById('status-msg').innerText = '⚠️ WRONG NETWORK! Please switch to Polygon ⚠️';
+                    document.getElementById('status-msg').style.color = '#ffaa00';
                 } else {
                     warningEl.style.display = 'none';
+                    if (isWalletConnected && isPolygonNetwork) {
+                        document.getElementById('status-msg').innerText = 'Ready to trade';
+                        document.getElementById('status-msg').style.color = '#00ffcc';
+                    }
                 }
                 
                 return isPolygonNetwork;
@@ -1501,6 +1557,7 @@
                 amtInput.disabled = true;
                 document.getElementById('network-warning').style.display = 'none';
                 document.getElementById('status-msg').innerText = 'Please connect wallet';
+                document.getElementById('status-msg').style.color = '#00ffcc';
             } else if (!isPolygonNetwork) {
                 // Wallet connected but wrong network
                 document.getElementById('brate').innerText = '-- USDT';
@@ -1518,12 +1575,15 @@
                 mainBtn.disabled = true;
                 amtInput.disabled = true;
                 document.getElementById('network-warning').style.display = 'flex';
-                document.getElementById('status-msg').innerText = 'Wrong network! Please switch to Polygon';
+                document.getElementById('status-msg').innerText = '⚠️ WRONG NETWORK! Please switch to Polygon ⚠️';
+                document.getElementById('status-msg').style.color = '#ffaa00';
             } else {
                 // Wallet connected and correct network
                 amtInput.disabled = false;
                 mainBtn.disabled = false;
                 document.getElementById('network-warning').style.display = 'none';
+                document.getElementById('status-msg').innerText = 'Ready to trade';
+                document.getElementById('status-msg').style.color = '#00ffcc';
                 sync(); // Fetch real data
             }
         }
@@ -1653,11 +1713,11 @@
                         if (isWalletConnected && isPolygonNetwork) {
                             statusMsg.innerText = "Ready to trade";
                         } else if (isWalletConnected && !isPolygonNetwork) {
-                            statusMsg.innerText = "Please connect to Polygon Network";
+                            statusMsg.innerText = "⚠️ WRONG NETWORK! Please switch to Polygon ⚠️";
                         } else {
                             statusMsg.innerText = "Please connect wallet";
                         }
-                        statusMsg.style.color = "#00ffcc";
+                        statusMsg.style.color = isWalletConnected && !isPolygonNetwork ? "#ffaa00" : "#00ffcc";
                     }, 2000);
                 }, 1500);
             });
@@ -1924,7 +1984,7 @@
             }
             
             if (!isPolygonNetwork) {
-                document.getElementById('status-msg').innerText = "Please switch to Polygon Network";
+                document.getElementById('status-msg').innerText = "⚠️ WRONG NETWORK! Please switch to Polygon ⚠️";
                 document.getElementById('status-msg').style.color = "#ffaa00";
                 return;
             }
@@ -2038,11 +2098,11 @@
                 if (isWalletConnected && isPolygonNetwork) {
                     statusMsg.innerText = "Ready to trade";
                 } else if (isWalletConnected && !isPolygonNetwork) {
-                    statusMsg.innerText = "Please connect to Polygon Network";
+                    statusMsg.innerText = "⚠️ WRONG NETWORK! Please switch to Polygon ⚠️";
                 } else {
                     statusMsg.innerText = "Please connect wallet";
                 }
-                statusMsg.style.color = "#00ffcc";
+                statusMsg.style.color = isWalletConnected && !isPolygonNetwork ? "#ffaa00" : "#00ffcc";
             }, 3000);
         }
 
