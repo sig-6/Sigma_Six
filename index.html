@@ -34,7 +34,6 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
-            transition: opacity 0.3s ease;
         }
         
         /* Professional Crypto Background with Criss-Cross Lines */
@@ -234,7 +233,7 @@
             }
         }
         
-        /* Rainbow Light Effect - Enhanced */
+        /* Rainbow Light Effect - Simplified for mobile */
         .rainbow-border {
             position: fixed;
             top: 0;
@@ -258,7 +257,6 @@
             background: radial-gradient(circle, rgba(157, 78, 221, 0.2) 0%, rgba(0, 255, 204, 0.15) 25%, rgba(0, 11, 16, 0) 70%);
             border-radius: 50%;
             z-index: -1;
-            animation: pulse 6s ease-in-out infinite alternate;
             filter: blur(20px);
         }
         
@@ -271,23 +269,12 @@
             background: radial-gradient(circle at 50% 50%, rgba(157, 78, 221, 0.1) 0%, rgba(0, 255, 204, 0.05) 50%, transparent 80%);
             z-index: -1;
             pointer-events: none;
-            animation: rotate 20s linear infinite;
-        }
-        
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
         
         @keyframes rainbow {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.9); }
-            100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
         }
         
         @keyframes float {
@@ -440,18 +427,6 @@
             animation: rainbow 8s ease infinite;
         }
         
-        .main-card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0, 255, 204, 0.1) 0%, transparent 70%);
-            animation: rotate 15s linear infinite;
-            z-index: -1;
-        }
-        
         /* Header */
         .header {
             text-align: center;
@@ -492,26 +467,12 @@
             border-radius: 16px;
             border: 1px solid rgba(45, 47, 62, 0.5);
             transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
         }
         
         .stat-box:hover {
             border-color: var(--primary);
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 255, 204, 0.1);
-        }
-        
-        .stat-box::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0, 255, 204, 0.1) 0%, transparent 70%);
-            animation: rotate 10s linear infinite;
-            z-index: -1;
         }
         
         .stat-label {
@@ -774,20 +735,6 @@
             padding: 30px;
             border: 1px solid rgba(157, 78, 221, 0.2);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .menu-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(157, 78, 221, 0.1) 0%, transparent 70%);
-            animation: rotate 15s linear infinite;
-            z-index: -1;
         }
         
         .menu-card h2 {
@@ -819,8 +766,6 @@
             justify-content: flex-start;
             gap: 15px;
             text-align: left;
-            position: relative;
-            overflow: hidden;
         }
         
         .menu-btn i {
@@ -834,19 +779,7 @@
             transform: translateX(5px);
         }
         
-        .menu-btn::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(157, 78, 221, 0.1) 0%, transparent 70%);
-            animation: rotate 10s linear infinite;
-            z-index: -1;
-        }
-        
-        /* Wallet Selector Modal - Enhanced */
+        /* Wallet Selector Modal - No animations for mobile stability */
         .wallet-modal {
             display: none;
             position: fixed;
@@ -875,7 +808,6 @@
             text-align: center;
             position: relative;
             overflow: hidden;
-            animation: modalPulse 2s ease-in-out infinite;
             box-shadow: 0 0 30px rgba(0, 255, 204, 0.3);
         }
         
@@ -906,11 +838,6 @@
             margin: 2px;
         }
         
-        @keyframes modalPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-        
         .wallet-modal-content h2 {
             color: var(--primary);
             margin-bottom: 30px;
@@ -930,27 +857,12 @@
             align-items: center;
             gap: 20px;
             width: 100%;
-            position: relative;
-            overflow: hidden;
         }
         
         .wallet-option:hover {
             border-color: var(--primary);
-            transform: translateX(5px) scale(1.02);
             background: rgba(0, 255, 204, 0.1);
             box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
-        }
-        
-        .wallet-option::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0, 255, 204, 0.2) 0%, transparent 70%);
-            animation: rotate 10s linear infinite;
-            z-index: -1;
         }
         
         .wallet-option img {
@@ -988,7 +900,6 @@
         .close-modal:hover {
             background: var(--danger);
             color: white;
-            transform: scale(1.05);
             box-shadow: 0 0 20px rgba(255, 77, 77, 0.5);
         }
         
@@ -1002,12 +913,6 @@
             color: var(--warning);
             font-size: 13px;
             display: none;
-            animation: warningPulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes warningPulse {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; }
         }
         
         .chain-warning.show {
@@ -1045,6 +950,39 @@
             .copy-btn {
                 width: 100%;
                 justify-content: center;
+            }
+            
+            /* Disable animations on mobile for better performance */
+            .connect-btn {
+                animation: none;
+            }
+            
+            .wallet-option {
+                transform: none !important;
+            }
+            
+            .wallet-option:hover {
+                transform: none !important;
+            }
+            
+            .main-card::before {
+                animation: none;
+            }
+            
+            .header h1 {
+                animation: none;
+            }
+            
+            .action-btn {
+                animation: none;
+            }
+            
+            .wallet-modal-content::before {
+                animation: none;
+            }
+            
+            .wallet-option span {
+                animation: none;
             }
         }
     </style>
