@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIGMA SIX | Premium DApp</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -35,7 +35,6 @@
             overflow-x: hidden;
             position: relative;
             transition: opacity 0.3s ease;
-            width: 100%;
         }
         
         /* Professional Crypto Background with Criss-Cross Lines */
@@ -286,7 +285,6 @@
             overflow: hidden;
             position: relative;
             z-index: 10;
-            width: 100%;
         }
         
         .ticker-wrapper {
@@ -347,21 +345,11 @@
             gap: 30px;
             position: relative;
             z-index: 1;
-            width: 100%;
         }
         
         @media (max-width: 992px) {
             .container {
                 grid-template-columns: 1fr;
-                padding: 15px;
-                gap: 20px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .container {
-                padding: 10px;
-                gap: 15px;
             }
         }
         
@@ -370,7 +358,6 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            width: 100%;
         }
         
         /* Right Panel - Menu */
@@ -378,7 +365,6 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            width: 100%;
         }
         
         /* Connect Button */
@@ -398,15 +384,6 @@
             gap: 10px;
             box-shadow: 0 4px 20px rgba(0, 255, 204, 0.3);
             animation: float 4s ease-in-out infinite;
-            width: 100%;
-            white-space: nowrap;
-        }
-        
-        @media (max-width: 480px) {
-            .connect-btn {
-                padding: 14px 20px;
-                font-size: 14px;
-            }
         }
         
         .connect-btn:hover {
@@ -420,93 +397,6 @@
             border: 1px solid var(--primary);
         }
         
-        /* Network Warning Message - COMPLETELY REDESIGNED FOR BETTER VISIBILITY */
-        .network-warning {
-            background: rgba(255, 170, 0, 0.25);
-            border: 2px solid var(--warning);
-            border-radius: 16px;
-            padding: 16px 20px;
-            margin: 10px 0 15px 0;
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            animation: warningPulse 1.5s ease-in-out infinite;
-            width: 100%;
-            word-break: break-word;
-            line-height: 1.5;
-            box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-            letter-spacing: 0.3px;
-        }
-        
-        @keyframes warningPulse {
-            0% {
-                background: rgba(255, 170, 0, 0.25);
-                border-color: var(--warning);
-                box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
-            }
-            50% {
-                background: rgba(255, 170, 0, 0.4);
-                border-color: #ffbb33;
-                box-shadow: 0 0 30px rgba(255, 170, 0, 0.5);
-            }
-            100% {
-                background: rgba(255, 170, 0, 0.25);
-                border-color: var(--warning);
-                box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .network-warning {
-                padding: 16px 18px;
-                font-size: 15px;
-                gap: 12px;
-                margin: 8px 0 12px 0;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .network-warning {
-                padding: 14px 16px;
-                font-size: 14px;
-                gap: 10px;
-                border-radius: 14px;
-            }
-        }
-        
-        .network-warning i {
-            font-size: 24px;
-            color: var(--warning);
-            filter: drop-shadow(0 0 5px rgba(255, 170, 0, 0.5));
-            flex-shrink: 0;
-        }
-        
-        @media (max-width: 480px) {
-            .network-warning i {
-                font-size: 20px;
-            }
-        }
-        
-        .network-warning span {
-            flex: 1;
-            color: #ffffff;
-        }
-        
-        /* Add a blinking effect to the text */
-        .network-warning span {
-            animation: textBlink 2s ease-in-out infinite;
-        }
-        
-        @keyframes textBlink {
-            0% { opacity: 1; }
-            50% { opacity: 0.9; }
-            100% { opacity: 1; }
-        }
-        
         /* Main Card */
         .main-card {
             background: rgba(22, 24, 33, 0.8);
@@ -517,20 +407,6 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             position: relative;
             overflow: hidden;
-            width: 100%;
-        }
-        
-        @media (max-width: 768px) {
-            .main-card {
-                padding: 20px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .main-card {
-                padding: 16px;
-                border-radius: 20px;
-            }
         }
         
         .main-card::before {
@@ -551,12 +427,6 @@
             margin-bottom: 30px;
         }
         
-        @media (max-width: 480px) {
-            .header {
-                margin-bottom: 20px;
-            }
-        }
-        
         .header h1 {
             background: var(--gradient);
             background-size: 400% 400%;
@@ -570,28 +440,10 @@
             animation: rainbow 8s ease infinite;
         }
         
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 36px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 28px;
-            }
-        }
-        
         .header p {
             color: #aaa;
             font-size: 14px;
             letter-spacing: 1px;
-        }
-        
-        @media (max-width: 480px) {
-            .header p {
-                font-size: 12px;
-            }
         }
         
         /* Stats Grid */
@@ -602,25 +454,12 @@
             margin-bottom: 25px;
         }
         
-        @media (max-width: 480px) {
-            .stats-grid {
-                gap: 10px;
-                margin-bottom: 20px;
-            }
-        }
-        
         .stat-box {
             background: rgba(255, 255, 255, 0.03);
             padding: 20px;
             border-radius: 16px;
             border: 1px solid rgba(45, 47, 62, 0.5);
             transition: all 0.3s;
-        }
-        
-        @media (max-width: 480px) {
-            .stat-box {
-                padding: 15px 12px;
-            }
         }
         
         .stat-box:hover {
@@ -640,40 +479,16 @@
             gap: 5px;
         }
         
-        @media (max-width: 480px) {
-            .stat-label {
-                font-size: 10px;
-            }
-        }
-        
         .stat-value {
             font-size: 22px;
             font-weight: 700;
             color: var(--primary);
         }
         
-        @media (max-width: 768px) {
-            .stat-value {
-                font-size: 18px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .stat-value {
-                font-size: 16px;
-            }
-        }
-        
         .stat-value-inr {
             font-size: 14px;
             color: #aaa;
             margin-top: 5px;
-        }
-        
-        @media (max-width: 480px) {
-            .stat-value-inr {
-                font-size: 12px;
-            }
         }
         
         /* Tabs */
@@ -684,14 +499,6 @@
             background: rgba(0, 0, 0, 0.3);
             padding: 6px;
             border-radius: 16px;
-        }
-        
-        @media (max-width: 480px) {
-            .tabs {
-                gap: 6px;
-                padding: 4px;
-                margin-bottom: 20px;
-            }
         }
         
         .tab {
@@ -710,21 +517,6 @@
             gap: 8px;
         }
         
-        @media (max-width: 768px) {
-            .tab {
-                padding: 12px;
-                font-size: 14px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .tab {
-                padding: 10px 8px;
-                font-size: 13px;
-                gap: 4px;
-            }
-        }
-        
         .tab.active {
             background: var(--primary);
             color: #000;
@@ -741,14 +533,6 @@
             transition: all 0.3s;
         }
         
-        @media (max-width: 480px) {
-            .input-area {
-                padding: 16px;
-                border-radius: 14px;
-                margin-bottom: 15px;
-            }
-        }
-        
         .input-area:focus-within {
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(0, 255, 204, 0.1);
@@ -762,13 +546,6 @@
             margin-bottom: 12px;
         }
         
-        @media (max-width: 480px) {
-            .input-header {
-                font-size: 12px;
-                margin-bottom: 8px;
-            }
-        }
-        
         input {
             background: transparent;
             border: none;
@@ -777,18 +554,6 @@
             width: 100%;
             outline: none;
             font-weight: 600;
-        }
-        
-        @media (max-width: 768px) {
-            input {
-                font-size: 26px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            input {
-                font-size: 22px;
-            }
         }
         
         /* Calc Box */
@@ -801,26 +566,10 @@
             margin-bottom: 20px;
         }
         
-        @media (max-width: 480px) {
-            .calc-box {
-                padding: 16px;
-                font-size: 13px;
-                margin-bottom: 15px;
-            }
-        }
-        
         .row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-        
-        @media (max-width: 480px) {
-            .row {
-                margin-bottom: 8px;
-            }
         }
         
         /* Action Button */
@@ -841,32 +590,9 @@
             animation: rainbow 8s ease infinite;
         }
         
-        @media (max-width: 768px) {
-            .action-btn {
-                padding: 16px;
-                font-size: 16px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .action-btn {
-                padding: 14px;
-                font-size: 14px;
-                border-radius: 12px;
-                margin-top: 5px;
-            }
-        }
-        
         .action-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(0, 255, 204, 0.4);
-        }
-        
-        .action-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-            animation: none;
         }
         
         /* Status Message */
@@ -877,14 +603,6 @@
             color: var(--primary);
             font-weight: 600;
             min-height: 20px;
-            word-break: break-word;
-        }
-        
-        @media (max-width: 480px) {
-            #status-msg {
-                font-size: 12px;
-                margin-top: 12px;
-            }
         }
         
         /* Referral Box */
@@ -894,14 +612,6 @@
             border-radius: 16px;
             border: 1px solid var(--border);
             margin-top: 25px;
-            width: 100%;
-        }
-        
-        @media (max-width: 480px) {
-            .ref-box {
-                padding: 16px;
-                margin-top: 20px;
-            }
         }
         
         /* Contract Address Box */
@@ -916,24 +626,8 @@
             gap: 15px;
         }
         
-        @media (max-width: 768px) {
-            .contract-box {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 10px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .contract-box {
-                padding: 16px;
-                margin-top: 15px;
-            }
-        }
-        
         .contract-info {
             flex: 1;
-            min-width: 0;
         }
         
         .contract-label {
@@ -952,12 +646,6 @@
             word-break: break-all;
         }
         
-        @media (max-width: 480px) {
-            .contract-address {
-                font-size: 12px;
-            }
-        }
-        
         .copy-btn {
             background: linear-gradient(90deg, var(--secondary), #7b2cbf);
             color: white;
@@ -970,22 +658,8 @@
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
             white-space: nowrap;
-        }
-        
-        @media (max-width: 768px) {
-            .copy-btn {
-                width: 100%;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .copy-btn {
-                padding: 10px 16px;
-                font-size: 12px;
-            }
         }
         
         .copy-btn:hover {
@@ -1002,22 +676,12 @@
             font-size: 14px;
         }
         
-        @media (max-width: 480px) {
-            .balance-footer {
-                margin-top: 20px;
-                padding-top: 16px;
-                font-size: 13px;
-            }
-        }
-        
         .balance-item {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            flex-wrap: wrap;
-            gap: 5px;
         }
         
         .balance-item:last-child {
@@ -1030,12 +694,6 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-        }
-        
-        @media (max-width: 480px) {
-            .balance-info {
-                align-items: flex-end;
-            }
         }
         
         .balance-inr {
@@ -1053,20 +711,6 @@
             padding: 30px;
             border: 1px solid rgba(157, 78, 221, 0.2);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            width: 100%;
-        }
-        
-        @media (max-width: 768px) {
-            .menu-card {
-                padding: 20px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .menu-card {
-                padding: 16px;
-                border-radius: 20px;
-            }
         }
         
         .menu-card h2 {
@@ -1076,30 +720,10 @@
             text-align: center;
         }
         
-        @media (max-width: 768px) {
-            .menu-card h2 {
-                font-size: 20px;
-                margin-bottom: 20px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .menu-card h2 {
-                font-size: 18px;
-                margin-bottom: 16px;
-            }
-        }
-        
         .menu-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 15px;
-        }
-        
-        @media (max-width: 480px) {
-            .menu-grid {
-                gap: 10px;
-            }
         }
         
         .menu-btn {
@@ -1119,53 +743,15 @@
             text-align: left;
         }
         
-        @media (max-width: 768px) {
-            .menu-btn {
-                padding: 14px;
-                font-size: 14px;
-                gap: 12px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .menu-btn {
-                padding: 12px;
-                font-size: 13px;
-                gap: 10px;
-                border-radius: 12px;
-            }
-        }
-        
         .menu-btn i {
             font-size: 20px;
             color: var(--secondary);
-            flex-shrink: 0;
-        }
-        
-        @media (max-width: 480px) {
-            .menu-btn i {
-                font-size: 16px;
-            }
         }
         
         .menu-btn:hover {
             background: rgba(157, 78, 221, 0.1);
             border-color: var(--secondary);
             transform: translateX(5px);
-        }
-        
-        .menu-btn div {
-            min-width: 0;
-        }
-        
-        .menu-btn div div:last-child {
-            font-size: 12px;
-        }
-        
-        @media (max-width: 480px) {
-            .menu-btn div div:last-child {
-                font-size: 10px;
-            }
         }
         
         /* Responsive */
@@ -1299,12 +885,6 @@
                 <i class="fas fa-wallet"></i> Connect Wallet
             </button>
             
-            <!-- Network Warning Message - COMPLETELY REDESIGNED FOR BETTER VISIBILITY -->
-            <div id="network-warning" class="network-warning" style="display: none;">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span>⚠️ PLEASE CONNECT TO POLYGON NETWORK! ⚠️</span>
-            </div>
-            
             <div class="main-card">
                 <div class="header">
                     <h1>SIGMA SIX</h1>
@@ -1314,13 +894,13 @@
                 <div class="stats-grid">
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-up"></i> BUY RATE</div>
-                        <div id="brate" class="stat-value">-- USDT</div>
-                        <div id="brate-inr" class="stat-value-inr">≈ -- INR</div>
+                        <div id="brate" class="stat-value">0.0576 USDT</div>
+                        <div id="brate-inr" class="stat-value-inr">≈ ₹5.18 INR</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-down"></i> SELL RATE</div>
-                        <div id="srate" class="stat-value">-- USDT</div>
-                        <div id="srate-inr" class="stat-value-inr">≈ -- INR</div>
+                        <div id="srate" class="stat-value">0.0573 USDT</div>
+                        <div id="srate-inr" class="stat-value-inr">≈ ₹5.16 INR</div>
                     </div>
                 </div>
                 
@@ -1346,15 +926,15 @@
                 <div class="calc-box">
                     <div class="row">
                         <span id="out-label">Total USDT to Pay:</span> 
-                        <span id="out-amt" style="color:var(--primary); font-weight:800">-- USDT</span>
+                        <span id="out-amt" style="color:var(--primary); font-weight:800">0.0000 USDT</span>
                     </div>
                     <div class="row">
                         <span id="tax-label">Buy Tax 1%:</span> 
-                        <span id="tax-amt" style="color:#ff4d4d">-- USDT</span>
+                        <span id="tax-amt" style="color:#ff4d4d">0.0000 USDT</span>
                     </div>
                     <div class="row">
                         <span>Equivalent INR:</span> 
-                        <span id="inr-amt" style="color:#ffaa00">-- INR</span>
+                        <span id="inr-amt" style="color:#ffaa00">0.00 INR</span>
                     </div>
                     <div class="row" id="upline-display">
                         <span style="color:#888;">Upline Address:</span> 
@@ -1362,7 +942,7 @@
                     </div>
                 </div>
                 
-                <button class="action-btn" id="mainBtn" onclick="action()" disabled>
+                <button class="action-btn" id="mainBtn" onclick="action()">
                     <i class="fas fa-lock"></i> APPROVE USDT
                 </button>
                 <div id="status-msg">Ready to trade</div>
@@ -1400,20 +980,20 @@
                     <div class="balance-item">
                         <span><i class="fas fa-wallet"></i> USDT Balance:</span>
                         <div class="balance-info">
-                            <span id="bal-usdt">-- USDT</span>
+                            <span id="bal-usdt">0.000</span>
                         </div>
                     </div>
                     <div class="balance-item">
                         <span><i class="fas fa-coins"></i> SIG6 Balance:</span>
                         <div class="balance-info">
-                            <span id="bal-sig">-- SIG6</span>
-                            <span id="bal-sig-inr" class="balance-inr">-- INR</span>
+                            <span id="bal-sig">0.000</span>
+                            <span id="bal-sig-inr" class="balance-inr">₹0.00 INR</span>
                         </div>
                     </div>
                     <div class="balance-item">
                         <span><i class="fas fa-gas-pump"></i> POL Balance:</span>
                         <div class="balance-info">
-                            <span id="bal-pol">-- POL</span>
+                            <span id="bal-pol">0.000</span>
                         </div>
                     </div>
                 </div>
@@ -1468,11 +1048,7 @@
     <script>
         const S_ADDR = "0x0f77a0d1FC8d04573402398A2ae19f367b4ef4aC";
         const U_ADDR = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
-        const POLYGON_CHAIN_ID = 137; // Polygon Mainnet
         let mode = 'buy', buyR = 0.0576, sellR = 0.0573, signer, addr, provider;
-        let currentChainId = null;
-        let isWalletConnected = false;
-        let isPolygonNetwork = false;
         const USDT_TO_INR = 90.0;
         
         // Create floating particles
@@ -1502,96 +1078,9 @@
             document.getElementById('upline-addr').innerText = currentRef.slice(0,10) + "..." + currentRef.slice(-8);
             return currentRef;
         }
-        
-        // Check if current network is Polygon
-        async function checkNetwork() {
-            if (!window.ethereum || !provider) return false;
-            
-            try {
-                const network = await provider.getNetwork();
-                currentChainId = Number(network.chainId);
-                isPolygonNetwork = (currentChainId === POLYGON_CHAIN_ID);
-                
-                // Show/hide network warning
-                const warningEl = document.getElementById('network-warning');
-                if (isWalletConnected && !isPolygonNetwork) {
-                    warningEl.style.display = 'flex';
-                    // Also update status message
-                    document.getElementById('status-msg').innerText = '⚠️ WRONG NETWORK! Please switch to Polygon ⚠️';
-                    document.getElementById('status-msg').style.color = '#ffaa00';
-                } else {
-                    warningEl.style.display = 'none';
-                    if (isWalletConnected && isPolygonNetwork) {
-                        document.getElementById('status-msg').innerText = 'Ready to trade';
-                        document.getElementById('status-msg').style.color = '#00ffcc';
-                    }
-                }
-                
-                return isPolygonNetwork;
-            } catch (error) {
-                console.error("Network check error:", error);
-                return false;
-            }
-        }
-        
-        // Update UI based on connection and network state
-        function updateUIBasedOnConnection() {
-            const mainBtn = document.getElementById('mainBtn');
-            const amtInput = document.getElementById('amt');
-            
-            if (!isWalletConnected) {
-                // Wallet not connected - show -- for all values
-                document.getElementById('brate').innerText = '-- USDT';
-                document.getElementById('srate').innerText = '-- USDT';
-                document.getElementById('brate-inr').innerText = '≈ -- INR';
-                document.getElementById('srate-inr').innerText = '≈ -- INR';
-                document.getElementById('out-amt').innerText = '-- USDT';
-                document.getElementById('tax-amt').innerText = '-- USDT';
-                document.getElementById('inr-amt').innerText = '-- INR';
-                document.getElementById('bal-usdt').innerText = '-- USDT';
-                document.getElementById('bal-sig').innerText = '-- SIG6';
-                document.getElementById('bal-sig-inr').innerText = '-- INR';
-                document.getElementById('bal-pol').innerText = '-- POL';
-                
-                mainBtn.disabled = true;
-                amtInput.disabled = true;
-                document.getElementById('network-warning').style.display = 'none';
-                document.getElementById('status-msg').innerText = 'Please connect wallet';
-                document.getElementById('status-msg').style.color = '#00ffcc';
-            } else if (!isPolygonNetwork) {
-                // Wallet connected but wrong network
-                document.getElementById('brate').innerText = '-- USDT';
-                document.getElementById('srate').innerText = '-- USDT';
-                document.getElementById('brate-inr').innerText = '≈ -- INR';
-                document.getElementById('srate-inr').innerText = '≈ -- INR';
-                document.getElementById('out-amt').innerText = '-- USDT';
-                document.getElementById('tax-amt').innerText = '-- USDT';
-                document.getElementById('inr-amt').innerText = '-- INR';
-                document.getElementById('bal-usdt').innerText = '-- USDT';
-                document.getElementById('bal-sig').innerText = '-- SIG6';
-                document.getElementById('bal-sig-inr').innerText = '-- INR';
-                document.getElementById('bal-pol').innerText = '-- POL';
-                
-                mainBtn.disabled = true;
-                amtInput.disabled = true;
-                document.getElementById('network-warning').style.display = 'flex';
-                document.getElementById('status-msg').innerText = '⚠️ WRONG NETWORK! Please switch to Polygon ⚠️';
-                document.getElementById('status-msg').style.color = '#ffaa00';
-            } else {
-                // Wallet connected and correct network
-                amtInput.disabled = false;
-                mainBtn.disabled = false;
-                document.getElementById('network-warning').style.display = 'none';
-                document.getElementById('status-msg').innerText = 'Ready to trade';
-                document.getElementById('status-msg').style.color = '#00ffcc';
-                sync(); // Fetch real data
-            }
-        }
 
         // Update INR values using current rates
         function updateINRValues() {
-            if (!isWalletConnected || !isPolygonNetwork) return;
-            
             const buyRateElement = document.getElementById('brate');
             const sellRateElement = document.getElementById('srate');
             
@@ -1613,8 +1102,6 @@
 
         // Update SIG6 balance INR value - USING SELL RATE
         function updateSigmaINRValue() {
-            if (!isWalletConnected || !isPolygonNetwork) return;
-            
             const sigBalanceElement = document.getElementById('bal-sig');
             const sigINRElement = document.getElementById('bal-sig-inr');
             
@@ -1635,13 +1122,6 @@
 
         // Live ticker data
         function updateTickers() {
-            if (!isWalletConnected || !isPolygonNetwork) {
-                document.querySelectorAll('[id^="ticker-sig6-price"]').forEach(el => {
-                    el.innerText = '--';
-                });
-                return;
-            }
-            
             const changePercent = 0.89; // Static change for SIG6
             
             // Format price to 4 decimals for SIG6
@@ -1663,7 +1143,7 @@
                 { symbol: 'USDT', price: 1.00, change: 0.00 },
                 { symbol: 'SOL', price: 142.60, change: -0.85 },
                 { symbol: 'BNB', price: 585.30, change: 0.92 },
-                { symbol: 'SIG6', price: isWalletConnected && isPolygonNetwork ? parseFloat(sig6Price) : 0, change: isWalletConnected && isPolygonNetwork ? changePercent : 0 }
+                { symbol: 'SIG6', price: parseFloat(sig6Price), change: changePercent }
             ];
             
             const wrapper = document.querySelector('.ticker-wrapper');
@@ -1675,14 +1155,12 @@
                         const changeClass = ticker.change > 0 ? 'positive' : (ticker.change < 0 ? 'negative' : '');
                         const changeSign = ticker.change > 0 ? '+' : '';
                         const decimals = ticker.symbol === 'SIG6' ? 4 : 2;
-                        const priceDisplay = (ticker.symbol === 'SIG6' && (!isWalletConnected || !isPolygonNetwork)) ? '--' : `$${ticker.price.toFixed(decimals)}`;
-                        const changeDisplay = (ticker.symbol === 'SIG6' && (!isWalletConnected || !isPolygonNetwork)) ? '' : `${changeSign}${Math.abs(ticker.change).toFixed(2)}%`;
                         
                         tickerHTML += `
                             <div class="ticker-item">
                                 <span class="ticker-symbol">${ticker.symbol}</span>
-                                <span class="ticker-price">${priceDisplay}</span>
-                                <span class="ticker-change ${changeClass}">${changeDisplay}</span>
+                                <span class="ticker-price">$${ticker.price.toFixed(decimals)}</span>
+                                <span class="ticker-change ${changeClass}">${changeSign}${Math.abs(ticker.change).toFixed(2)}%</span>
                             </div>
                         `;
                     });
@@ -1710,14 +1188,8 @@
                     copyBtn.style.background = 'linear-gradient(90deg, var(--secondary), #7b2cbf)';
                     
                     setTimeout(() => {
-                        if (isWalletConnected && isPolygonNetwork) {
-                            statusMsg.innerText = "Ready to trade";
-                        } else if (isWalletConnected && !isPolygonNetwork) {
-                            statusMsg.innerText = "⚠️ WRONG NETWORK! Please switch to Polygon ⚠️";
-                        } else {
-                            statusMsg.innerText = "Please connect wallet";
-                        }
-                        statusMsg.style.color = isWalletConnected && !isPolygonNetwork ? "#ffaa00" : "#00ffcc";
+                        statusMsg.innerText = "Ready to trade";
+                        statusMsg.style.color = "#00ffcc";
                     }, 2000);
                 }, 1500);
             });
@@ -1738,12 +1210,6 @@
                 addr = accounts[0];
                 signer = await provider.getSigner();
                 
-                // Update connection status
-                isWalletConnected = true;
-                
-                // Check network
-                await checkNetwork();
-                
                 // Update connect button
                 const connectBtn = document.getElementById('connectBtn');
                 connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
@@ -1753,8 +1219,12 @@
                 document.getElementById('ref-ui').style.display = 'block';
                 updateRefLink();
                 
-                // Update UI based on network
-                updateUIBasedOnConnection();
+                // Update status
+                document.getElementById('status-msg').innerText = "Wallet Connected Successfully!";
+                document.getElementById('status-msg').style.color = "#00ff88";
+                
+                // Start syncing data
+                await sync();
                 
                 // Listen for account changes
                 window.ethereum.on('accountsChanged', async (accounts) => {
@@ -1763,24 +1233,20 @@
                         signer = await provider.getSigner();
                         connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
                         updateRefLink();
-                        await checkNetwork();
-                        updateUIBasedOnConnection();
+                        await sync();
                     } else {
                         // User disconnected
-                        isWalletConnected = false;
-                        isPolygonNetwork = false;
                         connectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
                         connectBtn.classList.remove('connected');
                         document.getElementById('ref-ui').style.display = 'none';
-                        updateUIBasedOnConnection();
+                        document.getElementById('status-msg').innerText = "Wallet Disconnected";
+                        document.getElementById('status-msg').style.color = "#ffaa00";
                     }
                 });
                 
                 // Listen for chain changes
-                window.ethereum.on('chainChanged', async () => {
-                    provider = new ethers.BrowserProvider(window.ethereum);
-                    await checkNetwork();
-                    updateUIBasedOnConnection();
+                window.ethereum.on('chainChanged', () => {
+                    window.location.reload();
                 });
                 
             } catch (error) {
@@ -1802,7 +1268,7 @@
         }
 
         async function sync() {
-            if (!addr || !isWalletConnected || !isPolygonNetwork) return;
+            if (!addr) return;
             
             try {
                 const uc = new ethers.Contract(U_ADDR, [
@@ -1935,8 +1401,6 @@
         }
 
         function calc() {
-            if (!isWalletConnected || !isPolygonNetwork) return;
-            
             const v = parseFloat(document.getElementById('amt').value) || 0;
             let tax = 0, final = 0;
             
@@ -1972,22 +1436,11 @@
                 document.getElementById('mainBtn').innerHTML = '<i class="fas fa-coins"></i> SELL SIGMA';
             }
             
-            if (isWalletConnected && isPolygonNetwork) {
-                calc();
-            }
+            calc();
         }
 
         async function action() {
-            if (!signer) {
-                connectWallet();
-                return;
-            }
-            
-            if (!isPolygonNetwork) {
-                document.getElementById('status-msg').innerText = "⚠️ WRONG NETWORK! Please switch to Polygon ⚠️";
-                document.getElementById('status-msg').style.color = "#ffaa00";
-                return;
-            }
+            if (!signer) return connectWallet();
             
             const v = document.getElementById('amt').value;
             if (!v || v <= 0) {
@@ -2095,20 +1548,12 @@
             statusMsg.style.color = "#00ff88";
             
             setTimeout(() => {
-                if (isWalletConnected && isPolygonNetwork) {
-                    statusMsg.innerText = "Ready to trade";
-                } else if (isWalletConnected && !isPolygonNetwork) {
-                    statusMsg.innerText = "⚠️ WRONG NETWORK! Please switch to Polygon ⚠️";
-                } else {
-                    statusMsg.innerText = "Please connect wallet";
-                }
-                statusMsg.style.color = isWalletConnected && !isPolygonNetwork ? "#ffaa00" : "#00ffcc";
+                statusMsg.innerText = "Ready to trade";
+                statusMsg.style.color = "#00ffcc";
             }, 3000);
         }
 
         function max() {
-            if (!isWalletConnected || !isPolygonNetwork) return;
-            
             const u = document.getElementById('bal-usdt').innerText.split(' ')[0];
             const s = document.getElementById('bal-sig').innerText.split(' ')[0];
             
@@ -2126,9 +1571,9 @@
             createParticles();
             
             handleUpline();
-            
-            // Set initial -- values
-            updateUIBasedOnConnection();
+            updateINRValues();
+            updateTickers();
+            updateSigmaINRValue();
             
             // Check if wallet is already connected
             if (window.ethereum) {
@@ -2139,10 +1584,6 @@
                     if (accounts.length > 0) {
                         addr = accounts[0];
                         signer = await provider.getSigner();
-                        isWalletConnected = true;
-                        
-                        // Check network
-                        await checkNetwork();
                         
                         // Update UI for already connected wallet
                         const connectBtn = document.getElementById('connectBtn');
@@ -2152,8 +1593,8 @@
                         document.getElementById('ref-ui').style.display = 'block';
                         updateRefLink();
                         
-                        // Update UI based on network
-                        updateUIBasedOnConnection();
+                        // Sync data
+                        await sync();
                     }
                 } catch (error) {
                     console.error("Auto-connect error:", error);
@@ -2162,7 +1603,7 @@
             
             // Auto refresh sync every 30 seconds
             setInterval(() => {
-                if (addr && isWalletConnected && isPolygonNetwork) {
+                if (addr) {
                     sync();
                 }
             }, 30000);
