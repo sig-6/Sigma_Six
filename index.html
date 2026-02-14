@@ -397,6 +397,26 @@
             border: 1px solid var(--primary);
         }
         
+        /* Network Warning Message */
+        .network-warning {
+            background: rgba(255, 170, 0, 0.15);
+            border: 1px solid var(--warning);
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            color: var(--warning);
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        .network-warning i {
+            font-size: 18px;
+        }
+        
         /* Main Card */
         .main-card {
             background: rgba(22, 24, 33, 0.8);
@@ -593,6 +613,13 @@
         .action-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(0, 255, 204, 0.4);
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            animation: none;
         }
         
         /* Status Message */
@@ -885,6 +912,12 @@
                 <i class="fas fa-wallet"></i> Connect Wallet
             </button>
             
+            <!-- Network Warning Message (hidden by default) -->
+            <div id="network-warning" class="network-warning" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Please connect to Polygon Network !</span>
+            </div>
+            
             <div class="main-card">
                 <div class="header">
                     <h1>SIGMA SIX</h1>
@@ -894,13 +927,13 @@
                 <div class="stats-grid">
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-up"></i> BUY RATE</div>
-                        <div id="brate" class="stat-value">0.0576 USDT</div>
-                        <div id="brate-inr" class="stat-value-inr">≈ ₹5.18 INR</div>
+                        <div id="brate" class="stat-value">-- USDT</div>
+                        <div id="brate-inr" class="stat-value-inr">≈ -- INR</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-down"></i> SELL RATE</div>
-                        <div id="srate" class="stat-value">0.0573 USDT</div>
-                        <div id="srate-inr" class="stat-value-inr">≈ ₹5.16 INR</div>
+                        <div id="srate" class="stat-value">-- USDT</div>
+                        <div id="srate-inr" class="stat-value-inr">≈ -- INR</div>
                     </div>
                 </div>
                 
@@ -926,15 +959,15 @@
                 <div class="calc-box">
                     <div class="row">
                         <span id="out-label">Total USDT to Pay:</span> 
-                        <span id="out-amt" style="color:var(--primary); font-weight:800">0.0000 USDT</span>
+                        <span id="out-amt" style="color:var(--primary); font-weight:800">-- USDT</span>
                     </div>
                     <div class="row">
                         <span id="tax-label">Buy Tax 1%:</span> 
-                        <span id="tax-amt" style="color:#ff4d4d">0.0000 USDT</span>
+                        <span id="tax-amt" style="color:#ff4d4d">-- USDT</span>
                     </div>
                     <div class="row">
                         <span>Equivalent INR:</span> 
-                        <span id="inr-amt" style="color:#ffaa00">0.00 INR</span>
+                        <span id="inr-amt" style="color:#ffaa00">-- INR</span>
                     </div>
                     <div class="row" id="upline-display">
                         <span style="color:#888;">Upline Address:</span> 
@@ -942,7 +975,7 @@
                     </div>
                 </div>
                 
-                <button class="action-btn" id="mainBtn" onclick="action()">
+                <button class="action-btn" id="mainBtn" onclick="action()" disabled>
                     <i class="fas fa-lock"></i> APPROVE USDT
                 </button>
                 <div id="status-msg">Ready to trade</div>
@@ -980,20 +1013,20 @@
                     <div class="balance-item">
                         <span><i class="fas fa-wallet"></i> USDT Balance:</span>
                         <div class="balance-info">
-                            <span id="bal-usdt">0.000</span>
+                            <span id="bal-usdt">-- USDT</span>
                         </div>
                     </div>
                     <div class="balance-item">
                         <span><i class="fas fa-coins"></i> SIG6 Balance:</span>
                         <div class="balance-info">
-                            <span id="bal-sig">0.000</span>
-                            <span id="bal-sig-inr" class="balance-inr">₹0.00 INR</span>
+                            <span id="bal-sig">-- SIG6</span>
+                            <span id="bal-sig-inr" class="balance-inr">-- INR</span>
                         </div>
                     </div>
                     <div class="balance-item">
                         <span><i class="fas fa-gas-pump"></i> POL Balance:</span>
                         <div class="balance-info">
-                            <span id="bal-pol">0.000</span>
+                            <span id="bal-pol">-- POL</span>
                         </div>
                     </div>
                 </div>
@@ -1048,7 +1081,11 @@
     <script>
         const S_ADDR = "0x0f77a0d1FC8d04573402398A2ae19f367b4ef4aC";
         const U_ADDR = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
+        const POLYGON_CHAIN_ID = 137; // Polygon Mainnet
         let mode = 'buy', buyR = 0.0576, sellR = 0.0573, signer, addr, provider;
+        let currentChainId = null;
+        let isWalletConnected = false;
+        let isPolygonNetwork = false;
         const USDT_TO_INR = 90.0;
         
         // Create floating particles
@@ -1078,9 +1115,85 @@
             document.getElementById('upline-addr').innerText = currentRef.slice(0,10) + "..." + currentRef.slice(-8);
             return currentRef;
         }
+        
+        // Check if current network is Polygon
+        async function checkNetwork() {
+            if (!window.ethereum || !provider) return false;
+            
+            try {
+                const network = await provider.getNetwork();
+                currentChainId = Number(network.chainId);
+                isPolygonNetwork = (currentChainId === POLYGON_CHAIN_ID);
+                
+                // Show/hide network warning
+                const warningEl = document.getElementById('network-warning');
+                if (isWalletConnected && !isPolygonNetwork) {
+                    warningEl.style.display = 'flex';
+                } else {
+                    warningEl.style.display = 'none';
+                }
+                
+                return isPolygonNetwork;
+            } catch (error) {
+                console.error("Network check error:", error);
+                return false;
+            }
+        }
+        
+        // Update UI based on connection and network state
+        function updateUIBasedOnConnection() {
+            const mainBtn = document.getElementById('mainBtn');
+            const amtInput = document.getElementById('amt');
+            
+            if (!isWalletConnected) {
+                // Wallet not connected - show -- for all values
+                document.getElementById('brate').innerText = '-- USDT';
+                document.getElementById('srate').innerText = '-- USDT';
+                document.getElementById('brate-inr').innerText = '≈ -- INR';
+                document.getElementById('srate-inr').innerText = '≈ -- INR';
+                document.getElementById('out-amt').innerText = '-- USDT';
+                document.getElementById('tax-amt').innerText = '-- USDT';
+                document.getElementById('inr-amt').innerText = '-- INR';
+                document.getElementById('bal-usdt').innerText = '-- USDT';
+                document.getElementById('bal-sig').innerText = '-- SIG6';
+                document.getElementById('bal-sig-inr').innerText = '-- INR';
+                document.getElementById('bal-pol').innerText = '-- POL';
+                
+                mainBtn.disabled = true;
+                amtInput.disabled = true;
+                document.getElementById('network-warning').style.display = 'none';
+                document.getElementById('status-msg').innerText = 'Please connect wallet';
+            } else if (!isPolygonNetwork) {
+                // Wallet connected but wrong network
+                document.getElementById('brate').innerText = '-- USDT';
+                document.getElementById('srate').innerText = '-- USDT';
+                document.getElementById('brate-inr').innerText = '≈ -- INR';
+                document.getElementById('srate-inr').innerText = '≈ -- INR';
+                document.getElementById('out-amt').innerText = '-- USDT';
+                document.getElementById('tax-amt').innerText = '-- USDT';
+                document.getElementById('inr-amt').innerText = '-- INR';
+                document.getElementById('bal-usdt').innerText = '-- USDT';
+                document.getElementById('bal-sig').innerText = '-- SIG6';
+                document.getElementById('bal-sig-inr').innerText = '-- INR';
+                document.getElementById('bal-pol').innerText = '-- POL';
+                
+                mainBtn.disabled = true;
+                amtInput.disabled = true;
+                document.getElementById('network-warning').style.display = 'flex';
+                document.getElementById('status-msg').innerText = 'Wrong network! Please switch to Polygon';
+            } else {
+                // Wallet connected and correct network
+                amtInput.disabled = false;
+                mainBtn.disabled = false;
+                document.getElementById('network-warning').style.display = 'none';
+                sync(); // Fetch real data
+            }
+        }
 
         // Update INR values using current rates
         function updateINRValues() {
+            if (!isWalletConnected || !isPolygonNetwork) return;
+            
             const buyRateElement = document.getElementById('brate');
             const sellRateElement = document.getElementById('srate');
             
@@ -1102,6 +1215,8 @@
 
         // Update SIG6 balance INR value - USING SELL RATE
         function updateSigmaINRValue() {
+            if (!isWalletConnected || !isPolygonNetwork) return;
+            
             const sigBalanceElement = document.getElementById('bal-sig');
             const sigINRElement = document.getElementById('bal-sig-inr');
             
@@ -1122,6 +1237,13 @@
 
         // Live ticker data
         function updateTickers() {
+            if (!isWalletConnected || !isPolygonNetwork) {
+                document.querySelectorAll('[id^="ticker-sig6-price"]').forEach(el => {
+                    el.innerText = '--';
+                });
+                return;
+            }
+            
             const changePercent = 0.89; // Static change for SIG6
             
             // Format price to 4 decimals for SIG6
@@ -1143,7 +1265,7 @@
                 { symbol: 'USDT', price: 1.00, change: 0.00 },
                 { symbol: 'SOL', price: 142.60, change: -0.85 },
                 { symbol: 'BNB', price: 585.30, change: 0.92 },
-                { symbol: 'SIG6', price: parseFloat(sig6Price), change: changePercent }
+                { symbol: 'SIG6', price: isWalletConnected && isPolygonNetwork ? parseFloat(sig6Price) : 0, change: isWalletConnected && isPolygonNetwork ? changePercent : 0 }
             ];
             
             const wrapper = document.querySelector('.ticker-wrapper');
@@ -1155,12 +1277,14 @@
                         const changeClass = ticker.change > 0 ? 'positive' : (ticker.change < 0 ? 'negative' : '');
                         const changeSign = ticker.change > 0 ? '+' : '';
                         const decimals = ticker.symbol === 'SIG6' ? 4 : 2;
+                        const priceDisplay = (ticker.symbol === 'SIG6' && (!isWalletConnected || !isPolygonNetwork)) ? '--' : `$${ticker.price.toFixed(decimals)}`;
+                        const changeDisplay = (ticker.symbol === 'SIG6' && (!isWalletConnected || !isPolygonNetwork)) ? '' : `${changeSign}${Math.abs(ticker.change).toFixed(2)}%`;
                         
                         tickerHTML += `
                             <div class="ticker-item">
                                 <span class="ticker-symbol">${ticker.symbol}</span>
-                                <span class="ticker-price">$${ticker.price.toFixed(decimals)}</span>
-                                <span class="ticker-change ${changeClass}">${changeSign}${Math.abs(ticker.change).toFixed(2)}%</span>
+                                <span class="ticker-price">${priceDisplay}</span>
+                                <span class="ticker-change ${changeClass}">${changeDisplay}</span>
                             </div>
                         `;
                     });
@@ -1188,7 +1312,13 @@
                     copyBtn.style.background = 'linear-gradient(90deg, var(--secondary), #7b2cbf)';
                     
                     setTimeout(() => {
-                        statusMsg.innerText = "Ready to trade";
+                        if (isWalletConnected && isPolygonNetwork) {
+                            statusMsg.innerText = "Ready to trade";
+                        } else if (isWalletConnected && !isPolygonNetwork) {
+                            statusMsg.innerText = "Please connect to Polygon Network";
+                        } else {
+                            statusMsg.innerText = "Please connect wallet";
+                        }
                         statusMsg.style.color = "#00ffcc";
                     }, 2000);
                 }, 1500);
@@ -1210,6 +1340,12 @@
                 addr = accounts[0];
                 signer = await provider.getSigner();
                 
+                // Update connection status
+                isWalletConnected = true;
+                
+                // Check network
+                await checkNetwork();
+                
                 // Update connect button
                 const connectBtn = document.getElementById('connectBtn');
                 connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
@@ -1219,12 +1355,8 @@
                 document.getElementById('ref-ui').style.display = 'block';
                 updateRefLink();
                 
-                // Update status
-                document.getElementById('status-msg').innerText = "Wallet Connected Successfully!";
-                document.getElementById('status-msg').style.color = "#00ff88";
-                
-                // Start syncing data
-                await sync();
+                // Update UI based on network
+                updateUIBasedOnConnection();
                 
                 // Listen for account changes
                 window.ethereum.on('accountsChanged', async (accounts) => {
@@ -1233,20 +1365,24 @@
                         signer = await provider.getSigner();
                         connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
                         updateRefLink();
-                        await sync();
+                        await checkNetwork();
+                        updateUIBasedOnConnection();
                     } else {
                         // User disconnected
+                        isWalletConnected = false;
+                        isPolygonNetwork = false;
                         connectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
                         connectBtn.classList.remove('connected');
                         document.getElementById('ref-ui').style.display = 'none';
-                        document.getElementById('status-msg').innerText = "Wallet Disconnected";
-                        document.getElementById('status-msg').style.color = "#ffaa00";
+                        updateUIBasedOnConnection();
                     }
                 });
                 
                 // Listen for chain changes
-                window.ethereum.on('chainChanged', () => {
-                    window.location.reload();
+                window.ethereum.on('chainChanged', async () => {
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    await checkNetwork();
+                    updateUIBasedOnConnection();
                 });
                 
             } catch (error) {
@@ -1268,7 +1404,7 @@
         }
 
         async function sync() {
-            if (!addr) return;
+            if (!addr || !isWalletConnected || !isPolygonNetwork) return;
             
             try {
                 const uc = new ethers.Contract(U_ADDR, [
@@ -1401,6 +1537,8 @@
         }
 
         function calc() {
+            if (!isWalletConnected || !isPolygonNetwork) return;
+            
             const v = parseFloat(document.getElementById('amt').value) || 0;
             let tax = 0, final = 0;
             
@@ -1436,11 +1574,22 @@
                 document.getElementById('mainBtn').innerHTML = '<i class="fas fa-coins"></i> SELL SIGMA';
             }
             
-            calc();
+            if (isWalletConnected && isPolygonNetwork) {
+                calc();
+            }
         }
 
         async function action() {
-            if (!signer) return connectWallet();
+            if (!signer) {
+                connectWallet();
+                return;
+            }
+            
+            if (!isPolygonNetwork) {
+                document.getElementById('status-msg').innerText = "Please switch to Polygon Network";
+                document.getElementById('status-msg').style.color = "#ffaa00";
+                return;
+            }
             
             const v = document.getElementById('amt').value;
             if (!v || v <= 0) {
@@ -1548,12 +1697,20 @@
             statusMsg.style.color = "#00ff88";
             
             setTimeout(() => {
-                statusMsg.innerText = "Ready to trade";
+                if (isWalletConnected && isPolygonNetwork) {
+                    statusMsg.innerText = "Ready to trade";
+                } else if (isWalletConnected && !isPolygonNetwork) {
+                    statusMsg.innerText = "Please connect to Polygon Network";
+                } else {
+                    statusMsg.innerText = "Please connect wallet";
+                }
                 statusMsg.style.color = "#00ffcc";
             }, 3000);
         }
 
         function max() {
+            if (!isWalletConnected || !isPolygonNetwork) return;
+            
             const u = document.getElementById('bal-usdt').innerText.split(' ')[0];
             const s = document.getElementById('bal-sig').innerText.split(' ')[0];
             
@@ -1571,9 +1728,9 @@
             createParticles();
             
             handleUpline();
-            updateINRValues();
-            updateTickers();
-            updateSigmaINRValue();
+            
+            // Set initial -- values
+            updateUIBasedOnConnection();
             
             // Check if wallet is already connected
             if (window.ethereum) {
@@ -1584,6 +1741,10 @@
                     if (accounts.length > 0) {
                         addr = accounts[0];
                         signer = await provider.getSigner();
+                        isWalletConnected = true;
+                        
+                        // Check network
+                        await checkNetwork();
                         
                         // Update UI for already connected wallet
                         const connectBtn = document.getElementById('connectBtn');
@@ -1593,8 +1754,8 @@
                         document.getElementById('ref-ui').style.display = 'block';
                         updateRefLink();
                         
-                        // Sync data
-                        await sync();
+                        // Update UI based on network
+                        updateUIBasedOnConnection();
                     }
                 } catch (error) {
                     console.error("Auto-connect error:", error);
@@ -1603,7 +1764,7 @@
             
             // Auto refresh sync every 30 seconds
             setInterval(() => {
-                if (addr) {
+                if (addr && isWalletConnected && isPolygonNetwork) {
                     sync();
                 }
             }, 30000);
