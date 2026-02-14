@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>SIGMA SIX | Premium DApp</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -35,6 +35,7 @@
             overflow-x: hidden;
             position: relative;
             transition: opacity 0.3s ease;
+            width: 100%;
         }
         
         /* Professional Crypto Background with Criss-Cross Lines */
@@ -285,6 +286,7 @@
             overflow: hidden;
             position: relative;
             z-index: 10;
+            width: 100%;
         }
         
         .ticker-wrapper {
@@ -345,11 +347,21 @@
             gap: 30px;
             position: relative;
             z-index: 1;
+            width: 100%;
         }
         
         @media (max-width: 992px) {
             .container {
                 grid-template-columns: 1fr;
+                padding: 15px;
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+                gap: 15px;
             }
         }
         
@@ -358,6 +370,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            width: 100%;
         }
         
         /* Right Panel - Menu */
@@ -365,6 +378,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            width: 100%;
         }
         
         /* Connect Button */
@@ -384,6 +398,15 @@
             gap: 10px;
             box-shadow: 0 4px 20px rgba(0, 255, 204, 0.3);
             animation: float 4s ease-in-out infinite;
+            width: 100%;
+            white-space: nowrap;
+        }
+        
+        @media (max-width: 480px) {
+            .connect-btn {
+                padding: 14px 20px;
+                font-size: 14px;
+            }
         }
         
         .connect-btn:hover {
@@ -397,24 +420,42 @@
             border: 1px solid var(--primary);
         }
         
-        /* Network Warning Message */
+        /* Network Warning Message - IMPROVED FOR MOBILE */
         .network-warning {
             background: rgba(255, 170, 0, 0.15);
             border: 1px solid var(--warning);
             border-radius: 12px;
-            padding: 12px 20px;
-            margin-bottom: 10px;
+            padding: 14px 16px;
+            margin: 5px 0 10px 0;
             color: var(--warning);
             font-weight: 600;
-            font-size: 14px;
+            font-size: 15px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             animation: pulse 2s infinite;
+            width: 100%;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+        
+        @media (max-width: 480px) {
+            .network-warning {
+                padding: 12px 14px;
+                font-size: 14px;
+                gap: 10px;
+            }
         }
         
         .network-warning i {
-            font-size: 18px;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        @media (max-width: 480px) {
+            .network-warning i {
+                font-size: 18px;
+            }
         }
         
         /* Main Card */
@@ -427,6 +468,20 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             position: relative;
             overflow: hidden;
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .main-card {
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-card {
+                padding: 16px;
+                border-radius: 20px;
+            }
         }
         
         .main-card::before {
@@ -447,6 +502,12 @@
             margin-bottom: 30px;
         }
         
+        @media (max-width: 480px) {
+            .header {
+                margin-bottom: 20px;
+            }
+        }
+        
         .header h1 {
             background: var(--gradient);
             background-size: 400% 400%;
@@ -460,10 +521,28 @@
             animation: rainbow 8s ease infinite;
         }
         
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 36px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+        
         .header p {
             color: #aaa;
             font-size: 14px;
             letter-spacing: 1px;
+        }
+        
+        @media (max-width: 480px) {
+            .header p {
+                font-size: 12px;
+            }
         }
         
         /* Stats Grid */
@@ -474,12 +553,25 @@
             margin-bottom: 25px;
         }
         
+        @media (max-width: 480px) {
+            .stats-grid {
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+        }
+        
         .stat-box {
             background: rgba(255, 255, 255, 0.03);
             padding: 20px;
             border-radius: 16px;
             border: 1px solid rgba(45, 47, 62, 0.5);
             transition: all 0.3s;
+        }
+        
+        @media (max-width: 480px) {
+            .stat-box {
+                padding: 15px 12px;
+            }
         }
         
         .stat-box:hover {
@@ -499,16 +591,40 @@
             gap: 5px;
         }
         
+        @media (max-width: 480px) {
+            .stat-label {
+                font-size: 10px;
+            }
+        }
+        
         .stat-value {
             font-size: 22px;
             font-weight: 700;
             color: var(--primary);
         }
         
+        @media (max-width: 768px) {
+            .stat-value {
+                font-size: 18px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stat-value {
+                font-size: 16px;
+            }
+        }
+        
         .stat-value-inr {
             font-size: 14px;
             color: #aaa;
             margin-top: 5px;
+        }
+        
+        @media (max-width: 480px) {
+            .stat-value-inr {
+                font-size: 12px;
+            }
         }
         
         /* Tabs */
@@ -519,6 +635,14 @@
             background: rgba(0, 0, 0, 0.3);
             padding: 6px;
             border-radius: 16px;
+        }
+        
+        @media (max-width: 480px) {
+            .tabs {
+                gap: 6px;
+                padding: 4px;
+                margin-bottom: 20px;
+            }
         }
         
         .tab {
@@ -537,6 +661,21 @@
             gap: 8px;
         }
         
+        @media (max-width: 768px) {
+            .tab {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .tab {
+                padding: 10px 8px;
+                font-size: 13px;
+                gap: 4px;
+            }
+        }
+        
         .tab.active {
             background: var(--primary);
             color: #000;
@@ -553,6 +692,14 @@
             transition: all 0.3s;
         }
         
+        @media (max-width: 480px) {
+            .input-area {
+                padding: 16px;
+                border-radius: 14px;
+                margin-bottom: 15px;
+            }
+        }
+        
         .input-area:focus-within {
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(0, 255, 204, 0.1);
@@ -566,6 +713,13 @@
             margin-bottom: 12px;
         }
         
+        @media (max-width: 480px) {
+            .input-header {
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+        }
+        
         input {
             background: transparent;
             border: none;
@@ -574,6 +728,18 @@
             width: 100%;
             outline: none;
             font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            input {
+                font-size: 26px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            input {
+                font-size: 22px;
+            }
         }
         
         /* Calc Box */
@@ -586,10 +752,26 @@
             margin-bottom: 20px;
         }
         
+        @media (max-width: 480px) {
+            .calc-box {
+                padding: 16px;
+                font-size: 13px;
+                margin-bottom: 15px;
+            }
+        }
+        
         .row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        @media (max-width: 480px) {
+            .row {
+                margin-bottom: 8px;
+            }
         }
         
         /* Action Button */
@@ -608,6 +790,22 @@
             background-size: 400% 400%;
             color: #000;
             animation: rainbow 8s ease infinite;
+        }
+        
+        @media (max-width: 768px) {
+            .action-btn {
+                padding: 16px;
+                font-size: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .action-btn {
+                padding: 14px;
+                font-size: 14px;
+                border-radius: 12px;
+                margin-top: 5px;
+            }
         }
         
         .action-btn:hover {
@@ -630,6 +828,14 @@
             color: var(--primary);
             font-weight: 600;
             min-height: 20px;
+            word-break: break-word;
+        }
+        
+        @media (max-width: 480px) {
+            #status-msg {
+                font-size: 12px;
+                margin-top: 12px;
+            }
         }
         
         /* Referral Box */
@@ -639,6 +845,14 @@
             border-radius: 16px;
             border: 1px solid var(--border);
             margin-top: 25px;
+            width: 100%;
+        }
+        
+        @media (max-width: 480px) {
+            .ref-box {
+                padding: 16px;
+                margin-top: 20px;
+            }
         }
         
         /* Contract Address Box */
@@ -653,8 +867,24 @@
             gap: 15px;
         }
         
+        @media (max-width: 768px) {
+            .contract-box {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .contract-box {
+                padding: 16px;
+                margin-top: 15px;
+            }
+        }
+        
         .contract-info {
             flex: 1;
+            min-width: 0; /* Prevents overflow on mobile */
         }
         
         .contract-label {
@@ -673,6 +903,12 @@
             word-break: break-all;
         }
         
+        @media (max-width: 480px) {
+            .contract-address {
+                font-size: 12px;
+            }
+        }
+        
         .copy-btn {
             background: linear-gradient(90deg, var(--secondary), #7b2cbf);
             color: white;
@@ -685,8 +921,22 @@
             transition: all 0.3s;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             white-space: nowrap;
+        }
+        
+        @media (max-width: 768px) {
+            .copy-btn {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .copy-btn {
+                padding: 10px 16px;
+                font-size: 12px;
+            }
         }
         
         .copy-btn:hover {
@@ -703,12 +953,22 @@
             font-size: 14px;
         }
         
+        @media (max-width: 480px) {
+            .balance-footer {
+                margin-top: 20px;
+                padding-top: 16px;
+                font-size: 13px;
+            }
+        }
+        
         .balance-item {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            flex-wrap: wrap;
+            gap: 5px;
         }
         
         .balance-item:last-child {
@@ -721,6 +981,12 @@
             display: flex;
             flex-direction: column;
             align-items: flex-end;
+        }
+        
+        @media (max-width: 480px) {
+            .balance-info {
+                align-items: flex-end;
+            }
         }
         
         .balance-inr {
@@ -738,6 +1004,20 @@
             padding: 30px;
             border: 1px solid rgba(157, 78, 221, 0.2);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-card {
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .menu-card {
+                padding: 16px;
+                border-radius: 20px;
+            }
         }
         
         .menu-card h2 {
@@ -747,10 +1027,30 @@
             text-align: center;
         }
         
+        @media (max-width: 768px) {
+            .menu-card h2 {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .menu-card h2 {
+                font-size: 18px;
+                margin-bottom: 16px;
+            }
+        }
+        
         .menu-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 15px;
+        }
+        
+        @media (max-width: 480px) {
+            .menu-grid {
+                gap: 10px;
+            }
         }
         
         .menu-btn {
@@ -770,15 +1070,53 @@
             text-align: left;
         }
         
+        @media (max-width: 768px) {
+            .menu-btn {
+                padding: 14px;
+                font-size: 14px;
+                gap: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .menu-btn {
+                padding: 12px;
+                font-size: 13px;
+                gap: 10px;
+                border-radius: 12px;
+            }
+        }
+        
         .menu-btn i {
             font-size: 20px;
             color: var(--secondary);
+            flex-shrink: 0;
+        }
+        
+        @media (max-width: 480px) {
+            .menu-btn i {
+                font-size: 16px;
+            }
         }
         
         .menu-btn:hover {
             background: rgba(157, 78, 221, 0.1);
             border-color: var(--secondary);
             transform: translateX(5px);
+        }
+        
+        .menu-btn div {
+            min-width: 0; /* Prevents overflow */
+        }
+        
+        .menu-btn div div:last-child {
+            font-size: 12px;
+        }
+        
+        @media (max-width: 480px) {
+            .menu-btn div div:last-child {
+                font-size: 10px;
+            }
         }
         
         /* Responsive */
@@ -912,10 +1250,10 @@
                 <i class="fas fa-wallet"></i> Connect Wallet
             </button>
             
-            <!-- Network Warning Message (hidden by default) -->
+            <!-- Network Warning Message (hidden by default) - IMPROVED FOR MOBILE -->
             <div id="network-warning" class="network-warning" style="display: none;">
                 <i class="fas fa-exclamation-triangle"></i>
-                <span>Please connect to Polygon Network !</span>
+                <span>Please connect to Polygon Network!</span>
             </div>
             
             <div class="main-card">
