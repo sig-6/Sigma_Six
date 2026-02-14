@@ -34,6 +34,7 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            transition: opacity 0.3s ease;
         }
         
         /* Professional Crypto Background with Criss-Cross Lines */
@@ -233,7 +234,7 @@
             }
         }
         
-        /* Rainbow Light Effect - Simplified for mobile */
+        /* Rainbow Light Effect */
         .rainbow-border {
             position: fixed;
             top: 0;
@@ -244,7 +245,6 @@
             background-size: 400% 400%;
             animation: rainbow 8s ease infinite;
             z-index: 1000;
-            box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
         }
         
         .rainbow-glow {
@@ -254,27 +254,21 @@
             transform: translate(-50%, -50%);
             width: 800px;
             height: 800px;
-            background: radial-gradient(circle, rgba(157, 78, 221, 0.2) 0%, rgba(0, 255, 204, 0.15) 25%, rgba(0, 11, 16, 0) 70%);
+            background: radial-gradient(circle, rgba(157, 78, 221, 0.15) 0%, rgba(0, 255, 204, 0.1) 25%, rgba(0, 11, 16, 0) 70%);
             border-radius: 50%;
             z-index: -1;
-            filter: blur(20px);
-        }
-        
-        .rainbow-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 50% 50%, rgba(157, 78, 221, 0.1) 0%, rgba(0, 255, 204, 0.05) 50%, transparent 80%);
-            z-index: -1;
-            pointer-events: none;
+            animation: pulse 6s ease-in-out infinite alternate;
         }
         
         @keyframes rainbow {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.9); }
+            100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
         }
         
         @keyframes float {
@@ -444,7 +438,6 @@
             letter-spacing: 2px;
             margin-bottom: 8px;
             animation: rainbow 8s ease infinite;
-            text-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
         }
         
         .header p {
@@ -490,12 +483,6 @@
             font-size: 22px;
             font-weight: 700;
             color: var(--primary);
-        }
-        
-        .stat-value-placeholder {
-            font-size: 22px;
-            font-weight: 700;
-            color: #444;
         }
         
         .stat-value-inr {
@@ -569,11 +556,6 @@
             font-weight: 600;
         }
         
-        input:disabled {
-            color: #444;
-            cursor: not-allowed;
-        }
-        
         /* Calc Box */
         .calc-box {
             background: rgba(0, 255, 204, 0.05);
@@ -608,15 +590,9 @@
             animation: rainbow 8s ease infinite;
         }
         
-        .action-btn:hover:not(:disabled) {
+        .action-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(0, 255, 204, 0.4);
-        }
-        
-        .action-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            animation: none;
         }
         
         /* Status Message */
@@ -742,7 +718,6 @@
             font-size: 24px;
             margin-bottom: 25px;
             text-align: center;
-            text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
         }
         
         .menu-grid {
@@ -779,146 +754,6 @@
             transform: translateX(5px);
         }
         
-        /* Wallet Selector Modal - No animations for mobile stability */
-        .wallet-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(20px);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .wallet-modal.active {
-            display: flex;
-        }
-        
-        .wallet-modal-content {
-            background: var(--card);
-            border: 2px solid transparent;
-            border-radius: 32px;
-            padding: 40px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(0, 255, 204, 0.3);
-        }
-        
-        .wallet-modal-content::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: var(--gradient);
-            background-size: 400% 400%;
-            border-radius: 32px;
-            z-index: -2;
-            animation: rainbow 8s ease infinite;
-        }
-        
-        .wallet-modal-content::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: var(--card);
-            border-radius: 30px;
-            z-index: -1;
-            margin: 2px;
-        }
-        
-        .wallet-modal-content h2 {
-            color: var(--primary);
-            margin-bottom: 30px;
-            font-size: 28px;
-            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
-        }
-        
-        .wallet-option {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            width: 100%;
-        }
-        
-        .wallet-option:hover {
-            border-color: var(--primary);
-            background: rgba(0, 255, 204, 0.1);
-            box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
-        }
-        
-        .wallet-option img {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: white;
-            padding: 8px;
-        }
-        
-        .wallet-option span {
-            font-size: 20px;
-            font-weight: 700;
-            background: var(--gradient);
-            background-size: 400% 400%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: rainbow 8s ease infinite;
-        }
-        
-        .close-modal {
-            margin-top: 20px;
-            background: transparent;
-            border: 1px solid var(--danger);
-            color: var(--danger);
-            padding: 12px 30px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 700;
-            transition: all 0.3s;
-            font-size: 16px;
-        }
-        
-        .close-modal:hover {
-            background: var(--danger);
-            color: white;
-            box-shadow: 0 0 20px rgba(255, 77, 77, 0.5);
-        }
-        
-        /* Chain Warning */
-        .chain-warning {
-            background: rgba(255, 170, 0, 0.1);
-            border: 1px solid var(--warning);
-            border-radius: 12px;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            color: var(--warning);
-            font-size: 13px;
-            display: none;
-        }
-        
-        .chain-warning.show {
-            display: block;
-        }
-        
         /* Responsive */
         @media (max-width: 768px) {
             .container {
@@ -933,7 +768,7 @@
                 font-size: 32px;
             }
             
-            .stat-value, .stat-value-placeholder {
+            .stat-value {
                 font-size: 18px;
             }
             
@@ -950,39 +785,6 @@
             .copy-btn {
                 width: 100%;
                 justify-content: center;
-            }
-            
-            /* Disable animations on mobile for better performance */
-            .connect-btn {
-                animation: none;
-            }
-            
-            .wallet-option {
-                transform: none !important;
-            }
-            
-            .wallet-option:hover {
-                transform: none !important;
-            }
-            
-            .main-card::before {
-                animation: none;
-            }
-            
-            .header h1 {
-                animation: none;
-            }
-            
-            .action-btn {
-                animation: none;
-            }
-            
-            .wallet-modal-content::before {
-                animation: none;
-            }
-            
-            .wallet-option span {
-                animation: none;
             }
         }
     </style>
@@ -1004,10 +806,9 @@
     </div>
     <div class="crypto-particles" id="cryptoParticles"></div>
     
-    <!-- Rainbow Border and Effects -->
+    <!-- Rainbow Border -->
     <div class="rainbow-border"></div>
     <div class="rainbow-glow"></div>
-    <div class="rainbow-overlay"></div>
     
     <!-- Live Tickers -->
     <div class="ticker-container">
@@ -1076,43 +877,11 @@
         </div>
     </div>
     
-    <!-- Wallet Selector Modal - Only 3 Wallets -->
-    <div class="wallet-modal" id="walletModal">
-        <div class="wallet-modal-content">
-            <h2><i class="fas fa-wallet"></i> Connect Wallet</h2>
-            
-            <!-- MetaMask -->
-            <div class="wallet-option" onclick="connectWallet('metamask')">
-                <img src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg" alt="MetaMask" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 fill=%22%23f6851b%22 rx=%228%22/><text x=%225%22 y=%2228%22 fill=%22white%22 font-size=%2224%22>M</text></svg>'">
-                <span>MetaMask</span>
-            </div>
-            
-            <!-- Trust Wallet with Proper Logo -->
-            <div class="wallet-option" onclick="connectWallet('trust')">
-                <img src="https://trustwallet.com/assets/images/favicon.png" alt="Trust Wallet" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 fill=%22%230050ef%22 rx=%228%22/><text x=%225%22 y=%2228%22 fill=%22white%22 font-size=%2224%22>T</text></svg>'">
-                <span>Trust Wallet</span>
-            </div>
-            
-            <!-- BitGet Wallet with Proper Logo -->
-            <div class="wallet-option" onclick="connectWallet('bitget')">
-                <img src="https://cdn.prod.website-files.com/64449f9b1fa7be3e7e9aa001/65acd9d3a66cc56a38d4b9c3_favicon%20(1).png" alt="BitGet Wallet" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 fill=%22%2300b2ff%22 rx=%228%22/><text x=%225%22 y=%2228%22 fill=%22white%22 font-size=%2224%22>B</text></svg>'">
-                <span>BitGet Wallet</span>
-            </div>
-            
-            <button class="close-modal" onclick="closeWalletModal()">Cancel</button>
-        </div>
-    </div>
-    
     <!-- Main Container -->
     <div class="container">
         <!-- Left Panel -->
         <div class="left-panel">
-            <!-- Chain Warning -->
-            <div class="chain-warning" id="chainWarning">
-                <i class="fas fa-exclamation-triangle"></i> Please switch to Polygon network
-            </div>
-            
-            <button class="connect-btn" id="connectBtn" onclick="showWalletModal()">
+            <button class="connect-btn" id="connectBtn" onclick="connectWallet()">
                 <i class="fas fa-wallet"></i> Connect Wallet
             </button>
             
@@ -1125,13 +894,13 @@
                 <div class="stats-grid">
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-up"></i> BUY RATE</div>
-                        <div id="brate" class="stat-value-placeholder">-- USDT</div>
-                        <div id="brate-inr" class="stat-value-inr">≈ -- INR</div>
+                        <div id="brate" class="stat-value">0.0576 USDT</div>
+                        <div id="brate-inr" class="stat-value-inr">≈ ₹5.18 INR</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-down"></i> SELL RATE</div>
-                        <div id="srate" class="stat-value-placeholder">-- USDT</div>
-                        <div id="srate-inr" class="stat-value-inr">≈ -- INR</div>
+                        <div id="srate" class="stat-value">0.0573 USDT</div>
+                        <div id="srate-inr" class="stat-value-inr">≈ ₹5.16 INR</div>
                     </div>
                 </div>
                 
@@ -1151,7 +920,7 @@
                             <i class="fas fa-maximize"></i> MAX
                         </span>
                     </div>
-                    <input type="number" id="amt" placeholder="0" oninput="calc()" disabled>
+                    <input type="number" id="amt" placeholder="0" oninput="calc()">
                 </div>
                 
                 <div class="calc-box">
@@ -1173,10 +942,10 @@
                     </div>
                 </div>
                 
-                <button class="action-btn" id="mainBtn" onclick="action()" disabled>
+                <button class="action-btn" id="mainBtn" onclick="action()">
                     <i class="fas fa-lock"></i> APPROVE USDT
                 </button>
-                <div id="status-msg">Connect wallet to start trading</div>
+                <div id="status-msg">Ready to trade</div>
                 
                 <!-- Contract Address Box -->
                 <div class="contract-box">
@@ -1281,8 +1050,6 @@
         const U_ADDR = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
         let mode = 'buy', buyR = 0.0576, sellR = 0.0573, signer, addr, provider;
         const USDT_TO_INR = 90.0;
-        let selectedWallet = null;
-        let isWalletConnected = false;
         
         // Create floating particles
         function createParticles() {
@@ -1312,43 +1079,8 @@
             return currentRef;
         }
 
-        // Update UI based on connection state
-        function updateUIForConnection() {
-            const amtInput = document.getElementById('amt');
-            const mainBtn = document.getElementById('mainBtn');
-            const brateEl = document.getElementById('brate');
-            const srateEl = document.getElementById('srate');
-            
-            if (isWalletConnected) {
-                amtInput.disabled = false;
-                mainBtn.disabled = false;
-                brateEl.className = 'stat-value';
-                srateEl.className = 'stat-value';
-                document.getElementById('status-msg').innerText = 'Ready to trade';
-            } else {
-                amtInput.disabled = true;
-                mainBtn.disabled = true;
-                brateEl.className = 'stat-value-placeholder';
-                srateEl.className = 'stat-value-placeholder';
-                brateEl.innerText = '-- USDT';
-                srateEl.innerText = '-- USDT';
-                document.getElementById('brate-inr').innerText = '≈ -- INR';
-                document.getElementById('srate-inr').innerText = '≈ -- INR';
-                document.getElementById('out-amt').innerText = '0.0000 USDT';
-                document.getElementById('tax-amt').innerText = '0.0000 USDT';
-                document.getElementById('inr-amt').innerText = '0.00 INR';
-                document.getElementById('bal-usdt').innerText = '0.000';
-                document.getElementById('bal-sig').innerText = '0.000';
-                document.getElementById('bal-sig-inr').innerText = '₹0.00 INR';
-                document.getElementById('bal-pol').innerText = '0.000';
-                document.getElementById('status-msg').innerText = 'Connect wallet to start trading';
-            }
-        }
-
         // Update INR values using current rates
         function updateINRValues() {
-            if (!isWalletConnected) return;
-            
             const buyRateElement = document.getElementById('brate');
             const sellRateElement = document.getElementById('srate');
             
@@ -1370,8 +1102,6 @@
 
         // Update SIG6 balance INR value - USING SELL RATE
         function updateSigmaINRValue() {
-            if (!isWalletConnected) return;
-            
             const sigBalanceElement = document.getElementById('bal-sig');
             const sigINRElement = document.getElementById('bal-sig-inr');
             
@@ -1395,7 +1125,7 @@
             const changePercent = 0.89; // Static change for SIG6
             
             // Format price to 4 decimals for SIG6
-            const sig6Price = isWalletConnected ? buyR.toFixed(4) : '0.0576';
+            const sig6Price = buyR.toFixed(4);
             
             // Update ticker price display
             document.querySelectorAll('[id^="ticker-sig6-price"]').forEach(el => {
@@ -1458,174 +1188,31 @@
                     copyBtn.style.background = 'linear-gradient(90deg, var(--secondary), #7b2cbf)';
                     
                     setTimeout(() => {
-                        if (!isWalletConnected) {
-                            statusMsg.innerText = "Connect wallet to start trading";
-                        } else {
-                            statusMsg.innerText = "Ready to trade";
-                        }
-                        statusMsg.style.color = isWalletConnected ? "#00ffcc" : "#00ffcc";
+                        statusMsg.innerText = "Ready to trade";
+                        statusMsg.style.color = "#00ffcc";
                     }, 2000);
                 }, 1500);
             });
         }
 
-        // Check if correct chain (Polygon)
-        async function checkChain() {
-            if (!provider) return false;
-            
-            try {
-                const network = await provider.getNetwork();
-                const chainId = Number(network.chainId);
-                
-                // Polygon Mainnet = 137, Mumbai Testnet = 80001
-                if (chainId !== 137 && chainId !== 80001) {
-                    document.getElementById('chainWarning').classList.add('show');
-                    return false;
-                } else {
-                    document.getElementById('chainWarning').classList.remove('show');
-                    return true;
-                }
-            } catch (e) {
-                console.error("Chain check error:", e);
-                return false;
-            }
-        }
-
-        // Show wallet modal
-        function showWalletModal() {
-            document.getElementById('walletModal').classList.add('active');
-        }
-
-        // Close wallet modal
-        function closeWalletModal() {
-            document.getElementById('walletModal').classList.remove('active');
-        }
-
-        // Universal provider detection
-        function getProvider(walletType) {
-            // MetaMask or any injected wallet
-            if (walletType === 'metamask' || walletType === 'trust' || walletType === 'bitget') {
-                if (typeof window.ethereum !== 'undefined') {
-                    // Check for specific wallet providers
-                    if (walletType === 'trust' && window.ethereum.isTrust) {
-                        return window.ethereum;
-                    } else if (walletType === 'bitget' && (window.ethereum.isBitGet || window.ethereum.isBitkeep)) {
-                        return window.ethereum;
-                    } else if (walletType === 'metamask' && window.ethereum.isMetaMask) {
-                        return window.ethereum;
-                    } else if (walletType === 'trust' || walletType === 'bitget') {
-                        // Trust Wallet and BitGet might not have specific flags
-                        // But they inject ethereum object
-                        return window.ethereum;
-                    } else {
-                        // Default to window.ethereum for MetaMask
-                        return window.ethereum;
-                    }
-                }
-                
-                // Check for multiple injected providers (Trust Wallet sometimes uses window.trustWallet)
-                if (walletType === 'trust' && window.trustWallet) {
-                    return window.trustWallet;
-                }
-                
-                // Check for BitGet specific provider
-                if (walletType === 'bitget') {
-                    if (window.bitkeep && window.bitkeep.ethereum) {
-                        return window.bitkeep.ethereum;
-                    }
-                    if (window.bitget && window.bitget.ethereum) {
-                        return window.bitget.ethereum;
-                    }
-                }
+        // Connect Wallet Function
+        async function connectWallet() {
+            if (!window.ethereum) {
+                alert("Please install MetaMask to use this DApp!");
+                window.open("https://metamask.io/download/", "_blank");
+                return;
             }
             
-            return null;
-        }
-
-        // Connect Wallet Function with cross-wallet support
-        async function connectWallet(walletType) {
-            closeWalletModal();
-            selectedWallet = walletType;
-            
-            let ethProvider = null;
-            
             try {
-                // Try to get provider for selected wallet
-                ethProvider = getProvider(walletType);
-                
-                if (!ethProvider) {
-                    // If no provider found, show install prompts
-                    if (walletType === 'metamask') {
-                        if (confirm("MetaMask not found! Would you like to install it?")) {
-                            window.open("https://metamask.io/download/", "_blank");
-                        }
-                    } else if (walletType === 'trust') {
-                        if (confirm("Trust Wallet not found! Please install Trust Wallet browser extension or use in-app browser.")) {
-                            window.open("https://trustwallet.com/browser-extension", "_blank");
-                        }
-                    } else if (walletType === 'bitget') {
-                        if (confirm("BitGet Wallet not found! Please install BitGet Wallet extension or use in-app browser.")) {
-                            window.open("https://web3.bitget.com/en/wallet-download", "_blank");
-                        }
-                    }
-                    return;
-                }
-                
-                // For Trust Wallet and BitGet, we need to request provider
-                if (walletType === 'trust' && ethProvider.providers) {
-                    // Trust Wallet might be one of multiple providers
-                    const trustProvider = ethProvider.providers.find(p => p.isTrust || p.isTrustWallet);
-                    if (trustProvider) {
-                        ethProvider = trustProvider;
-                    }
-                }
-                
-                if (walletType === 'bitget' && ethProvider.providers) {
-                    const bitgetProvider = ethProvider.providers.find(p => p.isBitGet || p.isBitkeep);
-                    if (bitgetProvider) {
-                        ethProvider = bitgetProvider;
-                    }
-                }
-                
-                // Create ethers provider
-                provider = new ethers.BrowserProvider(ethProvider);
-                
-                // Request accounts - different wallets might handle this differently
-                let accounts;
-                try {
-                    accounts = await provider.send("eth_requestAccounts", []);
-                } catch (error) {
-                    // Some wallets need different method
-                    if (error.message.includes("wallet_requestPermissions")) {
-                        await provider.send("wallet_requestPermissions", [{ eth_accounts: {} }]);
-                        accounts = await provider.send("eth_accounts", []);
-                    } else {
-                        throw error;
-                    }
-                }
-                
-                if (!accounts || accounts.length === 0) {
-                    throw new Error("No accounts found");
-                }
-                
+                // Request account access
+                provider = new ethers.BrowserProvider(window.ethereum);
+                const accounts = await provider.send("eth_requestAccounts", []);
                 addr = accounts[0];
                 signer = await provider.getSigner();
-                isWalletConnected = true;
-                
-                // Update UI for connected state
-                updateUIForConnection();
-                
-                // Check chain
-                await checkChain();
                 
                 // Update connect button
                 const connectBtn = document.getElementById('connectBtn');
-                let walletIcon = '';
-                if (walletType === 'metamask') walletIcon = '🦊';
-                else if (walletType === 'trust') walletIcon = '🔵';
-                else if (walletType === 'bitget') walletIcon = '⚡';
-                
-                connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${walletIcon} ${addr.slice(0,6)}...${addr.slice(-4)}`;
+                connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
                 connectBtn.classList.add('connected');
                 
                 // Show referral UI
@@ -1640,69 +1227,50 @@
                 await sync();
                 
                 // Listen for account changes
-                ethProvider.on('accountsChanged', async (accounts) => {
-                    if (accounts && accounts.length > 0) {
+                window.ethereum.on('accountsChanged', async (accounts) => {
+                    if (accounts.length > 0) {
                         addr = accounts[0];
                         signer = await provider.getSigner();
-                        connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${walletIcon} ${addr.slice(0,6)}...${addr.slice(-4)}`;
+                        connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
                         updateRefLink();
                         await sync();
                     } else {
                         // User disconnected
-                        isWalletConnected = false;
                         connectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
                         connectBtn.classList.remove('connected');
                         document.getElementById('ref-ui').style.display = 'none';
                         document.getElementById('status-msg').innerText = "Wallet Disconnected";
                         document.getElementById('status-msg').style.color = "#ffaa00";
-                        updateUIForConnection();
-                        updateTickers();
                     }
                 });
                 
                 // Listen for chain changes
-                ethProvider.on('chainChanged', (chainId) => {
+                window.ethereum.on('chainChanged', () => {
                     window.location.reload();
-                });
-                
-                // Listen for disconnect
-                ethProvider.on('disconnect', (error) => {
-                    console.log("Wallet disconnected:", error);
-                    isWalletConnected = false;
-                    connectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
-                    connectBtn.classList.remove('connected');
-                    document.getElementById('ref-ui').style.display = 'none';
-                    document.getElementById('status-msg').innerText = "Wallet Disconnected";
-                    document.getElementById('status-msg').style.color = "#ffaa00";
-                    updateUIForConnection();
-                    updateTickers();
                 });
                 
             } catch (error) {
                 console.error("Connection error:", error);
                 
-                let errorMessage = "Connection failed";
-                
                 if (error.code === 4001) {
-                    errorMessage = "Connection rejected by user";
+                    // User rejected the connection request
+                    document.getElementById('status-msg').innerText = "Connection rejected by user";
+                    document.getElementById('status-msg').style.color = "#ff4d4d";
                 } else if (error.code === -32002) {
-                    errorMessage = "Connection request already pending";
-                } else if (error.message) {
-                    errorMessage = error.message;
+                    // Request already pending
+                    document.getElementById('status-msg').innerText = "Connection request already pending in MetaMask";
+                    document.getElementById('status-msg').style.color = "#ffaa00";
+                } else {
+                    document.getElementById('status-msg').innerText = "Connection failed: " + error.message;
+                    document.getElementById('status-msg').style.color = "#ff4d4d";
                 }
-                
-                document.getElementById('status-msg').innerText = errorMessage;
-                document.getElementById('status-msg').style.color = "#ff4d4d";
             }
         }
 
         async function sync() {
-            if (!addr || !provider || !isWalletConnected) return;
+            if (!addr) return;
             
             try {
-                // Check chain first
-                await checkChain();
-                
                 const uc = new ethers.Contract(U_ADDR, [
                     "function balanceOf(address) view returns (uint256)",
                     "function allowance(address,address) view returns (uint256)"
@@ -1833,8 +1401,6 @@
         }
 
         function calc() {
-            if (!isWalletConnected) return;
-            
             const v = parseFloat(document.getElementById('amt').value) || 0;
             let tax = 0, final = 0;
             
@@ -1870,24 +1436,11 @@
                 document.getElementById('mainBtn').innerHTML = '<i class="fas fa-coins"></i> SELL SIGMA';
             }
             
-            if (isWalletConnected) {
-                calc();
-            }
+            calc();
         }
 
         async function action() {
-            if (!signer) {
-                showWalletModal();
-                return;
-            }
-            
-            // Check chain before action
-            const isCorrectChain = await checkChain();
-            if (!isCorrectChain) {
-                document.getElementById('status-msg').innerText = "Please switch to Polygon network";
-                document.getElementById('status-msg').style.color = "#ffaa00";
-                return;
-            }
+            if (!signer) return connectWallet();
             
             const v = document.getElementById('amt').value;
             if (!v || v <= 0) {
@@ -1911,11 +1464,7 @@
                     
                     if (parseFloat(ethers.formatUnits(alw, 6)) < requiredUsdt) {
                         msg.innerText = "Approving USDT...";
-                        
-                        // Some wallets have issues with MaxUint256, so use a large number instead
-                        const largeAllowance = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
-                        const tx = await uc.approve(S_ADDR, largeAllowance);
-                        
+                        const tx = await uc.approve(S_ADDR, ethers.MaxUint256);
                         await tx.wait();
                         msg.innerText = "Approval Success!";
                         msg.style.color = "#00ff88";
@@ -1946,16 +1495,9 @@
                         
                         const sc = new ethers.Contract(S_ADDR, [buySigmaABI], signer);
                         const upline = handleUpline();
-                        
-                        // Show loading state
                         msg.innerText = "Buying SIGMA...";
-                        
-                        // Convert to proper format for different wallets
-                        const sigmaAmountWei = ethers.parseEther(v);
-                        
-                        const tx = await sc.buySigma(sigmaAmountWei, upline);
+                        const tx = await sc.buySigma(ethers.parseEther(v), upline);
                         await tx.wait();
-                        
                         msg.innerText = "Purchase Successful!";
                         msg.style.color = "#00ff88";
                         sync();
@@ -1976,33 +1518,16 @@
                     };
                     
                     const sc = new ethers.Contract(S_ADDR, [sellSigmaABI], signer);
-                    
-                    // Show loading state
                     msg.innerText = "Selling SIGMA...";
-                    
-                    // Convert to proper format
-                    const sigmaAmountWei = ethers.parseEther(v);
-                    
-                    const tx = await sc.sellSigma(sigmaAmountWei);
+                    const tx = await sc.sellSigma(ethers.parseEther(v));
                     await tx.wait();
-                    
                     msg.innerText = "Sale Successful!";
                     msg.style.color = "#00ff88";
                     sync();
                 }
             } catch (e) { 
-                console.error("Transaction error:", e);
-                
-                let errorMsg = "Transaction failed";
-                if (e.reason) errorMsg = e.reason;
-                else if (e.message) errorMsg = e.message;
-                
-                // Handle user rejection
-                if (e.code === 4001 || e.message?.includes("user rejected")) {
-                    errorMsg = "Transaction rejected by user";
-                }
-                
-                msg.innerText = errorMsg.slice(0, 50);
+                console.error(e);
+                msg.innerText = "Error: " + (e.reason || "Check Balance/Gas");
                 msg.style.color = "#ff4d4d";
             }
         }
@@ -2023,21 +1548,12 @@
             statusMsg.style.color = "#00ff88";
             
             setTimeout(() => {
-                if (!isWalletConnected) {
-                    statusMsg.innerText = "Connect wallet to start trading";
-                } else {
-                    statusMsg.innerText = "Ready to trade";
-                }
-                statusMsg.style.color = isWalletConnected ? "#00ffcc" : "#00ffcc";
+                statusMsg.innerText = "Ready to trade";
+                statusMsg.style.color = "#00ffcc";
             }, 3000);
         }
 
         function max() {
-            if (!isWalletConnected) {
-                showWalletModal();
-                return;
-            }
-            
             const u = document.getElementById('bal-usdt').innerText.split(' ')[0];
             const s = document.getElementById('bal-sig').innerText.split(' ')[0];
             
@@ -2055,10 +1571,11 @@
             createParticles();
             
             handleUpline();
-            updateUIForConnection();
+            updateINRValues();
             updateTickers();
+            updateSigmaINRValue();
             
-            // Check if any wallet is already connected
+            // Check if wallet is already connected
             if (window.ethereum) {
                 try {
                     provider = new ethers.BrowserProvider(window.ethereum);
@@ -2067,41 +1584,26 @@
                     if (accounts.length > 0) {
                         addr = accounts[0];
                         signer = await provider.getSigner();
-                        isWalletConnected = true;
-                        
-                        // Detect which wallet
-                        let walletIcon = '';
-                        if (window.ethereum.isMetaMask) walletIcon = '🦊';
-                        else if (window.ethereum.isTrust) walletIcon = '🔵';
-                        else if (window.ethereum.isBitGet) walletIcon = '⚡';
                         
                         // Update UI for already connected wallet
                         const connectBtn = document.getElementById('connectBtn');
-                        connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${walletIcon} ${addr.slice(0,6)}...${addr.slice(-4)}`;
+                        connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
                         connectBtn.classList.add('connected');
                         
                         document.getElementById('ref-ui').style.display = 'block';
                         updateRefLink();
-                        
-                        // Update UI for connected state
-                        updateUIForConnection();
-                        
-                        // Check chain
-                        await checkChain();
                         
                         // Sync data
                         await sync();
                     }
                 } catch (error) {
                     console.error("Auto-connect error:", error);
-                    isWalletConnected = false;
-                    updateUIForConnection();
                 }
             }
             
             // Auto refresh sync every 30 seconds
             setInterval(() => {
-                if (addr && isWalletConnected) {
+                if (addr) {
                     sync();
                 }
             }, 30000);
