@@ -276,62 +276,6 @@
             50% { transform: translateY(-10px); }
         }
         
-        /* Network Warning Banner - More Prominent */
-        .network-warning {
-            background: linear-gradient(90deg, rgba(255, 170, 0, 0.95), rgba(255, 140, 0, 0.95));
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            text-align: center;
-            font-size: 16px;
-            font-weight: 700;
-            color: #000;
-            display: none;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 2px solid #fff;
-            box-shadow: 0 4px 20px rgba(255, 170, 0, 0.5);
-            animation: warningPulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes warningPulse {
-            0% { background: linear-gradient(90deg, rgba(255, 170, 0, 0.95), rgba(255, 140, 0, 0.95)); }
-            50% { background: linear-gradient(90deg, rgba(255, 140, 0, 0.95), rgba(255, 170, 0, 0.95)); }
-            100% { background: linear-gradient(90deg, rgba(255, 170, 0, 0.95), rgba(255, 140, 0, 0.95)); }
-        }
-        
-        .network-warning i {
-            margin-right: 12px;
-            font-size: 20px;
-            color: #000;
-            animation: warningSpin 2s linear infinite;
-        }
-        
-        @keyframes warningSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .network-warning button {
-            background: #000;
-            color: #ffaa00;
-            border: none;
-            border-radius: 30px;
-            padding: 8px 20px;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            margin-left: 15px;
-            transition: all 0.3s;
-            border: 1px solid #fff;
-        }
-        
-        .network-warning button:hover {
-            background: #fff;
-            color: #000;
-            transform: scale(1.05);
-        }
-        
         /* Header with Tickers */
         .ticker-container {
             background: rgba(10, 11, 16, 0.9);
@@ -612,11 +556,6 @@
             font-weight: 600;
         }
         
-        input:disabled {
-            color: #666;
-            cursor: not-allowed;
-        }
-        
         /* Calc Box */
         .calc-box {
             background: rgba(0, 255, 204, 0.05);
@@ -651,17 +590,9 @@
             animation: rainbow 8s ease infinite;
         }
         
-        .action-btn:hover:not(:disabled) {
+        .action-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(0, 255, 204, 0.4);
-        }
-        
-        .action-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            animation: none;
-            background: #444;
-            color: #888;
         }
         
         /* Status Message */
@@ -810,7 +741,6 @@
             justify-content: flex-start;
             gap: 15px;
             text-align: left;
-            width: 100%;
         }
         
         .menu-btn i {
@@ -856,17 +786,6 @@
                 width: 100%;
                 justify-content: center;
             }
-            
-            .network-warning {
-                font-size: 14px;
-                padding: 12px 15px;
-            }
-            
-            .network-warning button {
-                display: block;
-                margin: 10px auto 0;
-                width: fit-content;
-            }
         }
     </style>
 </head>
@@ -890,15 +809,6 @@
     <!-- Rainbow Border -->
     <div class="rainbow-border"></div>
     <div class="rainbow-glow"></div>
-    
-    <!-- Network Warning Banner - Prominent -->
-    <div class="network-warning" id="networkWarning">
-        <i class="fas fa-exclamation-triangle"></i> 
-        <span id="warningText">Wrong Network Detected! Please connect to Polygon Network</span>
-        <button onclick="switchToPolygon()" id="switchNetworkBtn">
-            <i class="fas fa-exchange-alt"></i> SWITCH TO POLYGON
-        </button>
-    </div>
     
     <!-- Live Tickers -->
     <div class="ticker-container">
@@ -930,8 +840,8 @@
             </div>
             <div class="ticker-item">
                 <span class="ticker-symbol">SIG6</span>
-                <span class="ticker-price" id="ticker-sig6-price">--</span>
-                <span class="ticker-change" id="ticker-sig6-change">--</span>
+                <span class="ticker-price" id="ticker-sig6-price">$0.0576</span>
+                <span class="ticker-change positive" id="ticker-sig6-change">+0.89%</span>
             </div>
             <!-- Duplicate for seamless looping -->
             <div class="ticker-item">
@@ -961,8 +871,8 @@
             </div>
             <div class="ticker-item">
                 <span class="ticker-symbol">SIG6</span>
-                <span class="ticker-price" id="ticker-sig6-price-dup">--</span>
-                <span class="ticker-change" id="ticker-sig6-change-dup">--</span>
+                <span class="ticker-price" id="ticker-sig6-price-dup">$0.0576</span>
+                <span class="ticker-change positive" id="ticker-sig6-change-dup">+0.89%</span>
             </div>
         </div>
     </div>
@@ -984,13 +894,13 @@
                 <div class="stats-grid">
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-up"></i> BUY RATE</div>
-                        <div id="brate" class="stat-value">-- USDT</div>
-                        <div id="brate-inr" class="stat-value-inr">-- INR</div>
+                        <div id="brate" class="stat-value">0.0576 USDT</div>
+                        <div id="brate-inr" class="stat-value-inr">≈ ₹5.18 INR</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-label"><i class="fas fa-arrow-down"></i> SELL RATE</div>
-                        <div id="srate" class="stat-value">-- USDT</div>
-                        <div id="srate-inr" class="stat-value-inr">-- INR</div>
+                        <div id="srate" class="stat-value">0.0573 USDT</div>
+                        <div id="srate-inr" class="stat-value-inr">≈ ₹5.16 INR</div>
                     </div>
                 </div>
                 
@@ -1010,21 +920,21 @@
                             <i class="fas fa-maximize"></i> MAX
                         </span>
                     </div>
-                    <input type="number" id="amt" placeholder="0" oninput="calc()" disabled>
+                    <input type="number" id="amt" placeholder="0" oninput="calc()">
                 </div>
                 
                 <div class="calc-box">
                     <div class="row">
                         <span id="out-label">Total USDT to Pay:</span> 
-                        <span id="out-amt" style="color:var(--primary); font-weight:800">-- USDT</span>
+                        <span id="out-amt" style="color:var(--primary); font-weight:800">0.0000 USDT</span>
                     </div>
                     <div class="row">
                         <span id="tax-label">Buy Tax 1%:</span> 
-                        <span id="tax-amt" style="color:#ff4d4d">-- USDT</span>
+                        <span id="tax-amt" style="color:#ff4d4d">0.0000 USDT</span>
                     </div>
                     <div class="row">
                         <span>Equivalent INR:</span> 
-                        <span id="inr-amt" style="color:#ffaa00">-- INR</span>
+                        <span id="inr-amt" style="color:#ffaa00">0.00 INR</span>
                     </div>
                     <div class="row" id="upline-display">
                         <span style="color:#888;">Upline Address:</span> 
@@ -1032,10 +942,10 @@
                     </div>
                 </div>
                 
-                <button class="action-btn" id="mainBtn" onclick="action()" disabled>
-                    <i class="fas fa-lock"></i> CONNECT WALLET FIRST
+                <button class="action-btn" id="mainBtn" onclick="action()">
+                    <i class="fas fa-lock"></i> APPROVE USDT
                 </button>
-                <div id="status-msg">Connect wallet to start trading</div>
+                <div id="status-msg">Ready to trade</div>
                 
                 <!-- Contract Address Box -->
                 <div class="contract-box">
@@ -1070,20 +980,20 @@
                     <div class="balance-item">
                         <span><i class="fas fa-wallet"></i> USDT Balance:</span>
                         <div class="balance-info">
-                            <span id="bal-usdt">--</span>
+                            <span id="bal-usdt">0.000</span>
                         </div>
                     </div>
                     <div class="balance-item">
                         <span><i class="fas fa-coins"></i> SIG6 Balance:</span>
                         <div class="balance-info">
-                            <span id="bal-sig">--</span>
-                            <span id="bal-sig-inr" class="balance-inr">-- INR</span>
+                            <span id="bal-sig">0.000</span>
+                            <span id="bal-sig-inr" class="balance-inr">₹0.00 INR</span>
                         </div>
                     </div>
                     <div class="balance-item">
                         <span><i class="fas fa-gas-pump"></i> POL Balance:</span>
                         <div class="balance-info">
-                            <span id="bal-pol">--</span>
+                            <span id="bal-pol">0.000</span>
                         </div>
                     </div>
                 </div>
@@ -1116,14 +1026,6 @@
                             <div style="font-size:12px; color:#aaa;">Transaction history & analytics</div>
                         </div>
                     </button>
-                    <!-- NEW TRANSFER REPORT BUTTON ADDED HERE -->
-                    <button class="menu-btn" onclick="window.location.href='transfer.html'">
-                        <i class="fas fa-history"></i>
-                        <div>
-                            <div>Transfer Report</div>
-                            <div style="font-size:12px; color:#aaa;">View token transfers & history</div>
-                        </div>
-                    </button>
                     <button class="menu-btn" onclick="window.location.href='tree.html'">
                         <i class="fas fa-project-diagram"></i>
                         <div>
@@ -1146,16 +1048,8 @@
     <script>
         const S_ADDR = "0x0f77a0d1FC8d04573402398A2ae19f367b4ef4aC";
         const U_ADDR = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
-        const POLYGON_CHAIN_ID = 137; // Polygon Mainnet
-        // const POLYGON_CHAIN_ID = 80002; // Uncomment for Polygon Amoy Testnet
-        
         let mode = 'buy', buyR = 0.0576, sellR = 0.0573, signer, addr, provider;
         const USDT_TO_INR = 90.0;
-        let isWalletConnected = false;
-        let isPolygonNetwork = false;
-        
-        // Flag to track if we're in approval mode
-        let isApproving = false;
         
         // Create floating particles
         function createParticles() {
@@ -1185,188 +1079,8 @@
             return currentRef;
         }
 
-        // Check if connected to Polygon network
-        async function checkNetwork() {
-            if (!window.ethereum) return false;
-            
-            try {
-                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-                const chainIdDecimal = parseInt(chainId, 16);
-                
-                isPolygonNetwork = (chainIdDecimal === POLYGON_CHAIN_ID);
-                
-                const networkWarning = document.getElementById('networkWarning');
-                const mainBtn = document.getElementById('mainBtn');
-                const amtInput = document.getElementById('amt');
-                const statusMsg = document.getElementById('status-msg');
-                
-                if (isWalletConnected) {
-                    if (!isPolygonNetwork) {
-                        // Show warning with prominent style
-                        networkWarning.style.display = 'block';
-                        document.getElementById('warningText').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Wrong Network Detected! Please connect to Polygon Network';
-                        
-                        if (mainBtn) {
-                            mainBtn.disabled = true;
-                            mainBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> SWITCH TO POLYGON NETWORK';
-                        }
-                        if (amtInput) amtInput.disabled = true;
-                        if (statusMsg) {
-                            statusMsg.innerText = "⚠️ WRONG NETWORK - Please switch to Polygon";
-                            statusMsg.style.color = "#ffaa00";
-                            statusMsg.style.fontWeight = "bold";
-                            statusMsg.style.fontSize = "14px";
-                        }
-                        
-                        // Disable all interactive elements
-                        document.querySelectorAll('.tab').forEach(tab => {
-                            tab.style.pointerEvents = 'none';
-                            tab.style.opacity = '0.5';
-                        });
-                        
-                        document.querySelector('[onclick="max()"]').style.pointerEvents = 'none';
-                        document.querySelector('[onclick="max()"]').style.opacity = '0.5';
-                    } else {
-                        // Hide warning
-                        networkWarning.style.display = 'none';
-                        
-                        if (mainBtn) {
-                            mainBtn.disabled = false;
-                            // Button text will be updated by sync()
-                        }
-                        if (amtInput) amtInput.disabled = false;
-                        
-                        // Enable all interactive elements
-                        document.querySelectorAll('.tab').forEach(tab => {
-                            tab.style.pointerEvents = 'auto';
-                            tab.style.opacity = '1';
-                        });
-                        
-                        document.querySelector('[onclick="max()"]').style.pointerEvents = 'auto';
-                        document.querySelector('[onclick="max()"]').style.opacity = '1';
-                        
-                        if (statusMsg) {
-                            statusMsg.style.fontWeight = "normal";
-                            statusMsg.style.fontSize = "13px";
-                        }
-                    }
-                } else {
-                    // Wallet not connected - hide network warning
-                    networkWarning.style.display = 'none';
-                }
-                
-                return isPolygonNetwork;
-            } catch (error) {
-                console.error("Error checking network:", error);
-                return false;
-            }
-        }
-
-        // Switch to Polygon network
-        async function switchToPolygon() {
-            if (!window.ethereum) return;
-            
-            try {
-                // Show loading state
-                const switchBtn = document.getElementById('switchNetworkBtn');
-                const originalText = switchBtn.innerHTML;
-                switchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SWITCHING...';
-                switchBtn.disabled = true;
-                
-                await window.ethereum.request({
-                    method: 'wallet_switchEthereumChain',
-                    params: [{ chainId: '0x89' }], // 137 in hex
-                });
-                
-                // Network will trigger chainChanged event and update automatically
-            } catch (switchError) {
-                // Reset button
-                const switchBtn = document.getElementById('switchNetworkBtn');
-                switchBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> SWITCH TO POLYGON';
-                switchBtn.disabled = false;
-                
-                // This error code indicates that the chain has not been added to MetaMask
-                if (switchError.code === 4902) {
-                    try {
-                        switchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ADDING...';
-                        
-                        await window.ethereum.request({
-                            method: 'wallet_addEthereumChain',
-                            params: [{
-                                chainId: '0x89',
-                                chainName: 'Polygon Mainnet',
-                                nativeCurrency: {
-                                    name: 'MATIC',
-                                    symbol: 'MATIC',
-                                    decimals: 18
-                                },
-                                rpcUrls: ['https://polygon-rpc.com/'],
-                                blockExplorerUrls: ['https://polygonscan.com/']
-                            }]
-                        });
-                    } catch (addError) {
-                        console.error("Error adding Polygon network:", addError);
-                        switchBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> SWITCH TO POLYGON';
-                        switchBtn.disabled = false;
-                        
-                        document.getElementById('status-msg').innerText = "Failed to add Polygon network";
-                        document.getElementById('status-msg').style.color = "#ff4d4d";
-                    }
-                } else {
-                    console.error("Error switching to Polygon:", switchError);
-                    document.getElementById('status-msg').innerText = "Failed to switch network";
-                    document.getElementById('status-msg').style.color = "#ff4d4d";
-                }
-            }
-        }
-
-        // Update UI based on connection state
-        function updateUIForConnection() {
-            const amtInput = document.getElementById('amt');
-            const mainBtn = document.getElementById('mainBtn');
-            const statusMsg = document.getElementById('status-msg');
-            
-            if (!isWalletConnected) {
-                // Not connected - show placeholders
-                document.getElementById('brate').innerText = '-- USDT';
-                document.getElementById('srate').innerText = '-- USDT';
-                document.getElementById('brate-inr').innerText = '-- INR';
-                document.getElementById('srate-inr').innerText = '-- INR';
-                document.getElementById('bal-usdt').innerText = '--';
-                document.getElementById('bal-sig').innerText = '--';
-                document.getElementById('bal-sig-inr').innerText = '-- INR';
-                document.getElementById('bal-pol').innerText = '--';
-                document.getElementById('out-amt').innerText = '-- USDT';
-                document.getElementById('tax-amt').innerText = '-- USDT';
-                document.getElementById('inr-amt').innerText = '-- INR';
-                
-                // Update tickers
-                document.querySelectorAll('[id^="ticker-sig6-price"]').forEach(el => {
-                    el.innerText = '--';
-                });
-                document.querySelectorAll('[id^="ticker-sig6-change"]').forEach(el => {
-                    el.innerText = '--';
-                });
-                
-                if (amtInput) amtInput.disabled = true;
-                if (mainBtn) {
-                    mainBtn.disabled = true;
-                    mainBtn.innerHTML = '<i class="fas fa-lock"></i> CONNECT WALLET FIRST';
-                }
-                if (statusMsg) {
-                    statusMsg.innerText = '🔌 Connect wallet to start trading';
-                    statusMsg.style.color = '#ffaa00';
-                }
-                
-                // Hide network warning
-                document.getElementById('networkWarning').style.display = 'none';
-            }
-        }
-
         // Update INR values using current rates
         function updateINRValues() {
-            if (!isWalletConnected || !isPolygonNetwork) return;
-            
             const buyRateElement = document.getElementById('brate');
             const sellRateElement = document.getElementById('srate');
             
@@ -1388,8 +1102,6 @@
 
         // Update SIG6 balance INR value - USING SELL RATE
         function updateSigmaINRValue() {
-            if (!isWalletConnected || !isPolygonNetwork) return;
-            
             const sigBalanceElement = document.getElementById('bal-sig');
             const sigINRElement = document.getElementById('bal-sig-inr');
             
@@ -1410,8 +1122,6 @@
 
         // Live ticker data
         function updateTickers() {
-            if (!isWalletConnected || !isPolygonNetwork) return;
-            
             const changePercent = 0.89; // Static change for SIG6
             
             // Format price to 4 decimals for SIG6
@@ -1465,7 +1175,7 @@
             const contractAddress = "0x0f77a0d1FC8d04573402398A2ae19f367b4ef4aC";
             navigator.clipboard.writeText(contractAddress).then(() => {
                 const statusMsg = document.getElementById('status-msg');
-                statusMsg.innerText = "✅ Contract Address Copied!";
+                statusMsg.innerText = "Contract Address Copied!";
                 statusMsg.style.color = "#9d4edd";
                 
                 const copyBtn = document.querySelector('.copy-btn');
@@ -1478,16 +1188,8 @@
                     copyBtn.style.background = 'linear-gradient(90deg, var(--secondary), #7b2cbf)';
                     
                     setTimeout(() => {
-                        if (isWalletConnected && isPolygonNetwork) {
-                            statusMsg.innerText = "✅ Ready to trade";
-                            statusMsg.style.color = "#00ffcc";
-                        } else if (isWalletConnected && !isPolygonNetwork) {
-                            statusMsg.innerText = "⚠️ WRONG NETWORK - Switch to Polygon";
-                            statusMsg.style.color = "#ffaa00";
-                        } else {
-                            statusMsg.innerText = "🔌 Connect wallet to start trading";
-                            statusMsg.style.color = "#ffaa00";
-                        }
+                        statusMsg.innerText = "Ready to trade";
+                        statusMsg.style.color = "#00ffcc";
                     }, 2000);
                 }, 1500);
             });
@@ -1502,43 +1204,27 @@
             }
             
             try {
-                // Show loading state
-                const connectBtn = document.getElementById('connectBtn');
-                const originalText = connectBtn.innerHTML;
-                connectBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CONNECTING...';
-                connectBtn.disabled = true;
-                
                 // Request account access
                 provider = new ethers.BrowserProvider(window.ethereum);
                 const accounts = await provider.send("eth_requestAccounts", []);
                 addr = accounts[0];
                 signer = await provider.getSigner();
                 
-                isWalletConnected = true;
-                
                 // Update connect button
+                const connectBtn = document.getElementById('connectBtn');
                 connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
                 connectBtn.classList.add('connected');
-                connectBtn.disabled = false;
-                
-                // Check network
-                await checkNetwork();
                 
                 // Show referral UI
                 document.getElementById('ref-ui').style.display = 'block';
                 updateRefLink();
                 
                 // Update status
-                if (isPolygonNetwork) {
-                    document.getElementById('status-msg').innerText = "✅ Wallet Connected Successfully!";
-                    document.getElementById('status-msg').style.color = "#00ff88";
-                    
-                    // Start syncing data if on correct network
-                    await sync();
-                } else {
-                    document.getElementById('status-msg').innerText = "⚠️ Please switch to Polygon Network";
-                    document.getElementById('status-msg').style.color = "#ffaa00";
-                }
+                document.getElementById('status-msg').innerText = "Wallet Connected Successfully!";
+                document.getElementById('status-msg').style.color = "#00ff88";
+                
+                // Start syncing data
+                await sync();
                 
                 // Listen for account changes
                 window.ethereum.on('accountsChanged', async (accounts) => {
@@ -1547,55 +1233,42 @@
                         signer = await provider.getSigner();
                         connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
                         updateRefLink();
-                        await checkNetwork();
-                        if (isPolygonNetwork) {
-                            await sync();
-                        }
+                        await sync();
                     } else {
                         // User disconnected
-                        isWalletConnected = false;
                         connectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
                         connectBtn.classList.remove('connected');
                         document.getElementById('ref-ui').style.display = 'none';
-                        document.getElementById('status-msg').innerText = "🔌 Wallet Disconnected";
+                        document.getElementById('status-msg').innerText = "Wallet Disconnected";
                         document.getElementById('status-msg').style.color = "#ffaa00";
-                        updateUIForConnection();
                     }
                 });
                 
                 // Listen for chain changes
-                window.ethereum.on('chainChanged', async () => {
-                    await checkNetwork();
-                    if (isWalletConnected && isPolygonNetwork) {
-                        await sync();
-                    }
+                window.ethereum.on('chainChanged', () => {
+                    window.location.reload();
                 });
                 
             } catch (error) {
                 console.error("Connection error:", error);
                 
-                // Reset button
-                const connectBtn = document.getElementById('connectBtn');
-                connectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
-                connectBtn.disabled = false;
-                
                 if (error.code === 4001) {
                     // User rejected the connection request
-                    document.getElementById('status-msg').innerText = "❌ Connection rejected by user";
+                    document.getElementById('status-msg').innerText = "Connection rejected by user";
                     document.getElementById('status-msg').style.color = "#ff4d4d";
                 } else if (error.code === -32002) {
                     // Request already pending
-                    document.getElementById('status-msg').innerText = "⏳ Connection request already pending in MetaMask";
+                    document.getElementById('status-msg').innerText = "Connection request already pending in MetaMask";
                     document.getElementById('status-msg').style.color = "#ffaa00";
                 } else {
-                    document.getElementById('status-msg').innerText = "❌ Connection failed: " + error.message;
+                    document.getElementById('status-msg').innerText = "Connection failed: " + error.message;
                     document.getElementById('status-msg').style.color = "#ff4d4d";
                 }
             }
         }
 
         async function sync() {
-            if (!addr || !isWalletConnected || !isPolygonNetwork) return;
+            if (!addr) return;
             
             try {
                 const uc = new ethers.Contract(U_ADDR, [
@@ -1709,11 +1382,9 @@
                 const currentAlw = parseFloat(ethers.formatUnits(alw, 6));
 
                 if(mode === 'buy') {
-                    if (currentAlw >= requiredUsdt && requiredUsdt > 0) {
-                        document.getElementById('mainBtn').innerHTML = '<i class="fas fa-shopping-cart"></i> BUY SIGMA';
-                    } else {
-                        document.getElementById('mainBtn').innerHTML = '<i class="fas fa-lock"></i> APPROVE USDT';
-                    }
+                    document.getElementById('mainBtn').innerHTML = (currentAlw >= requiredUsdt && requiredUsdt > 0) 
+                        ? '<i class="fas fa-shopping-cart"></i> BUY SIGMA' 
+                        : '<i class="fas fa-lock"></i> APPROVE USDT';
                 } else {
                     document.getElementById('mainBtn').innerHTML = '<i class="fas fa-coins"></i> SELL SIGMA';
                 }
@@ -1724,14 +1395,12 @@
                 }
             } catch (e) { 
                 console.error(e);
-                document.getElementById('status-msg').innerText = "❌ Sync Error: " + (e.reason || "Check connection");
+                document.getElementById('status-msg').innerText = "Sync Error: " + (e.reason || "Check connection");
                 document.getElementById('status-msg').style.color = "#ff4d4d";
             }
         }
 
         function calc() {
-            if (!isWalletConnected || !isPolygonNetwork) return;
-            
             const v = parseFloat(document.getElementById('amt').value) || 0;
             let tax = 0, final = 0;
             
@@ -1760,70 +1429,22 @@
             document.getElementById('t-buy').className = m === 'buy' ? 'tab active' : 'tab';
             document.getElementById('t-sell').className = m === 'sell' ? 'tab active' : 'tab';
             
-            // Reset approval flag when changing mode
-            isApproving = false;
-            
-            // Update button text based on current mode and connection state
-            if (!isWalletConnected) {
-                document.getElementById('mainBtn').innerHTML = '<i class="fas fa-lock"></i> CONNECT WALLET FIRST';
-                return;
-            }
-            
-            if (!isPolygonNetwork) {
-                document.getElementById('mainBtn').innerHTML = '<i class="fas fa-exclamation-triangle"></i> SWITCH TO POLYGON';
-                return;
-            }
-            
+            // Update button text
             if (m === 'buy') {
-                // Check if we have allowance and update button text accordingly
-                if (addr) {
-                    checkAllowanceAndUpdateButton();
-                } else {
-                    document.getElementById('mainBtn').innerHTML = '<i class="fas fa-lock"></i> APPROVE USDT';
-                }
+                document.getElementById('mainBtn').innerHTML = '<i class="fas fa-lock"></i> APPROVE USDT';
             } else {
                 document.getElementById('mainBtn').innerHTML = '<i class="fas fa-coins"></i> SELL SIGMA';
             }
             
             calc();
         }
-        
-        // Helper function to check allowance and update button
-        async function checkAllowanceAndUpdateButton() {
-            if (!addr || !isPolygonNetwork) return;
-            
-            try {
-                const v = parseFloat(document.getElementById('amt').value) || 0;
-                const requiredUsdt = (v * buyR) * 1.01;
-                
-                const uc = new ethers.Contract(U_ADDR, [
-                    "function allowance(address,address) view returns (uint256)"
-                ], provider);
-                
-                const alw = await uc.allowance(addr, S_ADDR);
-                const currentAlw = parseFloat(ethers.formatUnits(alw, 6));
-                
-                if (currentAlw >= requiredUsdt && requiredUsdt > 0) {
-                    document.getElementById('mainBtn').innerHTML = '<i class="fas fa-shopping-cart"></i> BUY SIGMA';
-                } else {
-                    document.getElementById('mainBtn').innerHTML = '<i class="fas fa-lock"></i> APPROVE USDT';
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
 
         async function action() {
             if (!signer) return connectWallet();
             
-            if (!isPolygonNetwork) {
-                await switchToPolygon();
-                return;
-            }
-            
             const v = document.getElementById('amt').value;
             if (!v || v <= 0) {
-                document.getElementById('status-msg').innerText = "⚠️ Please enter a valid amount";
+                document.getElementById('status-msg').innerText = "Please enter a valid amount";
                 document.getElementById('status-msg').style.color = "#ffaa00";
                 return;
             }
@@ -1840,64 +1461,48 @@
                     
                     const requiredUsdt = (parseFloat(v) * buyR) * 1.01;
                     const alw = await uc.allowance(addr, S_ADDR);
-                    const currentAlw = parseFloat(ethers.formatUnits(alw, 6));
                     
-                    // Check if we need to approve first
-                    if (currentAlw < requiredUsdt) {
-                        // Set approving flag to true
-                        isApproving = true;
-                        
-                        msg.innerText = "⏳ Approving USDT...";
+                    if (parseFloat(ethers.formatUnits(alw, 6)) < requiredUsdt) {
+                        msg.innerText = "Approving USDT...";
                         const tx = await uc.approve(S_ADDR, ethers.MaxUint256);
                         await tx.wait();
-                        msg.innerText = "✅ Approval Successful! Now you can buy SIGMA.";
+                        msg.innerText = "Approval Success!";
                         msg.style.color = "#00ff88";
+                        sync();
                         
-                        // Reset approving flag
-                        isApproving = false;
+                        setTimeout(() => {
+                            document.getElementById('mainBtn').innerHTML = '<i class="fas fa-shopping-cart"></i> BUY SIGMA';
+                        }, 1000);
+                    } else {
+                        const buySigmaABI = {
+                            "inputs": [
+                                {
+                                    "internalType": "uint256",
+                                    "name": "sigmaAmount",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "internalType": "address",
+                                    "name": "_upline",
+                                    "type": "address"
+                                }
+                            ],
+                            "name": "buySigma",
+                            "outputs": [],
+                            "stateMutability": "nonpayable",
+                            "type": "function"
+                        };
                         
-                        // Update button text to BUY
-                        document.getElementById('mainBtn').innerHTML = '<i class="fas fa-shopping-cart"></i> BUY SIGMA';
-                        
-                        // Sync to update balances and allowance
-                        await sync();
-                        
-                        return; // Important: Exit after approval without buying
+                        const sc = new ethers.Contract(S_ADDR, [buySigmaABI], signer);
+                        const upline = handleUpline();
+                        msg.innerText = "Buying SIGMA...";
+                        const tx = await sc.buySigma(ethers.parseEther(v), upline);
+                        await tx.wait();
+                        msg.innerText = "Purchase Successful!";
+                        msg.style.color = "#00ff88";
+                        sync();
                     }
-                    
-                    // If we have enough allowance, proceed with buy
-                    const buySigmaABI = {
-                        "inputs": [
-                            {
-                                "internalType": "uint256",
-                                "name": "sigmaAmount",
-                                "type": "uint256"
-                            },
-                            {
-                                "internalType": "address",
-                                "name": "_upline",
-                                "type": "address"
-                            }
-                        ],
-                        "name": "buySigma",
-                        "outputs": [],
-                        "stateMutability": "nonpayable",
-                        "type": "function"
-                    };
-                    
-                    const sc = new ethers.Contract(S_ADDR, [buySigmaABI], signer);
-                    const upline = handleUpline();
-                    msg.innerText = "⏳ Buying SIGMA...";
-                    const tx = await sc.buySigma(ethers.parseEther(v), upline);
-                    await tx.wait();
-                    msg.innerText = "✅ Purchase Successful!";
-                    msg.style.color = "#00ff88";
-                    
-                    // Sync to update balances
-                    await sync();
-                    
                 } else {
-                    // SELL mode
                     const sellSigmaABI = {
                         "inputs": [
                             {
@@ -1913,29 +1518,16 @@
                     };
                     
                     const sc = new ethers.Contract(S_ADDR, [sellSigmaABI], signer);
-                    msg.innerText = "⏳ Selling SIGMA...";
+                    msg.innerText = "Selling SIGMA...";
                     const tx = await sc.sellSigma(ethers.parseEther(v));
                     await tx.wait();
-                    msg.innerText = "✅ Sale Successful!";
+                    msg.innerText = "Sale Successful!";
                     msg.style.color = "#00ff88";
-                    
-                    // Sync to update balances
-                    await sync();
+                    sync();
                 }
             } catch (e) { 
                 console.error(e);
-                
-                // Reset approving flag on error
-                if (mode === 'buy') {
-                    isApproving = false;
-                }
-                
-                // Handle user rejection
-                if (e.code === 4001) {
-                    msg.innerText = "❌ Transaction rejected by user";
-                } else {
-                    msg.innerText = "❌ Error: " + (e.reason || "Check Balance/Gas");
-                }
+                msg.innerText = "Error: " + (e.reason || "Check Balance/Gas");
                 msg.style.color = "#ff4d4d";
             }
         }
@@ -1952,26 +1544,16 @@
             navigator.clipboard.writeText(linkInput.value);
             
             const statusMsg = document.getElementById('status-msg');
-            statusMsg.innerText = "✅ Referral Link Copied to Clipboard!";
+            statusMsg.innerText = "Referral Link Copied to Clipboard!";
             statusMsg.style.color = "#00ff88";
             
             setTimeout(() => {
-                if (isWalletConnected && isPolygonNetwork) {
-                    statusMsg.innerText = "✅ Ready to trade";
-                    statusMsg.style.color = "#00ffcc";
-                } else if (isWalletConnected && !isPolygonNetwork) {
-                    statusMsg.innerText = "⚠️ WRONG NETWORK - Switch to Polygon";
-                    statusMsg.style.color = "#ffaa00";
-                } else {
-                    statusMsg.innerText = "🔌 Connect wallet to start trading";
-                    statusMsg.style.color = "#ffaa00";
-                }
+                statusMsg.innerText = "Ready to trade";
+                statusMsg.style.color = "#00ffcc";
             }, 3000);
         }
 
         function max() {
-            if (!isWalletConnected || !isPolygonNetwork) return;
-            
             const u = document.getElementById('bal-usdt').innerText.split(' ')[0];
             const s = document.getElementById('bal-sig').innerText.split(' ')[0];
             
@@ -1981,11 +1563,6 @@
                 document.getElementById('amt').value = s;
             }
             calc();
-            
-            // Check allowance and update button after max
-            if (addr && mode === 'buy') {
-                checkAllowanceAndUpdateButton();
-            }
         }
 
         // Initialize on page load
@@ -1994,9 +1571,9 @@
             createParticles();
             
             handleUpline();
-            
-            // Set initial UI state (not connected)
-            updateUIForConnection();
+            updateINRValues();
+            updateTickers();
+            updateSigmaINRValue();
             
             // Check if wallet is already connected
             if (window.ethereum) {
@@ -2007,45 +1584,32 @@
                     if (accounts.length > 0) {
                         addr = accounts[0];
                         signer = await provider.getSigner();
-                        isWalletConnected = true;
                         
                         // Update UI for already connected wallet
                         const connectBtn = document.getElementById('connectBtn');
                         connectBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${addr.slice(0,6)}...${addr.slice(-4)}`;
                         connectBtn.classList.add('connected');
                         
-                        // Check network
-                        await checkNetwork();
-                        
                         document.getElementById('ref-ui').style.display = 'block';
                         updateRefLink();
                         
-                        // Sync data if on correct network
-                        if (isPolygonNetwork) {
-                            await sync();
-                        } else {
-                            document.getElementById('status-msg').innerText = "⚠️ Please switch to Polygon Network";
-                            document.getElementById('status-msg').style.color = "#ffaa00";
-                        }
+                        // Sync data
+                        await sync();
                     }
                 } catch (error) {
                     console.error("Auto-connect error:", error);
                 }
             }
             
-            // Auto refresh sync every 30 seconds (only if connected and on correct network)
+            // Auto refresh sync every 30 seconds
             setInterval(() => {
-                if (addr && isWalletConnected && isPolygonNetwork) {
+                if (addr) {
                     sync();
                 }
             }, 30000);
             
             // Auto refresh tickers every 30 seconds
-            setInterval(() => {
-                if (isWalletConnected && isPolygonNetwork) {
-                    updateTickers();
-                }
-            }, 30000);
+            setInterval(updateTickers, 30000);
         };
     </script>
 </body>
