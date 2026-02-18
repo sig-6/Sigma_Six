@@ -670,7 +670,7 @@
             }
         }
         
-        // ===== MAIN LOAD FUNCTION - ULTIMATE FIXED VERSION =====
+        // ===== MAIN LOAD FUNCTION WITH CORRECT ACTIVE CONDITION =====
         async function loadTeamData() {
             if (!userAddress || !sigmaContract || isLoading) return;
             
@@ -680,11 +680,11 @@
                 document.getElementById('team-body').innerHTML = `
                     <tr><td colspan="10" class="loading">
                         <i class="fas fa-spinner fa-spin"></i><br>
-                        Loading team data... (This may take a minute)
+                        Loading team data...
                     </td></tr>
                 `;
                 
-                // Get current rates
+                // Get current rates - SELL RATE is important for active status
                 try {
                     const [buyRateRaw, sellRateRaw] = await Promise.all([
                         sigmaContract.buyRate(),
@@ -697,178 +697,102 @@
                     document.getElementById('sell-rate').textContent = `Sell: ${sellRate.toFixed(4)} USDT`;
                 } catch (e) {}
                 
-                // Calculate minimum SIG6 for active status
-                const minSIG6ForActive = 10 / sellRate;
+                // Calculate minimum SIG6 needed for ACTIVE status (10 USDT)
+                const minSIG6ForActive = 10 / sellRate; // ~321.5 at 0.0311
                 
-                // ===== STEP 1: GET ALL MEMBERJOINED EVENTS =====
-                console.log("🔍 Fetching MemberJoined events...");
+                // Get MemberJoined events for join dates
                 const memberFilter = sigmaContract.filters.MemberJoined();
                 const memberEvents = await sigmaContract.queryFilter(memberFilter, 0, 'latest');
-                console.log(`✅ Found ${memberEvents.length} MemberJoined events`);
                 
-                // ===== STEP 2: CREATE MAPS =====
                 const joinDateMap = new Map();
-                const allAddresses = new Set();
-                const uplineMap = new Map(); // Store upline for quick access
-                
-                // Add creator wallet
-                allAddresses.add(CREATOR_WALLET.toLowerCase());
-                
-                // Process MemberJoined events
                 for (const event of memberEvents) {
-                    const userAddr = event.args.user.toLowerCase();
-                    const referrerAddr = event.args.referrer.toLowerCase();
-                    
-                    allAddresses.add(userAddr);
-                    allAddresses.add(referrerAddr);
-                    joinDateMap.set(userAddr, Number(event.args.timestamp));
-                    
-                    // Store in upline map (we'll verify with contract later)
-                    uplineMap.set(userAddr, referrerAddr);
+                    joinDateMap.set(event.args.user.toLowerCase(), Number(event.args.timestamp));
                 }
                 
-                console.log(`🔍 Total ${allAddresses.size} unique addresses to check`);
+                // Get Transfer events to find holders
+                const transferFilter = sigmaContract.filters.Transfer();
+                const transfers = await sigmaContract.queryFilter(transferFilter, 0, 'latest');
                 
-                // ===== STEP 3: CHECK EACH ADDRESS =====
-                const addrArray = Array.from(allAddresses);
+                // Collect unique addresses
+                const addresses = new Set();
+                for (let i = Math.max(0, transfers.length - 1000); i < transfers.length; i++) {
+                    addresses.add(transfers[i].args.to.toLowerCase());
+                }
+                addresses.add(CREATOR_WALLET.toLowerCase());
+                
+                // Process in batches
+                const addrArray = Array.from(addresses);
                 teamMembers = [];
                 
-                const myAddressLower = userAddress.toLowerCase();
-                const creatorLower = CREATOR_WALLET.toLowerCase();
-                
-                // Progress tracking
-                let checkedCount = 0;
-                let foundCount = 0;
-                
-                for (let i = 0; i < addrArray.length; i += 30) { // Smaller batches for reliability
-                    const batch = addrArray.slice(i, i + 30);
+                for (let i = 0; i < addrArray.length; i += 50) {
+                    const batch = addrArray.slice(i, i + 50);
                     const batchPromises = batch.map(async (addr) => {
-                        checkedCount++;
-                        if (checkedCount % 100 === 0) {
-                            console.log(`Checked ${checkedCount}/${addrArray.length} addresses...`);
-                        }
-                        
-                        // Skip self
-                        if (addr === myAddressLower) return null;
+                        if (addr === userAddress.toLowerCase() || addr === CREATOR_WALLET.toLowerCase()) return null;
                         
                         try {
-                            // Get balance and upline from contract
-                            const [balanceRaw, contractUpline] = await Promise.all([
+                            const [balanceRaw, uplineAddr] = await Promise.all([
                                 sigmaContract.balanceOf(addr),
                                 sigmaContract.upline(addr)
                             ]);
                             
                             const balance = parseFloat(ethers.formatEther(balanceRaw));
+                            if (balance <= 0) return null;
                             
-                            // Skip if no upline (not in system)
-                            if (!contractUpline || contractUpline === "0x0000000000000000000000000000000000000000") {
-                                return null;
-                            }
-                            
-                            const uplineLower = contractUpline.toLowerCase();
-                            
-                            // ===== FIND LEVEL IN DOWNLINE =====
+                            // Find level
                             let level = 0;
-                            
-                            // Method 1: Direct check (Level 1)
-                            if (uplineLower === myAddressLower || uplineLower === creatorLower) {
-                                level = 1;
-                            } 
-                            // Method 2: Check upline chain (Levels 2-5)
-                            else {
-                                try {
-                                    const upline1 = uplineLower;
-                                    const upline2Raw = await sigmaContract.upline(upline1);
-                                    
-                                    if (upline2Raw && upline2Raw !== "0x0000000000000000000000000000000000000000") {
-                                        const upline2 = upline2Raw.toLowerCase();
-                                        
-                                        if (upline2 === myAddressLower || upline2 === creatorLower) {
-                                            level = 2;
-                                        } else {
-                                            const upline3Raw = await sigmaContract.upline(upline2);
-                                            
-                                            if (upline3Raw && upline3Raw !== "0x0000000000000000000000000000000000000000") {
-                                                const upline3 = upline3Raw.toLowerCase();
-                                                
-                                                if (upline3 === myAddressLower || upline3 === creatorLower) {
-                                                    level = 3;
-                                                } else {
-                                                    const upline4Raw = await sigmaContract.upline(upline3);
-                                                    
-                                                    if (upline4Raw && upline4Raw !== "0x0000000000000000000000000000000000000000") {
-                                                        const upline4 = upline4Raw.toLowerCase();
-                                                        
-                                                        if (upline4 === myAddressLower || upline4 === creatorLower) {
-                                                            level = 4;
-                                                        } else {
-                                                            const upline5Raw = await sigmaContract.upline(upline4);
-                                                            
-                                                            if (upline5Raw && upline5Raw !== "0x0000000000000000000000000000000000000000") {
-                                                                const upline5 = upline5Raw.toLowerCase();
-                                                                
-                                                                if (upline5 === myAddressLower || upline5 === creatorLower) {
-                                                                    level = 5;
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
+                            if (uplineAddr && uplineAddr !== "0x0000000000000000000000000000000000000000") {
+                                let currentAddr = uplineAddr.toLowerCase();
+                                let currentLevel = 1;
+                                
+                                while (currentAddr && currentAddr !== "0x0000000000000000000000000000000000000000" && currentLevel <= 5) {
+                                    if (currentAddr === userAddress.toLowerCase()) {
+                                        level = currentLevel;
+                                        break;
                                     }
-                                } catch (e) {
-                                    // Ignore chain errors
+                                    
+                                    try {
+                                        const nextUpline = await sigmaContract.upline(currentAddr);
+                                        if (!nextUpline || nextUpline === "0x0000000000000000000000000000000000000000") break;
+                                        currentAddr = nextUpline.toLowerCase();
+                                        currentLevel++;
+                                    } catch {
+                                        break;
+                                    }
                                 }
                             }
                             
-                            // If found in downline, add to team
                             if (level > 0) {
-                                foundCount++;
                                 const joinTimestamp = joinDateMap.get(addr) || 0;
                                 
-                                // Active status based on balance
+                                // ===== FIXED ACTIVE CONDITION =====
+                                // Active only if SIG6 balance >= minimum required for 10 USDT
                                 const isActive = balance >= minSIG6ForActive;
                                 
                                 return {
                                     address: addr,
                                     level: level,
                                     balance: balance,
-                                    usdtValue: balance * sellRate,
-                                    upline: uplineLower,
+                                    usdtValue: balance * sellRate, // Use SELL rate for value
+                                    upline: uplineAddr ? uplineAddr.toLowerCase() : "0x0000000000000000000000000000000000000000",
                                     joinTime: joinTimestamp > 0 ? new Date(joinTimestamp * 1000) : null,
                                     joinTimestamp: joinTimestamp,
                                     isActive: isActive
                                 };
                             }
-                        } catch (e) {
-                            // Ignore individual errors
-                        }
+                        } catch (e) {}
                         return null;
                     });
                     
                     const results = await Promise.all(batchPromises);
-                    const validResults = results.filter(r => r !== null);
-                    
-                    if (validResults.length > 0) {
-                        teamMembers.push(...validResults);
-                    }
+                    teamMembers.push(...results.filter(r => r !== null));
                 }
                 
-                console.log(`🎉 FINAL: Found ${teamMembers.length} team members!`);
-                
-                // ===== STEP 4: SORT AND DISPLAY =====
+                // Sort and display
                 teamMembers.sort((a, b) => a.level - b.level);
                 filteredMembers = [...teamMembers];
                 
                 updateStats();
                 updateTeamTable();
-                
-                // Show warning if no members found
-                if (teamMembers.length === 0) {
-                    console.warn("⚠️ No team members found. Running diagnostics...");
-                    await diagnoseUplineIssue();
-                }
                 
             } catch (error) {
                 console.error("Error loading team:", error);
@@ -880,81 +804,6 @@
                 `;
             } finally {
                 isLoading = false;
-            }
-        }
-        
-        // ===== DIAGNOSTIC FUNCTION =====
-        async function diagnoseUplineIssue() {
-            console.log("🔍 Running diagnostics...");
-            
-            try {
-                // Check MemberJoined events
-                const memberFilter = sigmaContract.filters.MemberJoined();
-                const memberEvents = await sigmaContract.queryFilter(memberFilter, 0, 'latest');
-                
-                if (memberEvents.length === 0) {
-                    console.log("❌ No MemberJoined events found!");
-                    return;
-                }
-                
-                console.log(`✅ Found ${memberEvents.length} total registrations`);
-                
-                // Check first 5 members
-                for (let i = 0; i < Math.min(5, memberEvents.length); i++) {
-                    const event = memberEvents[i];
-                    const userAddr = event.args.user.toLowerCase();
-                    const referrerAddr = event.args.referrer.toLowerCase();
-                    
-                    console.log(`\n--- Member ${i+1} ---`);
-                    console.log(`User: ${userAddr}`);
-                    console.log(`Referrer: ${referrerAddr}`);
-                    
-                    // Get contract upline
-                    const contractUpline = await sigmaContract.upline(userAddr);
-                    console.log(`Contract upline: ${contractUpline}`);
-                    
-                    // Check balance
-                    const balance = await sigmaContract.balanceOf(userAddr);
-                    console.log(`Balance: ${ethers.formatEther(balance)} SIG6`);
-                    
-                    // Check if in downline
-                    const myAddressLower = userAddress.toLowerCase();
-                    const creatorLower = CREATOR_WALLET.toLowerCase();
-                    
-                    if (contractUpline.toLowerCase() === myAddressLower || 
-                        contractUpline.toLowerCase() === creatorLower) {
-                        console.log(`✅ DIRECT DOWNLINE (Level 1)!`);
-                    } else {
-                        // Check level 2
-                        try {
-                            const upline2 = await sigmaContract.upline(contractUpline);
-                            if (upline2 && upline2.toLowerCase() === myAddressLower || 
-                                upline2 && upline2.toLowerCase() === creatorLower) {
-                                console.log(`✅ LEVEL 2 DOWNLINE!`);
-                            } else {
-                                // Check level 3
-                                try {
-                                    const upline3 = await sigmaContract.upline(upline2);
-                                    if (upline3 && upline3.toLowerCase() === myAddressLower || 
-                                        upline3 && upline3.toLowerCase() === creatorLower) {
-                                        console.log(`✅ LEVEL 3 DOWNLINE!`);
-                                    } else {
-                                        console.log(`❌ Not in downline (or deeper than level 3)`);
-                                    }
-                                } catch {}
-                            }
-                        } catch {}
-                    }
-                }
-                
-                // Show your info
-                console.log(`\n--- Your Info ---`);
-                console.log(`Your address: ${userAddress}`);
-                console.log(`Creator address: ${CREATOR_WALLET}`);
-                console.log(`Are you creator? ${userAddress.toLowerCase() === CREATOR_WALLET.toLowerCase()}`);
-                
-            } catch (e) {
-                console.error("Diagnostic error:", e);
             }
         }
         
@@ -979,17 +828,14 @@
                 tbody.innerHTML = `
                     <tr><td colspan="10" class="empty-state">
                         <i class="fas fa-users-slash"></i><br>
-                        No team members found in downline<br>
-                        <small style="color:#888; margin-top:10px; display:block">
-                            Check console (F12) for diagnostics
-                        </small>
+                        No team members found in downline
                     </td></tr>
                 `;
                 resultsDiv.style.display = 'none';
                 return;
             }
             
-            // Count active members
+            // Count active members for display
             const activeCount = filteredMembers.filter(m => m.isActive).length;
             
             resultsDiv.style.display = 'block';
@@ -1006,10 +852,6 @@
                     timeDisplay = member.joinTime.toLocaleTimeString('en-IN', {hour12: false});
                 }
                 
-                // Balance show karo (agar 0 hai to 0.00 dikhega)
-                const balanceDisplay = member.balance.toFixed(2);
-                const usdtDisplay = member.usdtValue.toFixed(2);
-                
                 html += `
                     <tr>
                         <td>${i+1}</td>
@@ -1021,8 +863,8 @@
                             </div>
                         </td>
                         <td><span class="level-badge level-${member.level}">Level ${member.level}</span></td>
-                        <td><span style="color:var(--primary); font-weight:700">${balanceDisplay}</span></td>
-                        <td>$${usdtDisplay}</td>
+                        <td><span style="color:var(--primary); font-weight:700">${member.balance.toFixed(2)}</span></td>
+                        <td>$${member.usdtValue.toFixed(2)}</td>
                         <td>${dateDisplay}</td>
                         <td style="color:#aaa">${timeDisplay}</td>
                         <td><span class="wallet-address" style="font-size:12px">${uplineShort}</span></td>
@@ -1120,10 +962,9 @@
         function exportData() {
             if (!teamMembers.length) return;
             
-            let csv = "Level,Address,Balance (SIG6),USDT Value,Status,Upline,Join Date\n";
+            let csv = "Level,Address,Balance (SIG6),USDT Value,Status,Upline\n";
             teamMembers.forEach(m => {
-                const joinDate = m.joinTimestamp > 0 ? new Date(m.joinTimestamp * 1000).toLocaleString() : 'N/A';
-                csv += `${m.level},${m.address},${m.balance.toFixed(2)},${m.usdtValue.toFixed(2)},${m.isActive ? 'Active' : 'Inactive'},${m.upline},${joinDate}\n`;
+                csv += `${m.level},${m.address},${m.balance.toFixed(2)},${m.usdtValue.toFixed(2)},${m.isActive ? 'Active' : 'Inactive'},${m.upline}\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv' });
@@ -1133,9 +974,6 @@
             a.download = `sigma_team_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
         }
-        
-        // Manual diagnostic function (call from console)
-        window.runDiagnostic = diagnoseUplineIssue;
     </script>
 </body>
 </html>
