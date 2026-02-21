@@ -130,7 +130,7 @@
         
         <div class="header">
             <h1>SIGMA SIX | INCOME REPORT</h1>
-            <p>ICO Bonus (10%) • Team Referral (10%,4%,3%,2%,1%,0.5%...) • Lapsed Details</p>
+            <p>ICO Bonus (10% on first purchase) • Team Referral • Lapsed Income</p>
         </div>
         
         <div class="filters-section">
@@ -141,7 +141,7 @@
                 <div class="filter-group"><label class="filter-label"><i class="fas fa-tag"></i> Income Type</label>
                     <select id="incomeType" class="type-select">
                         <option value="all">All Types</option>
-                        <option value="ICO">ICO Bonus (10%)</option>
+                        <option value="ICO">ICO Bonus</option>
                         <option value="REFERRAL">Team Referral</option>
                         <option value="lapsed">Lapsed Income</option>
                     </select>
@@ -164,31 +164,51 @@
             </div>
         </div>
         
-        <!-- Combined ICO + Referral Card -->
+        <!-- ICO Bonus Table (Separate) -->
         <div class="main-card">
-            <h2 class="card-title"><i class="fas fa-gift"></i> ICO Bonus (10%) & Team Referral (10%,4%,3%,2%,1%,0.5%...)</h2>
+            <h2 class="card-title"><i class="fas fa-star"></i> ICO Bonus (10% on first purchase only)</h2>
             <div class="table-container">
-                <table class="desktop-table" id="rewards-table">
+                <table class="desktop-table" id="ico-table">
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Type</th>
-                            <th>From / Referrer</th>
-                            <th>Level</th>
-                            <th>Amount (SIG6)</th>
-                            <th>%</th>
-                            <th>Date</th>
+                            <th>Purchase Date</th>
+                            <th>USDT Amount</th>
+                            <th>SIG6 Received</th>
+                            <th>Bonus SIG6 (10%)</th>
+                            <th>Total SIG6</th>
                         </tr>
                     </thead>
-                    <tbody id="rewards-body-desktop"></tbody>
+                    <tbody id="ico-body-desktop"></tbody>
                 </table>
-                <div class="mobile-cards" id="rewards-body-mobile"></div>
+                <div class="mobile-cards" id="ico-body-mobile"></div>
             </div>
         </div>
         
-        <!-- Lapsed Income Card -->
+        <!-- Team Referral Table -->
         <div class="main-card">
-            <h2 class="card-title"><i class="fas fa-exclamation-triangle"></i> Lapsed Income (with Reason)</h2>
+            <h2 class="card-title"><i class="fas fa-users"></i> Team Referral (10%,4%,3%,2%,1%,0.5%,0.5%,0.5%,0.5%,0.5%)</h2>
+            <div class="table-container">
+                <table class="desktop-table" id="referral-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>From Wallet</th>
+                            <th>Level</th>
+                            <th>Percentage</th>
+                            <th>Amount (SIG6)</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="referral-body-desktop"></tbody>
+                </table>
+                <div class="mobile-cards" id="referral-body-mobile"></div>
+            </div>
+        </div>
+        
+        <!-- Lapsed Income Table -->
+        <div class="main-card">
+            <h2 class="card-title"><i class="fas fa-exclamation-triangle"></i> Lapsed Income</h2>
             <div class="table-container">
                 <table class="desktop-table" id="lapsed-table">
                     <thead>
@@ -290,9 +310,12 @@
             if(!(await checkChain())) return;
             
             // Loading states
-            document.getElementById('rewards-body-desktop').innerHTML = `<tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading data...</td></tr>`;
-            document.getElementById('lapsed-body-desktop').innerHTML = `<tr><td colspan="6" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading lapsed...</td></tr>`;
-            document.getElementById('rewards-body-mobile').innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`;
+            document.getElementById('ico-body-desktop').innerHTML = `<tr><td colspan="6" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading ICO data...</td></tr>`;
+            document.getElementById('referral-body-desktop').innerHTML = `<tr><td colspan="6" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading referral data...</td></tr>`;
+            document.getElementById('lapsed-body-desktop').innerHTML = `<tr><td colspan="6" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading lapsed data...</td></tr>`;
+            
+            document.getElementById('ico-body-mobile').innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`;
+            document.getElementById('referral-body-mobile').innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`;
             document.getElementById('lapsed-body-mobile').innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`;
             
             try{
@@ -303,7 +326,7 @@
                 const referralFilter = sigmaContract.filters.ReferralPaid(null, userAddress);
                 const refEvents = await sigmaContract.queryFilter(referralFilter, fromBlock, currentBlock);
                 
-                // Fetch Bought events for ICO bonus (first purchase gets +10%)
+                // Fetch Bought events (for ICO bonus - only first purchase gets bonus)
                 const boughtFilter = sigmaContract.filters.Bought(userAddress);
                 const boughtEvents = await sigmaContract.queryFilter(boughtFilter, fromBlock, currentBlock);
                 
@@ -315,94 +338,83 @@
                 allBoughtEvents = boughtEvents;
                 allLapsedEvents = lapEvents;
                 
-                displayCombinedRewards([...allReferralEvents, ...allBoughtEvents]);
+                displayICOData(allBoughtEvents);
+                displayReferralData(allReferralEvents);
                 displayLapsedData(allLapsedEvents);
-                updateStats([...allReferralEvents, ...allBoughtEvents], allLapsedEvents);
+                updateStats(allReferralEvents, allBoughtEvents, allLapsedEvents);
             } catch(error){
                 console.error(error);
-                document.getElementById('rewards-body-desktop').innerHTML = `<tr><td colspan="7" class="no-data">Error: ${error.message}</td></tr>`;
+                document.getElementById('ico-body-desktop').innerHTML = `<tr><td colspan="6" class="no-data">Error: ${error.message}</td></tr>`;
+                document.getElementById('referral-body-desktop').innerHTML = `<tr><td colspan="6" class="no-data">Error: ${error.message}</td></tr>`;
+                document.getElementById('lapsed-body-desktop').innerHTML = `<tr><td colspan="6" class="no-data">Error: ${error.message}</td></tr>`;
             }
         }
 
-        function displayCombinedRewards(events){
-            const desktop = document.getElementById('rewards-body-desktop');
-            const mobile = document.getElementById('rewards-body-mobile');
+        function displayICOData(events){
+            const desktop = document.getElementById('ico-body-desktop');
+            const mobile = document.getElementById('ico-body-mobile');
+            
             if(!events.length){ 
-                desktop.innerHTML = `<tr><td colspan="7" class="no-data">No ICO or referral income</td></tr>`;
-                mobile.innerHTML = `<div class="no-data">No ICO or referral income</div>`;
+                desktop.innerHTML = `<tr><td colspan="6" class="no-data">No ICO bonus received yet</td></tr>`;
+                mobile.innerHTML = `<div class="no-data">No ICO bonus received yet</div>`;
                 return;
             }
+            
             events.sort((a,b) => Number(b.args.timestamp) - Number(a.args.timestamp));
-            let totalSIG6 = 0;
+            let totalBonus = 0;
             let html = '', mobileHtml = '';
             
             events.forEach((ev, i) => {
-                let type, from, level, amount, percentDisplay = '—', date;
-                let ts;
+                let args = ev.args;
+                let usdtAmount = parseFloat(ethers.formatUnits(args.usdtAmount, 6)); // USDT has 6 decimals
+                let sigmaAmount = parseFloat(ethers.formatUnits(args.sigmaAmount, 18));
                 
-                if(ev.eventName === 'ReferralPaid'){
-                    type = 'Team Referral';
-                    from = ev.args.from;
-                    level = Number(ev.args.level);
-                    amount = parseFloat(ethers.formatUnits(ev.args.amount, 18));
-                    let percent = (level >= 1 && level <= 10) ? levelPercent[level] : 0;
-                    percentDisplay = percent + '%';
-                    ts = Number(ev.args.timestamp);
-                } else { // Bought event as ICO Bonus (first purchase gets +10% bonus)
-                    type = 'ICO Bonus';
-                    from = 'System'; // Bonus from system
-                    level = 0;
-                    amount = parseFloat(ethers.formatUnits(ev.args.sigmaAmount, 18));
-                    percentDisplay = '10%'; // ICO bonus is 10% extra on first buy
-                    ts = Number(ev.args.timestamp);
-                }
+                // Calculate bonus (10% of sigma amount for first purchase)
+                // The contract adds 10% bonus on first buy: tokensToMint += (tokensToMint * 10) / 100
+                // So the bonus is 10% of the base amount = sigmaAmount * (10/110) actually?
+                // Better to show: Base SIG6 = sigmaAmount * 100/110, Bonus = sigmaAmount * 10/110
+                let baseAmount = sigmaAmount * 100 / 110;
+                let bonusAmount = sigmaAmount - baseAmount;
+                totalBonus += bonusAmount;
                 
-                totalSIG6 += amount;
+                let ts = Number(args.timestamp);
                 let dateStr = new Date(ts * 1000).toLocaleDateString('en-IN');
-                let fromShort = from !== 'System' ? from.slice(0,6) + '...' + from.slice(-4) : 'System';
-                
-                let typeBadge = type === 'Team Referral' 
-                    ? '<span class="status-badge status-active">Team Referral</span>' 
-                    : '<span class="status-badge status-ico">ICO Bonus (10%)</span>';
-                
-                let levelHtml = type === 'Team Referral' 
-                    ? `${level} <span class="level-badge">Lv${level}</span>` 
-                    : '—';
+                let timeStr = new Date(ts * 1000).toLocaleTimeString('en-IN');
                 
                 html += `<tr>
                     <td>${i+1}</td>
-                    <td>${typeBadge}</td>
-                    <td>${from !== 'System' ? `<div class="wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</div>` : 'System'}</td>
-                    <td>${levelHtml}</td>
-                    <td class="amount-positive">${amount.toFixed(4)} SIG6</td>
-                    <td><span class="percent-badge">${percentDisplay}</span></td>
-                    <td>${dateStr}</td>
+                    <td>${dateStr}<br><small>${timeStr}</small></td>
+                    <td>$${usdtAmount.toFixed(2)} USDT</td>
+                    <td>${baseAmount.toFixed(4)} SIG6</td>
+                    <td class="amount-positive">+${bonusAmount.toFixed(4)} SIG6</td>
+                    <td class="amount-positive">${sigmaAmount.toFixed(4)} SIG6</td>
                 </tr>`;
                 
                 mobileHtml += `<div class="mobile-card">
-                    <div class="mobile-card-header"><span class="mobile-card-title">${type}</span>${type === 'Team Referral' ? '<span class="level-badge">Lv'+level+'</span>' : ''}</div>
-                    <div class="mobile-card-row"><span class="mobile-card-label">From</span><span class="mobile-card-value">${from !== 'System' ? `<span class="mobile-wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</span>` : 'System'}</span></div>
-                    <div class="mobile-card-row"><span class="mobile-card-label">Amount</span><span class="mobile-card-value mobile-amount positive">${amount.toFixed(4)} SIG6</span></div>
-                    <div class="mobile-card-row"><span class="mobile-card-label">%</span><span class="mobile-card-value">${percentDisplay}</span></div>
-                    <div class="mobile-card-row"><span class="mobile-card-label">Date</span><span class="mobile-card-value">${dateStr}</span></div>
+                    <div class="mobile-card-header"><span class="mobile-card-title">ICO Bonus</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">Date</span><span class="mobile-card-value">${dateStr} ${timeStr}</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">USDT</span><span class="mobile-card-value">$${usdtAmount.toFixed(2)}</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">Base SIG6</span><span class="mobile-card-value">${baseAmount.toFixed(4)}</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">Bonus (10%)</span><span class="mobile-card-value mobile-amount positive">+${bonusAmount.toFixed(4)}</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">Total</span><span class="mobile-card-value mobile-amount positive">${sigmaAmount.toFixed(4)}</span></div>
                 </div>`;
             });
             
             desktop.innerHTML = html;
             mobile.innerHTML = mobileHtml;
-            document.getElementById('total-sig6').innerText = totalSIG6.toFixed(4) + " SIG6";
         }
 
-        function displayLapsedData(events){
-            const desktop = document.getElementById('lapsed-body-desktop');
-            const mobile = document.getElementById('lapsed-body-mobile');
-            if(!events.length){
-                desktop.innerHTML = `<tr><td colspan="6" class="no-data">No lapsed income</td></tr>`;
-                mobile.innerHTML = `<div class="no-data">No lapsed income</div>`;
+        function displayReferralData(events){
+            const desktop = document.getElementById('referral-body-desktop');
+            const mobile = document.getElementById('referral-body-mobile');
+            
+            if(!events.length){ 
+                desktop.innerHTML = `<tr><td colspan="6" class="no-data">No referral income received yet</td></tr>`;
+                mobile.innerHTML = `<div class="no-data">No referral income received yet</div>`;
                 return;
             }
+            
             events.sort((a,b) => Number(b.args.timestamp) - Number(a.args.timestamp));
-            let totalLapsed = 0;
             let html = '', mobileHtml = '';
             
             events.forEach((ev, i) => {
@@ -410,7 +422,50 @@
                 let from = args.from;
                 let level = Number(args.level);
                 let amount = parseFloat(ethers.formatUnits(args.amount, 18));
-                totalLapsed += amount;
+                let percent = (level >= 1 && level <= 10) ? levelPercent[level] : 0;
+                let ts = Number(args.timestamp);
+                let dateStr = new Date(ts * 1000).toLocaleDateString('en-IN');
+                let fromShort = from.slice(0,6) + '...' + from.slice(-4);
+                
+                html += `<tr>
+                    <td>${i+1}</td>
+                    <td><div class="wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</div></td>
+                    <td>Level ${level}</td>
+                    <td><span class="percent-badge">${percent}%</span></td>
+                    <td class="amount-positive">${amount.toFixed(4)} SIG6</td>
+                    <td>${dateStr}</td>
+                </tr>`;
+                
+                mobileHtml += `<div class="mobile-card">
+                    <div class="mobile-card-header"><span class="mobile-card-title">Referral Level ${level}</span><span class="percent-badge">${percent}%</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">From</span><span class="mobile-card-value"><span class="mobile-wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</span></span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">Amount</span><span class="mobile-card-value mobile-amount positive">${amount.toFixed(4)} SIG6</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">Date</span><span class="mobile-card-value">${dateStr}</span></div>
+                </div>`;
+            });
+            
+            desktop.innerHTML = html;
+            mobile.innerHTML = mobileHtml;
+        }
+
+        function displayLapsedData(events){
+            const desktop = document.getElementById('lapsed-body-desktop');
+            const mobile = document.getElementById('lapsed-body-mobile');
+            
+            if(!events.length){
+                desktop.innerHTML = `<tr><td colspan="6" class="no-data">No lapsed income</td></tr>`;
+                mobile.innerHTML = `<div class="no-data">No lapsed income</div>`;
+                return;
+            }
+            
+            events.sort((a,b) => Number(b.args.timestamp) - Number(a.args.timestamp));
+            let html = '', mobileHtml = '';
+            
+            events.forEach((ev, i) => {
+                let args = ev.args;
+                let from = args.from;
+                let level = Number(args.level);
+                let amount = parseFloat(ethers.formatUnits(args.amount, 18));
                 let reason = args.reason || "Unknown";
                 let ts = Number(args.timestamp);
                 let date = new Date(ts * 1000).toLocaleDateString('en-IN');
@@ -420,14 +475,14 @@
                 html += `<tr>
                     <td>${i+1}</td>
                     <td><div class="wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</div></td>
-                    <td>${level} <span class="level-badge">Lv${level}</span></td>
+                    <td>Level ${level}</td>
                     <td class="amount-negative">${amount.toFixed(4)} SIG6</td>
                     <td><span class="reason-badge" title="${reason}">${reasonShort}</span></td>
                     <td>${date}</td>
                 </tr>`;
                 
                 mobileHtml += `<div class="mobile-card">
-                    <div class="mobile-card-header"><span class="mobile-card-title">Lapsed Lv${level}</span></div>
+                    <div class="mobile-card-header"><span class="mobile-card-title">Lapsed Level ${level}</span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">From</span><span class="mobile-card-value"><span class="mobile-wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</span></span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">Amount</span><span class="mobile-card-value mobile-amount negative">${amount.toFixed(4)} SIG6</span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">Reason</span><span class="mobile-card-value">${reasonShort}</span></div>
@@ -437,19 +492,30 @@
             
             desktop.innerHTML = html;
             mobile.innerHTML = mobileHtml;
-            document.getElementById('lapsed-income').innerText = totalLapsed.toFixed(4) + " SIG6";
         }
 
-        function updateStats(rewardEvents, lapEvents){
-            let total = 0, lapsed = 0;
-            rewardEvents.forEach(e => { 
-                let amt = e.eventName === 'ReferralPaid' ? e.args.amount : e.args.sigmaAmount; 
-                total += parseFloat(ethers.formatUnits(amt, 18)); 
+        function updateStats(refEvents, icoEvents, lapEvents){
+            let totalReferral = 0;
+            let totalICO = 0;
+            let totalLapsed = 0;
+            
+            refEvents.forEach(e => { 
+                totalReferral += parseFloat(ethers.formatUnits(e.args.amount, 18)); 
             });
-            lapEvents.forEach(e => lapsed += parseFloat(ethers.formatUnits(e.args.amount, 18)));
-            document.getElementById('total-sig6').innerText = total.toFixed(4) + " SIG6";
-            document.getElementById('lapsed-income').innerText = lapsed.toFixed(4) + " SIG6";
-            document.getElementById('total-transactions').innerText = rewardEvents.length + lapEvents.length;
+            
+            icoEvents.forEach(e => { 
+                totalICO += parseFloat(ethers.formatUnits(e.args.sigmaAmount, 18)); 
+            });
+            
+            lapEvents.forEach(e => { 
+                totalLapsed += parseFloat(ethers.formatUnits(e.args.amount, 18)); 
+            });
+            
+            let totalIncome = totalReferral + totalICO;
+            
+            document.getElementById('total-sig6').innerText = totalIncome.toFixed(4) + " SIG6";
+            document.getElementById('lapsed-income').innerText = totalLapsed.toFixed(4) + " SIG6";
+            document.getElementById('total-transactions').innerText = refEvents.length + icoEvents.length + lapEvents.length;
         }
 
         function applyFilters(){
@@ -459,7 +525,7 @@
             const search = document.getElementById('searchWallet').value.toLowerCase().trim();
             
             let filteredRef = [...allReferralEvents];
-            let filteredBought = [...allBoughtEvents];
+            let filteredIco = [...allBoughtEvents];
             let filteredLap = [...allLapsedEvents];
             
             const toTimestamp = (d) => d ? Math.floor(new Date(d).getTime()/1000) : null;
@@ -468,22 +534,22 @@
             
             if(st){ 
                 filteredRef = filteredRef.filter(e => Number(e.args.timestamp) >= st); 
-                filteredBought = filteredBought.filter(e => Number(e.args.timestamp) >= st); 
+                filteredIco = filteredIco.filter(e => Number(e.args.timestamp) >= st); 
                 filteredLap = filteredLap.filter(e => Number(e.args.timestamp) >= st); 
             }
             if(et){ 
                 filteredRef = filteredRef.filter(e => Number(e.args.timestamp) <= et); 
-                filteredBought = filteredBought.filter(e => Number(e.args.timestamp) <= et); 
+                filteredIco = filteredIco.filter(e => Number(e.args.timestamp) <= et); 
                 filteredLap = filteredLap.filter(e => Number(e.args.timestamp) <= et); 
             }
             
             if(type !== 'all'){
                 if(type === 'lapsed') { 
                     filteredRef = []; 
-                    filteredBought = []; 
+                    filteredIco = []; 
                 }
                 else if(type === 'REFERRAL') { 
-                    filteredBought = []; 
+                    filteredIco = []; 
                     filteredLap = []; 
                 }
                 else if(type === 'ICO') { 
@@ -497,9 +563,10 @@
                 filteredLap = filteredLap.filter(e => e.args.from.toLowerCase().includes(search));
             }
             
-            displayCombinedRewards([...filteredRef, ...filteredBought]);
+            displayReferralData(filteredRef);
+            displayICOData(filteredIco);
             displayLapsedData(filteredLap);
-            updateStats([...filteredRef, ...filteredBought], filteredLap);
+            updateStats(filteredRef, filteredIco, filteredLap);
         }
 
         function resetFilters(){
@@ -507,9 +574,10 @@
             document.getElementById('endDate').value = ''; 
             document.getElementById('incomeType').value = 'all'; 
             document.getElementById('searchWallet').value = '';
-            displayCombinedRewards([...allReferralEvents, ...allBoughtEvents]);
+            displayReferralData(allReferralEvents);
+            displayICOData(allBoughtEvents);
             displayLapsedData(allLapsedEvents);
-            updateStats([...allReferralEvents, ...allBoughtEvents], allLapsedEvents);
+            updateStats(allReferralEvents, allBoughtEvents, allLapsedEvents);
         }
 
         function copyToClipboard(t){ 
