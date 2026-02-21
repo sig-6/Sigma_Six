@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>SIGMA SIX | Transfer History</title>
+    <title>SIGMA SIX | My Transfers</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -718,8 +718,8 @@
         
         <!-- Header -->
         <div class="header">
-            <h1>TRANSFER HISTORY</h1>
-            <p>Complete P2P Transfer History for SIGMA, USDT & POL (MATIC)</p>
+            <h1>MY TRANSFERS</h1>
+            <p>Complete P2P Transfer History for SIGMA, USDT & POL (sent & received)</p>
         </div>
         
         <!-- Stats Overview -->
@@ -737,7 +737,7 @@
             </div>
             
             <div class="stat-card fade-in">
-                <div class="stat-title"><i class="fas fa-exchange-alt"></i> Total Transactions</div>
+                <div class="stat-title"><i class="fas fa-exchange-alt"></i> My Transactions</div>
                 <div class="stat-value" id="total-transactions">0</div>
                 <div class="stat-change" id="unique-counterparties">0 Counterparties</div>
             </div>
@@ -756,7 +756,7 @@
                     <i class="fas fa-filter"></i>
                 </div>
                 <div>
-                    <div class="card-title">FILTER TRANSACTIONS</div>
+                    <div class="card-title">FILTER MY TRANSACTIONS</div>
                     <div class="card-subtitle">Filter by token, direction, date or wallet</div>
                 </div>
             </div>
@@ -809,8 +809,8 @@
                     <i class="fas fa-history"></i>
                 </div>
                 <div>
-                    <div class="card-title">P2P TRANSFER HISTORY</div>
-                    <div class="card-subtitle">All SIGMA, USDT & POL transfers (sent and received)</div>
+                    <div class="card-title">MY P2P TRANSFER HISTORY</div>
+                    <div class="card-subtitle">Only transfers where you are sender or receiver</div>
                 </div>
             </div>
             
@@ -835,7 +835,7 @@
                         <tr>
                             <td colspan="11" class="loading">
                                 <i class="fas fa-spinner fa-spin"></i><br>
-                                Loading transfer history... Please connect wallet
+                                Loading your transfer history... Please connect wallet
                             </td>
                         </tr>
                     </tbody>
@@ -848,7 +848,6 @@
         // Contract Configuration
         const SIGMA_CONTRACT_ADDRESS = "0x068Aaba73Fd754F21140E2F13DA177ce7251A299";
         const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // Polygon USDT
-        const POL_ADDRESS = "0x0000000000000000000000000000000000001010"; // POL/MATIC on Polygon
         
         // USDT to INR conversion rate
         let usdtToInr = 85.0;
@@ -867,7 +866,7 @@
         // SigmaSix Contract ABI
         const sigmaABI = [{"inputs":[{"internalType":"address","name":"_user","type":"address"},{"internalType":"address","name":"_upline","type":"address"}],"name":"adminSetUpline","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_usdt","type":"address"},{"internalType":"address","name":"_creator","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"allowance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientAllowance","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"uint256","name":"balance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientBalance","type":"error"},{"inputs":[{"internalType":"address","name":"approver","type":"address"}],"name":"ERC20InvalidApprover","type":"error"},{"inputs":[{"internalType":"address","name":"receiver","type":"address"}],"name":"ERC20InvalidReceiver","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"ERC20InvalidSender","type":"error"},{"inputs":[{"internalType":"address","name":"spender","type":"address"}],"name":"ERC20InvalidSpender","type":"error"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},{"inputs":[{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"p2pTransfer","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"ReentrancyGuardReentrantCall","type":"error"},{"inputs":[{"internalType":"address","name":"token","type":"address"}],"name":"SafeERC20FailedOperation","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"usdtAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"sigmaAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"rate","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"Bought","type":"event"},{"inputs":[{"internalType":"uint256","name":"_usdtAmount","type":"uint256"},{"internalType":"address","name":"_upline","type":"address"}],"name":"buy","outputs":[],"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"level","type":"uint256"},{"indexed":false,"internalType":"string","name":"reason","type":"string"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"IncomeLapsed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"level","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"ReferralPaid","type":"event"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_sigmaAmount","type":"uint256"}],"name":"sell","outputs":[],"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"sigmaAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"usdtAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"rate","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"Sold","type":"event"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ath","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"atl","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"BASE_RATE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"creatorWallet","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"currentRate","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"dailyHistory","outputs":[{"internalType":"uint256","name":"open","type":"uint256"},{"internalType":"uint256","name":"high","type":"uint256"},{"internalType":"uint256","name":"low","type":"uint256"},{"internalType":"uint256","name":"close","type":"uint256"},{"internalType":"uint256","name":"timestamp","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getSellRate","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"INCREMENT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_upline","type":"address"},{"internalType":"uint256","name":"_level","type":"uint256"}],"name":"isLevelUnlocked","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lastHistoryDay","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"levelRewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_SIGMA_BUY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MIN_FOR_RENEWAL","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MIN_HOLD_VALUE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"usdt","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"users","outputs":[{"internalType":"address","name":"upline","type":"address"},{"internalType":"uint256","name":"referralExpiry","type":"uint256"},{"internalType":"uint256","name":"totalReferralEarned","type":"uint256"},{"internalType":"uint256","name":"lastBuyTimestamp","type":"uint256"},{"internalType":"uint256","name":"lastActionBlock","type":"uint256"},{"internalType":"uint256","name":"qualifiedDirectsCount","type":"uint256"},{"internalType":"bool","name":"hasBought","type":"bool"},{"internalType":"bool","name":"isInitialized","type":"bool"},{"internalType":"bool","name":"isCurrentlyQualified","type":"bool"}],"stateMutability":"view","type":"function"}];
 
-        // ERC20 ABI for USDT and POL transfers
+        // ERC20 ABI for USDT transfers
         const erc20ABI = [
             "event Transfer(address indexed from, address indexed to, uint256 value)"
         ];
@@ -960,28 +959,35 @@
                     <tr>
                         <td colspan="11" class="loading">
                             <i class="fas fa-spinner fa-spin"></i><br>
-                            Loading transfer history...
+                            Loading your transfer history...
                         </td>
                     </tr>
                 `;
                 
                 const currentBlock = await provider.getBlockNumber();
-                const fromBlock = Math.max(currentBlock - 500000, 0);
+                const fromBlock = Math.max(currentBlock - 1000000, 0); // Last ~1M blocks
                 
                 allTransfers = [];
                 
-                // 1. Fetch SIGMA Transfer events from SigmaSix contract
-                const sigmaFilter = sigmaContract.filters.Transfer(null, null);
-                const sigmaEvents = await sigmaContract.queryFilter(sigmaFilter, fromBlock, currentBlock);
+                // 1. Fetch SIGMA Transfer events from SigmaSix contract (only where user is involved)
+                const sigmaFilterFrom = sigmaContract.filters.Transfer(userAddress, null);
+                const sigmaFilterTo = sigmaContract.filters.Transfer(null, userAddress);
                 
-                for (const event of sigmaEvents) {
+                const [sigmaEventsFrom, sigmaEventsTo] = await Promise.all([
+                    sigmaContract.queryFilter(sigmaFilterFrom, fromBlock, currentBlock),
+                    sigmaContract.queryFilter(sigmaFilterTo, fromBlock, currentBlock)
+                ]);
+                
+                const allSigmaEvents = [...sigmaEventsFrom, ...sigmaEventsTo];
+                
+                for (const event of allSigmaEvents) {
                     if (event.args.from === "0x0000000000000000000000000000000000000000") continue; // Skip mints
                     if (event.args.to === "0x0000000000000000000000000000000000000000") continue; // Skip burns
                     
                     const block = await provider.getBlock(event.blockNumber);
-                    const timestamp = block.timestamp;
                     
-                    // Get SIGMA rate at that time (approximate from contract state)
+                    // Get SIGMA rate at that time (using current rate as approximation)
+                    // In production, you'd want to query historical rate from an API
                     const rate = await getRateAtBlock(event.blockNumber);
                     
                     allTransfers.push({
@@ -992,26 +998,28 @@
                         amount: ethers.formatUnits(event.args.value, 18),
                         value: parseFloat(ethers.formatUnits(event.args.value, 18)) * rate,
                         rate: rate,
-                        timestamp: timestamp,
-                        date: new Date(timestamp * 1000),
+                        timestamp: block.timestamp,
+                        date: new Date(block.timestamp * 1000),
                         blockNumber: event.blockNumber
                     });
                 }
                 
-                // 2. Fetch USDT Transfer events
+                // 2. Fetch USDT Transfer events (only where user is involved)
                 const usdtContract = new ethers.Contract(USDT_ADDRESS, erc20ABI, provider);
-                const usdtFilter = usdtContract.filters.Transfer(null, null);
-                const usdtEvents = await usdtContract.queryFilter(usdtFilter, fromBlock, currentBlock);
                 
-                for (const event of usdtEvents) {
+                const usdtFilterFrom = usdtContract.filters.Transfer(userAddress, null);
+                const usdtFilterTo = usdtContract.filters.Transfer(null, userAddress);
+                
+                const [usdtEventsFrom, usdtEventsTo] = await Promise.all([
+                    usdtContract.queryFilter(usdtFilterFrom, fromBlock, currentBlock),
+                    usdtContract.queryFilter(usdtFilterTo, fromBlock, currentBlock)
+                ]);
+                
+                const allUsdtEvents = [...usdtEventsFrom, ...usdtEventsTo];
+                
+                for (const event of allUsdtEvents) {
                     if (event.args.from === "0x0000000000000000000000000000000000000000") continue;
                     if (event.args.to === "0x0000000000000000000000000000000000000000") continue;
-                    
-                    // Only include transfers involving the user
-                    if (event.args.from.toLowerCase() !== userAddress.toLowerCase() && 
-                        event.args.to.toLowerCase() !== userAddress.toLowerCase()) {
-                        continue;
-                    }
                     
                     const block = await provider.getBlock(event.blockNumber);
                     
@@ -1029,10 +1037,13 @@
                     });
                 }
                 
-                // 3. Fetch POL/MATIC Transfer events (native token)
-                // We need to scan for transactions involving the user
-                // This is a simplified approach - in production you'd want to use an API
-                // For now, we'll just create a placeholder or use transaction receipts
+                // 3. Fetch POL/MATIC native transfers
+                // For native token, we need to scan blocks for transactions involving the user
+                // This is more complex and requires additional API calls
+                // For now, we'll show a placeholder or you can integrate with a blockchain API service
+                
+                // Note: For POL transfers, you'd typically use a service like Covalent, Moralis, or Etherscan API
+                // Since we can't do that here, we'll skip POL for now
                 
                 // Sort all transfers by timestamp (newest first)
                 allTransfers.sort((a, b) => b.timestamp - a.timestamp);
@@ -1040,6 +1051,17 @@
                 filteredTransfers = [...allTransfers];
                 updateStats();
                 displayTransfers();
+                
+                if (allTransfers.length === 0) {
+                    document.getElementById('transfer-body').innerHTML = `
+                        <tr>
+                            <td colspan="11" class="empty-state">
+                                <i class="fas fa-exchange-alt"></i><br>
+                                No transfer history found for your wallet
+                            </td>
+                        </tr>
+                    `;
+                }
                 
             } catch (error) {
                 console.error("Error loading data:", error);
@@ -1056,12 +1078,12 @@
         
         async function getRateAtBlock(blockNumber) {
             try {
-                // Try to get historical rate from contract
-                // This is a simplified approach - you might need to query a different source
-                const contractAtBlock = sigmaContract.connect(provider);
-                return 1.0; // Default to 1 USDT per SIGMA if can't get historical
+                // Try to get rate from contract at that block
+                // This is simplified - in production you'd query historical rate
+                const rate = await sigmaContract.currentRate({ blockTag: blockNumber });
+                return parseFloat(ethers.formatUnits(rate, 6));
             } catch {
-                return 1.0;
+                return 1.0; // Default fallback
             }
         }
         
@@ -1169,7 +1191,7 @@
                     <tr>
                         <td colspan="11" class="empty-state">
                             <i class="fas fa-exchange-alt"></i><br>
-                            No transfer history found
+                            No matching transfers found
                         </td>
                     </tr>
                 `;
@@ -1290,7 +1312,7 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `sigma_transfer_history.csv`);
+            link.setAttribute("download", `my_transfers.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
