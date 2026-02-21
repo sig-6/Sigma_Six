@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>SIGMA SIX | Income Report (Final)</title>
+    <title>SIGMA SIX | Income Report</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -119,7 +119,7 @@
     <div class="floating-icons"> <div class="floating-icon">₿</div> <div class="floating-icon">Ξ</div> <div class="floating-icon">S</div> <div class="floating-icon">Σ</div> <div class="floating-icon">$</div> <div class="floating-icon">◈</div> <div class="floating-icon">✦</div> </div>
     <div class="chain-warning" id="chainWarning"><i class="fas fa-exclamation-triangle"></i> Please switch to Polygon network</div>
     
-    <!-- Connect Button (Direct Connection) -->
+    <!-- Connect Button -->
     <button class="connect-btn" id="connectBtn" onclick="handleConnectClick()"><i class="fas fa-wallet"></i> <span id="btn-text">Connect Wallet</span></button>
     
     <div class="container">
@@ -159,14 +159,14 @@
             <h2 class="card-title"><i class="fas fa-chart-line"></i> Income Overview</h2>
             <div class="stats-row">
                 <div class="stat-box"><div class="stat-label"><i class="fas fa-coins"></i> Total SIG6 Income</div><div id="total-sig6" class="stat-value positive">0.0000 SIG6</div></div>
-                <div class="stat-box"><div class="stat-label"><i class="fas fa-exclamation-triangle"></i> Lapsed Income (SIG6)</div><div id="lapsed-income" class="stat-value negative">0.0000 SIG6</div></div>
+                <div class="stat-box"><div class="stat-label"><i class="fas fa-exclamation-triangle"></i> Lapsed Income</div><div id="lapsed-income" class="stat-value negative">0.0000 SIG6</div></div>
                 <div class="stat-box"><div class="stat-label"><i class="fas fa-history"></i> Total Transactions</div><div id="total-transactions" class="stat-value">0</div></div>
             </div>
         </div>
         
-        <!-- ICO Bonus Table (Separate) -->
+        <!-- ICO Bonus Table - Shows ONLY the first purchase with 10% bonus -->
         <div class="main-card">
-            <h2 class="card-title"><i class="fas fa-star"></i> ICO Bonus (10% on first purchase only)</h2>
+            <h2 class="card-title"><i class="fas fa-star"></i> ICO Bonus</h2>
             <div class="table-container">
                 <table class="desktop-table" id="ico-table">
                     <thead>
@@ -174,8 +174,8 @@
                             <th>#</th>
                             <th>Purchase Date</th>
                             <th>USDT Amount</th>
-                            <th>SIG6 Received</th>
-                            <th>Bonus SIG6 (10%)</th>
+                            <th>Base SIG6</th>
+                            <th>Bonus (10%)</th>
                             <th>Total SIG6</th>
                         </tr>
                     </thead>
@@ -187,7 +187,7 @@
         
         <!-- Team Referral Table -->
         <div class="main-card">
-            <h2 class="card-title"><i class="fas fa-users"></i> Team Referral (10%,4%,3%,2%,1%,0.5%,0.5%,0.5%,0.5%,0.5%)</h2>
+            <h2 class="card-title"><i class="fas fa-users"></i> Team Referral</h2>
             <div class="table-container">
                 <table class="desktop-table" id="referral-table">
                     <thead>
@@ -232,17 +232,14 @@
         // Contract Configuration
         const SIGMA_CONTRACT_ADDRESS = "0x068Aaba73Fd754F21140E2F13DA177ce7251A299";
         let provider, userAddress, sigmaContract, signer;
-        let allReferralEvents = [];      // ReferralPaid events
-        let allLapsedEvents = [];         // IncomeLapsed events
-        let allBoughtEvents = [];          // Bought events (for ICO bonus - 10% extra on first buy)
+        let allReferralEvents = [];
+        let allLapsedEvents = [];
+        let allBoughtEvents = [];
         
-        // ✅ CORRECT REFERRAL PERCENTAGES FROM CONTRACT
-        // levelRewards = [1000, 400, 300, 200, 100, 50, 50, 50, 50, 50] basis points
-        // Percentages: 10%, 4%, 3%, 2%, 1%, 0.5%, 0.5%, 0.5%, 0.5%, 0.5%
+        // Correct referral percentages from contract
         const levelPercent = [0, 10, 4, 3, 2, 1, 0.5, 0.5, 0.5, 0.5, 0.5];
-        // Index:          0   1   2  3  4  5   6    7    8    9    10
         
-        // Complete ABI from contract
+        // Complete ABI
         const sigmaABI = [{"inputs":[{"internalType":"address","name":"_usdt","type":"address"},{"internalType":"address","name":"_creator","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"usdtAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"sigmaAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"rate","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"Bought","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"level","type":"uint256"},{"indexed":false,"internalType":"string","name":"reason","type":"string"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"IncomeLapsed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"level","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"ReferralPaid","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"sigmaAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"usdtAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"rate","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"Sold","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"BASE_RATE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"INCREMENT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_SIGMA_BUY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MIN_FOR_RENEWAL","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MIN_HOLD_VALUE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"},{"internalType":"address","name":"_upline","type":"address"}],"name":"adminSetUpline","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"ath","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"atl","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_usdtAmount","type":"uint256"},{"internalType":"address","name":"_upline","type":"address"}],"name":"buy","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"creatorWallet","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"currentRate","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"dailyHistory","outputs":[{"internalType":"uint256","name":"open","type":"uint256"},{"internalType":"uint256","name":"high","type":"uint256"},{"internalType":"uint256","name":"low","type":"uint256"},{"internalType":"uint256","name":"close","type":"uint256"},{"internalType":"uint256","name":"timestamp","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getSellRate","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_upline","type":"address"},{"internalType":"uint256","name":"_level","type":"uint256"}],"name":"isLevelUnlocked","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lastHistoryDay","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"levelRewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"p2pTransfer","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_sigmaAmount","type":"uint256"}],"name":"sell","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"usdt","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"users","outputs":[{"internalType":"address","name":"upline","type":"address"},{"internalType":"uint256","name":"referralExpiry","type":"uint256"},{"internalType":"uint256","name":"totalReferralEarned","type":"uint256"},{"internalType":"uint256","name":"lastBuyTimestamp","type":"uint256"},{"internalType":"uint256","name":"lastActionBlock","type":"uint256"},{"internalType":"uint256","name":"qualifiedDirectsCount","type":"uint256"},{"internalType":"bool","name":"hasBought","type":"bool"},{"internalType":"bool","name":"isInitialized","type":"bool"},{"internalType":"bool","name":"isCurrentlyQualified","type":"bool"}],"stateMutability":"view","type":"function"}];
 
         // Helper Functions
@@ -263,7 +260,6 @@
             }
         }
         
-        // Direct connect without popup
         async function handleConnectClick() {
             if (window.ethereum) {
                 await connectWallet();
@@ -322,11 +318,11 @@
                 const currentBlock = await provider.getBlockNumber();
                 const fromBlock = Math.max(0, currentBlock - 3000000); 
                 
-                // Fetch ReferralPaid events (where 'to' == userAddress)
+                // Fetch ReferralPaid events
                 const referralFilter = sigmaContract.filters.ReferralPaid(null, userAddress);
                 const refEvents = await sigmaContract.queryFilter(referralFilter, fromBlock, currentBlock);
                 
-                // Fetch Bought events (for ICO bonus - only first purchase gets bonus)
+                // Fetch Bought events
                 const boughtFilter = sigmaContract.filters.Bought(userAddress);
                 const boughtEvents = await sigmaContract.queryFilter(boughtFilter, fromBlock, currentBlock);
                 
@@ -338,6 +334,7 @@
                 allBoughtEvents = boughtEvents;
                 allLapsedEvents = lapEvents;
                 
+                // Display data
                 displayICOData(allBoughtEvents);
                 displayReferralData(allReferralEvents);
                 displayLapsedData(allLapsedEvents);
@@ -345,8 +342,6 @@
             } catch(error){
                 console.error(error);
                 document.getElementById('ico-body-desktop').innerHTML = `<tr><td colspan="6" class="no-data">Error: ${error.message}</td></tr>`;
-                document.getElementById('referral-body-desktop').innerHTML = `<tr><td colspan="6" class="no-data">Error: ${error.message}</td></tr>`;
-                document.getElementById('lapsed-body-desktop').innerHTML = `<tr><td colspan="6" class="no-data">Error: ${error.message}</td></tr>`;
             }
         }
 
@@ -355,48 +350,59 @@
             const mobile = document.getElementById('ico-body-mobile');
             
             if(!events.length){ 
-                desktop.innerHTML = `<tr><td colspan="6" class="no-data">No ICO bonus received yet</td></tr>`;
-                mobile.innerHTML = `<div class="no-data">No ICO bonus received yet</div>`;
+                desktop.innerHTML = `<tr><td colspan="6" class="no-data">No purchases found</td></tr>`;
+                mobile.innerHTML = `<div class="no-data">No purchases found</div>`;
                 return;
             }
             
-            events.sort((a,b) => Number(b.args.timestamp) - Number(a.args.timestamp));
-            let totalBonus = 0;
-            let html = '', mobileHtml = '';
+            // Sort by timestamp (oldest first to find first purchase)
+            events.sort((a,b) => Number(a.args.timestamp) - Number(b.args.timestamp));
             
-            events.forEach((ev, i) => {
+            let html = '';
+            let mobileHtml = '';
+            let hasFoundBonus = false;
+            
+            events.forEach((ev, index) => {
                 let args = ev.args;
-                let usdtAmount = parseFloat(ethers.formatUnits(args.usdtAmount, 6)); // USDT has 6 decimals
+                let usdtAmount = parseFloat(ethers.formatUnits(args.usdtAmount, 6));
                 let sigmaAmount = parseFloat(ethers.formatUnits(args.sigmaAmount, 18));
-                
-                // Calculate bonus (10% of sigma amount for first purchase)
-                // The contract adds 10% bonus on first buy: tokensToMint += (tokensToMint * 10) / 100
-                // So the bonus is 10% of the base amount = sigmaAmount * (10/110) actually?
-                // Better to show: Base SIG6 = sigmaAmount * 100/110, Bonus = sigmaAmount * 10/110
-                let baseAmount = sigmaAmount * 100 / 110;
-                let bonusAmount = sigmaAmount - baseAmount;
-                totalBonus += bonusAmount;
-                
                 let ts = Number(args.timestamp);
                 let dateStr = new Date(ts * 1000).toLocaleDateString('en-IN');
                 let timeStr = new Date(ts * 1000).toLocaleTimeString('en-IN');
                 
+                // Calculate base amount and bonus
+                // First purchase gets 10% bonus
+                let baseAmount, bonusAmount;
+                
+                if (index === 0 && !hasFoundBonus) {
+                    // This is the first purchase - it has the 10% bonus
+                    baseAmount = sigmaAmount * 100 / 110;
+                    bonusAmount = sigmaAmount - baseAmount;
+                    hasFoundBonus = true;
+                } else {
+                    // Subsequent purchases - no bonus
+                    baseAmount = sigmaAmount;
+                    bonusAmount = 0;
+                }
+                
                 html += `<tr>
-                    <td>${i+1}</td>
+                    <td>${index + 1}</td>
                     <td>${dateStr}<br><small>${timeStr}</small></td>
                     <td>$${usdtAmount.toFixed(2)} USDT</td>
                     <td>${baseAmount.toFixed(4)} SIG6</td>
-                    <td class="amount-positive">+${bonusAmount.toFixed(4)} SIG6</td>
+                    <td class="${bonusAmount > 0 ? 'amount-positive' : ''}">${bonusAmount > 0 ? '+' + bonusAmount.toFixed(4) + ' SIG6' : '—'}</td>
                     <td class="amount-positive">${sigmaAmount.toFixed(4)} SIG6</td>
                 </tr>`;
                 
                 mobileHtml += `<div class="mobile-card">
-                    <div class="mobile-card-header"><span class="mobile-card-title">ICO Bonus</span></div>
+                    <div class="mobile-card-header"><span class="mobile-card-title">Purchase #${index + 1}</span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">Date</span><span class="mobile-card-value">${dateStr} ${timeStr}</span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">USDT</span><span class="mobile-card-value">$${usdtAmount.toFixed(2)}</span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">Base SIG6</span><span class="mobile-card-value">${baseAmount.toFixed(4)}</span></div>
+                    ${bonusAmount > 0 ? `
                     <div class="mobile-card-row"><span class="mobile-card-label">Bonus (10%)</span><span class="mobile-card-value mobile-amount positive">+${bonusAmount.toFixed(4)}</span></div>
-                    <div class="mobile-card-row"><span class="mobile-card-label">Total</span><span class="mobile-card-value mobile-amount positive">${sigmaAmount.toFixed(4)}</span></div>
+                    ` : ''}
+                    <div class="mobile-card-row"><span class="mobile-card-label">Total</span><span class="mobile-card-value mobile-amount positive">${sigmaAmount.toFixed(4)} SIG6</span></div>
                 </div>`;
             });
             
@@ -437,7 +443,7 @@
                 </tr>`;
                 
                 mobileHtml += `<div class="mobile-card">
-                    <div class="mobile-card-header"><span class="mobile-card-title">Referral Level ${level}</span><span class="percent-badge">${percent}%</span></div>
+                    <div class="mobile-card-header"><span class="mobile-card-title">Level ${level}</span><span class="percent-badge">${percent}%</span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">From</span><span class="mobile-card-value"><span class="mobile-wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</span></span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">Amount</span><span class="mobile-card-value mobile-amount positive">${amount.toFixed(4)} SIG6</span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">Date</span><span class="mobile-card-value">${dateStr}</span></div>
@@ -482,7 +488,7 @@
                 </tr>`;
                 
                 mobileHtml += `<div class="mobile-card">
-                    <div class="mobile-card-header"><span class="mobile-card-title">Lapsed Level ${level}</span></div>
+                    <div class="mobile-card-header"><span class="mobile-card-title">Level ${level}</span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">From</span><span class="mobile-card-value"><span class="mobile-wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</span></span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">Amount</span><span class="mobile-card-value mobile-amount negative">${amount.toFixed(4)} SIG6</span></div>
                     <div class="mobile-card-row"><span class="mobile-card-label">Reason</span><span class="mobile-card-value">${reasonShort}</span></div>
