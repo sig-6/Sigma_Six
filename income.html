@@ -130,7 +130,7 @@
         
         <div class="header">
             <h1>SIGMA SIX | INCOME REPORT</h1>
-            <p>ICO Bonus (10% on first purchase) • Team Referral • Lapsed Income</p>
+            <p>ICO Bonus (10% on first purchase only) • Team Referral • Lapsed Income</p>
         </div>
         
         <div class="filters-section">
@@ -334,7 +334,7 @@
                 allBoughtEvents = boughtEvents;
                 allLapsedEvents = lapEvents;
                 
-                // Display data
+                // Display data - ICO shows ONLY first purchase
                 displayICOData(allBoughtEvents);
                 displayReferralData(allReferralEvents);
                 displayLapsedData(allLapsedEvents);
@@ -358,53 +358,37 @@
             // Sort by timestamp (oldest first to find first purchase)
             events.sort((a,b) => Number(a.args.timestamp) - Number(b.args.timestamp));
             
-            let html = '';
-            let mobileHtml = '';
-            let hasFoundBonus = false;
+            // Take ONLY the first purchase
+            const firstPurchase = events[0];
             
-            events.forEach((ev, index) => {
-                let args = ev.args;
-                let usdtAmount = parseFloat(ethers.formatUnits(args.usdtAmount, 6));
-                let sigmaAmount = parseFloat(ethers.formatUnits(args.sigmaAmount, 18));
-                let ts = Number(args.timestamp);
-                let dateStr = new Date(ts * 1000).toLocaleDateString('en-IN');
-                let timeStr = new Date(ts * 1000).toLocaleTimeString('en-IN');
-                
-                // Calculate base amount and bonus
-                // First purchase gets 10% bonus
-                let baseAmount, bonusAmount;
-                
-                if (index === 0 && !hasFoundBonus) {
-                    // This is the first purchase - it has the 10% bonus
-                    baseAmount = sigmaAmount * 100 / 110;
-                    bonusAmount = sigmaAmount - baseAmount;
-                    hasFoundBonus = true;
-                } else {
-                    // Subsequent purchases - no bonus
-                    baseAmount = sigmaAmount;
-                    bonusAmount = 0;
-                }
-                
-                html += `<tr>
-                    <td>${index + 1}</td>
-                    <td>${dateStr}<br><small>${timeStr}</small></td>
-                    <td>$${usdtAmount.toFixed(2)} USDT</td>
-                    <td>${baseAmount.toFixed(4)} SIG6</td>
-                    <td class="${bonusAmount > 0 ? 'amount-positive' : ''}">${bonusAmount > 0 ? '+' + bonusAmount.toFixed(4) + ' SIG6' : '—'}</td>
-                    <td class="amount-positive">${sigmaAmount.toFixed(4)} SIG6</td>
-                </tr>`;
-                
-                mobileHtml += `<div class="mobile-card">
-                    <div class="mobile-card-header"><span class="mobile-card-title">Purchase #${index + 1}</span></div>
-                    <div class="mobile-card-row"><span class="mobile-card-label">Date</span><span class="mobile-card-value">${dateStr} ${timeStr}</span></div>
-                    <div class="mobile-card-row"><span class="mobile-card-label">USDT</span><span class="mobile-card-value">$${usdtAmount.toFixed(2)}</span></div>
-                    <div class="mobile-card-row"><span class="mobile-card-label">Base SIG6</span><span class="mobile-card-value">${baseAmount.toFixed(4)}</span></div>
-                    ${bonusAmount > 0 ? `
-                    <div class="mobile-card-row"><span class="mobile-card-label">Bonus (10%)</span><span class="mobile-card-value mobile-amount positive">+${bonusAmount.toFixed(4)}</span></div>
-                    ` : ''}
-                    <div class="mobile-card-row"><span class="mobile-card-label">Total</span><span class="mobile-card-value mobile-amount positive">${sigmaAmount.toFixed(4)} SIG6</span></div>
-                </div>`;
-            });
+            let args = firstPurchase.args;
+            let usdtAmount = parseFloat(ethers.formatUnits(args.usdtAmount, 6));
+            let sigmaAmount = parseFloat(ethers.formatUnits(args.sigmaAmount, 18));
+            let ts = Number(args.timestamp);
+            let dateStr = new Date(ts * 1000).toLocaleDateString('en-IN');
+            let timeStr = new Date(ts * 1000).toLocaleTimeString('en-IN');
+            
+            // Calculate base amount and bonus (10% on first purchase)
+            let baseAmount = sigmaAmount * 100 / 110;
+            let bonusAmount = sigmaAmount - baseAmount;
+            
+            let html = `<tr>
+                <td>1</td>
+                <td>${dateStr}<br><small>${timeStr}</small></td>
+                <td>$${usdtAmount.toFixed(2)} USDT</td>
+                <td>${baseAmount.toFixed(4)} SIG6</td>
+                <td class="amount-positive">+${bonusAmount.toFixed(4)} SIG6</td>
+                <td class="amount-positive">${sigmaAmount.toFixed(4)} SIG6</td>
+            </tr>`;
+            
+            let mobileHtml = `<div class="mobile-card">
+                <div class="mobile-card-header"><span class="mobile-card-title">First Purchase (with 10% Bonus)</span></div>
+                <div class="mobile-card-row"><span class="mobile-card-label">Date</span><span class="mobile-card-value">${dateStr} ${timeStr}</span></div>
+                <div class="mobile-card-row"><span class="mobile-card-label">USDT</span><span class="mobile-card-value">$${usdtAmount.toFixed(2)}</span></div>
+                <div class="mobile-card-row"><span class="mobile-card-label">Base SIG6</span><span class="mobile-card-value">${baseAmount.toFixed(4)}</span></div>
+                <div class="mobile-card-row"><span class="mobile-card-label">Bonus (10%)</span><span class="mobile-card-value mobile-amount positive">+${bonusAmount.toFixed(4)}</span></div>
+                <div class="mobile-card-row"><span class="mobile-card-label">Total</span><span class="mobile-card-value mobile-amount positive">${sigmaAmount.toFixed(4)} SIG6</span></div>
+            </div>`;
             
             desktop.innerHTML = html;
             mobile.innerHTML = mobileHtml;
@@ -509,9 +493,12 @@
                 totalReferral += parseFloat(ethers.formatUnits(e.args.amount, 18)); 
             });
             
-            icoEvents.forEach(e => { 
-                totalICO += parseFloat(ethers.formatUnits(e.args.sigmaAmount, 18)); 
-            });
+            // Only count first purchase for ICO total
+            if (icoEvents.length > 0) {
+                // Sort to get first purchase
+                icoEvents.sort((a,b) => Number(a.args.timestamp) - Number(b.args.timestamp));
+                totalICO += parseFloat(ethers.formatUnits(icoEvents[0].args.sigmaAmount, 18));
+            }
             
             lapEvents.forEach(e => { 
                 totalLapsed += parseFloat(ethers.formatUnits(e.args.amount, 18)); 
@@ -521,7 +508,7 @@
             
             document.getElementById('total-sig6').innerText = totalIncome.toFixed(4) + " SIG6";
             document.getElementById('lapsed-income').innerText = totalLapsed.toFixed(4) + " SIG6";
-            document.getElementById('total-transactions').innerText = refEvents.length + icoEvents.length + lapEvents.length;
+            document.getElementById('total-transactions').innerText = refEvents.length + (icoEvents.length > 0 ? 1 : 0) + lapEvents.length;
         }
 
         function applyFilters(){
