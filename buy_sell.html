@@ -326,7 +326,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 1000px;
+            min-width: 900px;
         }
         
         thead {
@@ -674,11 +674,11 @@
             font-size: 12px;
         }
 
-        /* INR rate note */
-        .inr-note {
+        /* INR rate small text */
+        .inr-rate {
             font-size: 11px;
             color: #888;
-            margin-top: 5px;
+            margin-top: 2px;
         }
     </style>
 </head>
@@ -774,17 +774,15 @@
                             <th>#</th>
                             <th>Date & Time</th>
                             <th>Sigma Quantity</th>
-                            <th>Buy Rate (USDT)</th>
-                            <th>Buy Rate (INR)</th>
-                            <th>Current Rate (USDT)</th>
-                            <th>Current Rate (INR)</th>
+                            <th>Buy Rate</th>
+                            <th>Current Rate</th>
                             <th>P&L %</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="active-body">
                         <tr>
-                            <td colspan="9" class="loading">
+                            <td colspan="7" class="loading">
                                 <i class="fas fa-spinner fa-spin"></i><br>
                                 Loading active positions... Please connect wallet
                             </td>
@@ -813,17 +811,16 @@
                             <th>#</th>
                             <th>Date & Time</th>
                             <th>Sigma Quantity</th>
-                            <th>Buy Rate (USDT)</th>
-                            <th>Sell Rate (USDT)</th>
-                            <th>P&L Amount (USDT)</th>
-                            <th>P&L Amount (INR)</th>
+                            <th>Buy Rate</th>
+                            <th>Sell Rate</th>
+                            <th>P&L Amount</th>
                             <th>P&L %</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="closed-body">
                         <tr>
-                            <td colspan="9" class="loading">
+                            <td colspan="8" class="loading">
                                 <i class="fas fa-spinner fa-spin"></i><br>
                                 Loading closed positions...
                             </td>
@@ -901,7 +898,7 @@
                 // Show loading state
                 document.getElementById('active-body').innerHTML = `
                     <tr>
-                        <td colspan="9" class="loading">
+                        <td colspan="7" class="loading">
                             <i class="fas fa-spinner fa-spin"></i><br>
                             Loading data...
                         </td>
@@ -910,7 +907,7 @@
                 
                 document.getElementById('closed-body').innerHTML = `
                     <tr>
-                        <td colspan="9" class="loading">
+                        <td colspan="8" class="loading">
                             <i class="fas fa-spinner fa-spin"></i><br>
                             Loading data...
                         </td>
@@ -948,8 +945,8 @@
                 
             } catch (error) {
                 console.error("Error loading data:", error);
-                document.getElementById('active-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="fas fa-exclamation-circle"></i><br>Error: ${error.message}</td></tr>`;
-                document.getElementById('closed-body').innerHTML = `<tr><td colspan="9" class="empty-state"><i class="fas fa-exclamation-circle"></i><br>Error: ${error.message}</td></tr>`;
+                document.getElementById('active-body').innerHTML = `<tr><td colspan="7" class="empty-state"><i class="fas fa-exclamation-circle"></i><br>Error: ${error.message}</td></tr>`;
+                document.getElementById('closed-body').innerHTML = `<tr><td colspan="8" class="empty-state"><i class="fas fa-exclamation-circle"></i><br>Error: ${error.message}</td></tr>`;
             }
         }
         
@@ -1083,7 +1080,7 @@
             if (buyTransactions.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="9" class="empty-state">
+                        <td colspan="7" class="empty-state">
                             <i class="fas fa-chart-bar"></i><br>
                             No active positions found
                         </td>
@@ -1097,8 +1094,7 @@
             buyTransactions.forEach((tx, index) => {
                 const currentValue = tx.sigmaAmount * currentBuyRate;
                 const buyValue = tx.sigmaAmount * tx.rate;
-                const unrealizedPL = currentValue - buyValue;
-                const unrealizedPLPercent = (unrealizedPL / buyValue) * 100;
+                const unrealizedPLPercent = ((currentValue - buyValue) / buyValue * 100).toFixed(2);
                 
                 const dateStr = tx.date.toLocaleDateString('en-GB', {
                     day: '2-digit',
@@ -1123,23 +1119,15 @@
                         </td>
                         <td>
                             <div>$${tx.rate.toFixed(4)}</div>
-                            <div style="font-size:12px; color:#888">₹${(tx.rate * usdtToInr).toFixed(2)}</div>
-                        </td>
-                        <td>
-                            <div>$${tx.rate.toFixed(4)}</div>
-                            <div style="font-size:12px; color:#888">₹${(tx.rate * usdtToInr).toFixed(2)}</div>
+                            <div class="inr-rate">₹${(tx.rate * usdtToInr).toFixed(2)}</div>
                         </td>
                         <td>
                             <div>$${currentBuyRate.toFixed(4)}</div>
-                            <div style="font-size:12px; color:#888">₹${(currentBuyRate * usdtToInr).toFixed(2)}</div>
-                        </td>
-                        <td>
-                            <div>$${currentBuyRate.toFixed(4)}</div>
-                            <div style="font-size:12px; color:#888">₹${(currentBuyRate * usdtToInr).toFixed(2)}</div>
+                            <div class="inr-rate">₹${(currentBuyRate * usdtToInr).toFixed(2)}</div>
                         </td>
                         <td>
                             <div class="${unrealizedPLPercent >= 0 ? 'badge-profit' : 'badge-loss'}" style="display:inline-block">
-                                ${unrealizedPLPercent >= 0 ? '+' : ''}${unrealizedPLPercent.toFixed(2)}%
+                                ${unrealizedPLPercent >= 0 ? '+' : ''}${unrealizedPLPercent}%
                             </div>
                         </td>
                         <td>
@@ -1158,7 +1146,7 @@
             if (sellTransactions.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="9" class="empty-state">
+                        <td colspan="8" class="empty-state">
                             <i class="fas fa-history"></i><br>
                             No closed positions found
                         </td>
@@ -1173,7 +1161,7 @@
                 // Find average buy rate for this sell (FIFO)
                 const avgBuyRate = getAverageBuyRateForSell(tx.sigmaAmount, tx.timestamp);
                 const plAmount = (tx.rate - avgBuyRate) * tx.sigmaAmount;
-                const plPercentage = avgBuyRate > 0 ? ((tx.rate - avgBuyRate) / avgBuyRate) * 100 : 0;
+                const plPercentage = avgBuyRate > 0 ? ((tx.rate - avgBuyRate) / avgBuyRate * 100).toFixed(2) : 0;
                 
                 const dateStr = tx.date.toLocaleDateString('en-GB', {
                     day: '2-digit',
@@ -1198,27 +1186,22 @@
                         </td>
                         <td>
                             <div>$${avgBuyRate.toFixed(4)}</div>
-                            <div style="font-size:12px; color:#888">₹${(avgBuyRate * usdtToInr).toFixed(2)}</div>
+                            <div class="inr-rate">₹${(avgBuyRate * usdtToInr).toFixed(2)}</div>
                         </td>
                         <td>
                             <div>$${tx.rate.toFixed(4)}</div>
-                            <div style="font-size:12px; color:#888">₹${(tx.rate * usdtToInr).toFixed(2)}</div>
+                            <div class="inr-rate">₹${(tx.rate * usdtToInr).toFixed(2)}</div>
                         </td>
                         <td>
                             <div class="${plAmount >= 0 ? 'pnl-positive' : 'pnl-negative'}" style="padding:4px 8px; border-radius:6px; display:inline-block">
                                 <i class="fas fa-${plAmount >= 0 ? 'arrow-up' : 'arrow-down'}"></i>
-                                $${Math.abs(plAmount).toFixed(2)}
+                                $${Math.abs(plAmount).toFixed(2)}<br>
+                                <span style="font-size:11px">₹${Math.abs(plAmount * usdtToInr).toFixed(2)}</span>
                             </div>
                         </td>
                         <td>
-                            <div class="${plAmount >= 0 ? 'pnl-positive' : 'pnl-negative'}" style="padding:4px 8px; border-radius:6px; display:inline-block">
-                                <i class="fas fa-${plAmount >= 0 ? 'arrow-up' : 'arrow-down'}"></i>
-                                ₹${Math.abs(plAmount * usdtToInr).toFixed(2)}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="${plPercentage >= 0 ? 'badge-profit' : 'badge-loss'}" style="display:inline-block">
-                                ${plPercentage >= 0 ? '+' : ''}${plPercentage.toFixed(2)}%
+                            <div class="${plAmount >= 0 ? 'badge-profit' : 'badge-loss'}" style="display:inline-block">
+                                ${plAmount >= 0 ? '+' : ''}${plPercentage}%
                             </div>
                         </td>
                         <td>
