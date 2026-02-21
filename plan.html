@@ -431,7 +431,7 @@
             font-size: 12px;
         }
         
-        /* Expandable Section - UPDATED */
+        /* Expandable Section */
         .expand-section {
             margin-top: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -629,110 +629,28 @@
             font-size: 13px;
         }
         
-        /* Referral to Wealth Animation Section - NEW */
-        .journey-section {
-            background: rgba(22, 24, 33, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 40px;
-            padding: 50px 30px;
+        /* Animation Video Section */
+        .animation-section {
             margin: 50px 0;
-            border: 2px solid transparent;
-            background-image: linear-gradient(var(--card), var(--card)), var(--gradient);
-            background-origin: border-box;
-            background-clip: padding-box, border-box;
-            position: relative;
+            border-radius: 40px;
             overflow: hidden;
+            box-shadow: 0 30px 50px -15px #000000cc, 0 0 0 1px rgba(0, 255, 204, 0.2) inset;
+            background: #070b12;
         }
         
-        .journey-title {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        .journey-title h2 {
-            background: var(--gradient);
-            background-size: 400% 400%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            font-size: 32px;
-            font-weight: 800;
-            animation: rainbow 8s ease infinite;
-        }
-        
-        .journey-title p {
-            color: #aaa;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        
-        .journey-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            max-width: 900px;
+        .animation-wrapper {
+            width: 100%;
+            max-width: 500px;
             margin: 0 auto;
+            background: #10141e;
         }
         
-        .journey-svg {
+        .animation-canvas {
+            display: block;
             width: 100%;
-            max-width: 800px;
             height: auto;
-            margin-bottom: 30px;
-        }
-        
-        .journey-steps {
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        
-        .journey-step {
-            text-align: center;
-            flex: 1;
-            min-width: 150px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 20px;
-            border: 1px solid rgba(0, 255, 204, 0.2);
-            transition: all 0.3s;
-        }
-        
-        .journey-step:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: 0 10px 30px rgba(0, 255, 204, 0.2);
-        }
-        
-        .journey-step .step-icon {
-            font-size: 40px;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-        
-        .journey-step .step-icon:nth-child(2) { color: var(--secondary); }
-        .journey-step .step-icon:nth-child(3) { color: var(--success); }
-        
-        .journey-step h3 {
-            color: var(--primary);
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        
-        .journey-step p {
-            color: #aaa;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        .journey-step .highlight {
-            color: var(--success);
-            font-weight: 700;
-            font-size: 20px;
+            cursor: pointer;
+            background: #10141e;
         }
         
         /* CTA Button */
@@ -802,10 +720,6 @@
             
             .level-percent {
                 font-size: 28px;
-            }
-            
-            .journey-steps {
-                flex-direction: column;
             }
         }
         
@@ -998,7 +912,7 @@
                 </div>
             </div>
             
-            <!-- Expand Button for Higher Levels - UPDATED -->
+            <!-- Expand Button for Higher Levels -->
             <div class="expand-section">
                 <button class="expand-btn" id="expandBtn" onclick="toggleLevels()">
                     <i class="fas fa-chevron-down" id="expandIcon"></i>
@@ -1119,159 +1033,10 @@
             </div>
         </div>
         
-        <!-- REFERRAL TO WEALTH ANIMATION SECTION - NEW -->
-        <div class="journey-section fade-in">
-            <div class="journey-title">
-                <h2>🚀 Refer ➔ Earn ➔ Wealth</h2>
-                <p>Ek ladka, bohut saare referrals, unlimited SIGMA, infinite wealth</p>
-            </div>
-            
-            <div class="journey-container">
-                <!-- Animated SVG -->
-                <svg class="journey-svg" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Background glow -->
-                    <circle cx="150" cy="100" r="40" fill="url(#glow1)" opacity="0.3">
-                        <animate attributeName="r" values="40;45;40" dur="3s" repeatCount="indefinite" />
-                    </circle>
-                    <circle cx="400" cy="100" r="40" fill="url(#glow2)" opacity="0.3">
-                        <animate attributeName="r" values="40;45;40" dur="3s" repeatCount="indefinite" begin="1s" />
-                    </circle>
-                    <circle cx="650" cy="100" r="40" fill="url(#glow3)" opacity="0.3">
-                        <animate attributeName="r" values="40;45;40" dur="3s" repeatCount="indefinite" begin="2s" />
-                    </circle>
-                    
-                    <!-- Gradients -->
-                    <defs>
-                        <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stop-color="#00ffcc" stop-opacity="0.5"/>
-                            <stop offset="100%" stop-color="#00ffcc" stop-opacity="0"/>
-                        </radialGradient>
-                        <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stop-color="#9d4edd" stop-opacity="0.5"/>
-                            <stop offset="100%" stop-color="#9d4edd" stop-opacity="0"/>
-                        </radialGradient>
-                        <radialGradient id="glow3" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stop-color="#00ff88" stop-opacity="0.5"/>
-                            <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
-                        </radialGradient>
-                        
-                        <!-- Animated gradient for path -->
-                        <linearGradient id="pathGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="#00ffcc">
-                                <animate attributeName="stop-color" values="#00ffcc;#9d4edd;#ff2a6d;#00ffcc" dur="4s" repeatCount="indefinite" />
-                            </stop>
-                            <stop offset="50%" stop-color="#9d4edd">
-                                <animate attributeName="stop-color" values="#9d4edd;#ff2a6d;#00ffcc;#9d4edd" dur="4s" repeatCount="indefinite" />
-                            </stop>
-                            <stop offset="100%" stop-color="#00ff88">
-                                <animate attributeName="stop-color" values="#00ff88;#00ffcc;#9d4edd;#00ff88" dur="4s" repeatCount="indefinite" />
-                            </stop>
-                        </linearGradient>
-                    </defs>
-                    
-                    <!-- Connecting lines with animation -->
-                    <path d="M180 100 L370 100" stroke="url(#pathGrad)" stroke-width="3" stroke-dasharray="5,5">
-                        <animate attributeName="stroke-dashoffset" values="0;20;0" dur="2s" repeatCount="indefinite" />
-                    </path>
-                    <path d="M430 100 L620 100" stroke="url(#pathGrad)" stroke-width="3" stroke-dasharray="5,5">
-                        <animate attributeName="stroke-dashoffset" values="0;20;0" dur="2s" repeatCount="indefinite" begin="0.5s" />
-                    </path>
-                    
-                    <!-- Person 1 - Main character -->
-                    <g transform="translate(120,70)">
-                        <!-- Person with glow -->
-                        <circle cx="30" cy="30" r="25" fill="url(#glow1)" opacity="0.6"/>
-                        <!-- Head -->
-                        <circle cx="30" cy="20" r="10" fill="#fff"/>
-                        <!-- Body -->
-                        <rect x="25" y="30" width="10" height="20" fill="#00ffcc" rx="3"/>
-                        <!-- Arms -->
-                        <line x1="20" y1="35" x2="40" y2="35" stroke="#fff" stroke-width="2"/>
-                        <!-- Legs -->
-                        <line x1="25" y1="50" x2="20" y2="65" stroke="#fff" stroke-width="2"/>
-                        <line x1="35" y1="50" x2="40" y2="65" stroke="#fff" stroke-width="2"/>
-                        <!-- Pulse animation -->
-                        <circle cx="30" cy="30" r="30" fill="none" stroke="#00ffcc" stroke-width="2" opacity="0.3">
-                            <animate attributeName="r" values="30;35;30" dur="2s" repeatCount="indefinite" />
-                            <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2s" repeatCount="indefinite" />
-                        </circle>
-                    </g>
-                    
-                    <!-- Multiple referral people with flowing animation -->
-                    <g transform="translate(330,70)" opacity="0.8">
-                        <circle cx="30" cy="20" r="8" fill="#9d4edd"/>
-                        <rect x="25" y="28" width="10" height="15" fill="#9d4edd" rx="2"/>
-                        <!-- Floating up animation -->
-                        <animateTransform attributeName="transform" type="translate" values="330,70;330,60;330,70" dur="2s" repeatCount="indefinite" />
-                    </g>
-                    
-                    <g transform="translate(360,90)" opacity="0.8">
-                        <circle cx="30" cy="20" r="8" fill="#9d4edd"/>
-                        <rect x="25" y="28" width="10" height="15" fill="#9d4edd" rx="2"/>
-                        <animateTransform attributeName="transform" type="translate" values="360,90;360,80;360,90" dur="2.2s" repeatCount="indefinite" begin="0.2s" />
-                    </g>
-                    
-                    <g transform="translate(390,60)" opacity="0.8">
-                        <circle cx="30" cy="20" r="8" fill="#9d4edd"/>
-                        <rect x="25" y="28" width="10" height="15" fill="#9d4edd" rx="2"/>
-                        <animateTransform attributeName="transform" type="translate" values="390,60;390,50;390,60" dur="1.8s" repeatCount="indefinite" begin="0.4s" />
-                    </g>
-                    
-                    <g transform="translate(420,80)" opacity="0.8">
-                        <circle cx="30" cy="20" r="8" fill="#9d4edd"/>
-                        <rect x="25" y="28" width="10" height="15" fill="#9d4edd" rx="2"/>
-                        <animateTransform attributeName="transform" type="translate" values="420,80;420,70;420,80" dur="2.1s" repeatCount="indefinite" begin="0.6s" />
-                    </g>
-                    
-                    <!-- SIGMA coins flowing -->
-                    <g transform="translate(550,70)">
-                        <!-- Coin -->
-                        <circle cx="30" cy="30" r="20" fill="url(#glow3)" opacity="0.8"/>
-                        <text x="23" y="35" fill="#000" font-size="14" font-weight="bold">Σ</text>
-                        <!-- Rotating animation -->
-                        <animateTransform attributeName="transform" type="rotate" values="0 30 30;360 30 30" dur="3s" repeatCount="indefinite" />
-                    </g>
-                    
-                    <!-- Wealth accumulation -->
-                    <g transform="translate(600,70)">
-                        <circle cx="30" cy="30" r="25" fill="url(#glow3)" opacity="0.6"/>
-                        <text x="10" y="35" fill="#00ff88" font-size="20" font-weight="bold">$</text>
-                        <!-- Growing animation -->
-                        <animate attributeName="r" values="25;30;25" dur="1.5s" repeatCount="indefinite" />
-                    </g>
-                    
-                    <!-- Floating SIGMA tokens -->
-                    <circle cx="580" cy="40" r="5" fill="#00ffcc" opacity="0.6">
-                        <animate attributeName="cy" values="40;30;40" dur="2s" repeatCount="indefinite" />
-                    </circle>
-                    <circle cx="610" cy="110" r="5" fill="#00ffcc" opacity="0.6">
-                        <animate attributeName="cy" values="110;100;110" dur="2.3s" repeatCount="indefinite" />
-                    </circle>
-                    <circle cx="640" cy="50" r="5" fill="#00ffcc" opacity="0.6">
-                        <animate attributeName="cy" values="50;40;50" dur="1.7s" repeatCount="indefinite" />
-                    </circle>
-                </svg>
-                
-                <!-- Journey Steps Text -->
-                <div class="journey-steps">
-                    <div class="journey-step">
-                        <div class="step-icon">👤</div>
-                        <h3>Referral King</h3>
-                        <p>Ek ladka bohut saare <span class="highlight">referrals</span> karta hai</p>
-                    </div>
-                    
-                    <div class="journey-step">
-                        <div class="step-icon">💰</div>
-                        <h3>SIGMA Earnings</h3>
-                        <p>Har referral se <span class="highlight">SIGMA rewards</span> milte hain</p>
-                    </div>
-                    
-                    <div class="journey-step">
-                        <div class="step-icon">🏦</div>
-                        <h3>Wealth Creation</h3>
-                        <p>SIGMA se <span class="highlight">unlimited wealth</span> banta hai</p>
-                    </div>
-                </div>
+        <!-- PROFESSIONAL INFINITE LOOP ANIMATION SECTION -->
+        <div class="animation-section fade-in">
+            <div class="animation-wrapper">
+                <canvas id="referralAnimation" width="360" height="640" class="animation-canvas"></canvas>
             </div>
         </div>
         
@@ -1304,7 +1069,7 @@
             }
         }
         
-        // Toggle higher levels - UPDATED
+        // Toggle higher levels
         function toggleLevels() {
             const content = document.getElementById('expandContent');
             const btn = document.getElementById('expandBtn');
@@ -1322,6 +1087,299 @@
                 text.textContent = 'More...';
             }
         }
+        
+        // ========== PROFESSIONAL INFINITE LOOP ANIMATION ==========
+        const canvas = document.getElementById('referralAnimation');
+        const ctx = canvas.getContext('2d');
+
+        const FPS = 60;
+        const TOTAL_FRAMES = 600;  // 10 seconds
+        let frame = 0;
+
+        // Timeline (in frames)
+        const WALK_START = 0;
+        const REFERRAL_COUNT_START = 25;
+        const REFERRAL_COUNT_END = 135;
+        const SIGMA_TOKEN_SHOW = 160;
+        const CASH_CONVERT = 250;
+        const WEALTH_EXPLOSION = 380;
+        const FINAL_FRAME = 580;
+
+        // Dynamic elements
+        let walkOffset = 360;
+        const MIN_X = 40;
+        let legPhase = 0;
+        let referralCount = 0;
+        let sigmaScale = 0;
+        let cashMode = false;
+        let wealthValue = 0;
+        let particles = [];
+
+        // Particle system for cash conversion
+        function createCashExplosion(baseX, baseY) {
+            particles = [];
+            for (let i = 0; i < 42; i++) {
+                particles.push({
+                    x: baseX + (Math.random() - 0.5) * 100,
+                    y: baseY - 30 + (Math.random() - 0.5) * 80,
+                    vx: (Math.random() - 0.5) * 7,
+                    vy: (Math.random() - 1.2) * 5,
+                    life: 0.9 + Math.random() * 0.3,
+                    size: 10 + Math.floor(Math.random() * 20),
+                    type: 'bill'
+                });
+            }
+        }
+
+        function resetAnimation() {
+            frame = 0;
+            walkOffset = 360;
+            referralCount = 0;
+            sigmaScale = 0;
+            cashMode = false;
+            particles = [];
+            wealthValue = 0;
+        }
+
+        function drawAnimation() {
+            ctx.clearRect(0, 0, 360, 640);
+
+            // Deep background gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, 640);
+            grad.addColorStop(0, '#18212f');
+            grad.addColorStop(0.5, '#0f172a');
+            grad.addColorStop(1, '#070b14');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 360, 640);
+
+            // Floor with perspective
+            ctx.beginPath();
+            ctx.moveTo(0, 460);
+            ctx.lineTo(360, 420);
+            ctx.strokeStyle = '#3e5068';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.fillStyle = '#1d2b37';
+            ctx.globalAlpha = 0.25;
+            ctx.fillRect(0, 462, 360, 178);
+            ctx.globalAlpha = 1;
+
+            // Walking ladka (right to left)
+            if (frame < 180) {
+                walkOffset = 360 - (frame / 180) * (360 - MIN_X);
+            } else {
+                walkOffset = MIN_X;
+            }
+
+            legPhase = (frame % 24) / 24 * Math.PI * 2;
+            const bodyY = Math.sin(frame * 0.3) * 4;
+
+            // Shadow
+            ctx.shadowColor = '#00000055';
+            ctx.shadowBlur = 22;
+            ctx.shadowOffsetY = 6;
+
+            // Legs
+            ctx.fillStyle = '#2c4058';
+            ctx.fillRect(walkOffset - 14, 340 + Math.sin(legPhase)*8, 9, 45);
+            ctx.fillRect(walkOffset + 5, 340 + Math.cos(legPhase)*8, 9, 45);
+
+            // Body
+            ctx.fillStyle = '#2f4b6e';
+            ctx.beginPath();
+            ctx.ellipse(walkOffset - 3, 305 + bodyY, 18, 28, 0, 0, Math.PI*2);
+            ctx.fill();
+
+            // Head
+            ctx.fillStyle = '#f7ddc5';
+            ctx.beginPath();
+            ctx.arc(walkOffset - 3, 266 + bodyY, 20, 0, Math.PI*2);
+            ctx.fill();
+
+            // Eyes
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(walkOffset - 11, 261 + bodyY, 3.2, 0, Math.PI*2);
+            ctx.arc(walkOffset + 5, 261 + bodyY, 3.2, 0, Math.PI*2);
+            ctx.fill();
+
+            // Hair
+            ctx.fillStyle = '#1f2c1e';
+            ctx.beginPath();
+            ctx.ellipse(walkOffset - 3, 249 + bodyY, 12, 8, 0, 0, Math.PI*2);
+            ctx.fill();
+
+            // Smile
+            ctx.beginPath();
+            ctx.strokeStyle = '#ac6b5b';
+            ctx.lineWidth = 2.5;
+            ctx.arc(walkOffset - 3, 279 + bodyY, 9, 0.1, Math.PI - 0.1);
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Referral counter
+            if (frame >= REFERRAL_COUNT_START) {
+                let progress = Math.min(1, (frame - REFERRAL_COUNT_START) / (REFERRAL_COUNT_END - REFERRAL_COUNT_START));
+                referralCount = Math.floor(progress * 500);
+                if (referralCount > 500) referralCount = 500;
+            }
+
+            ctx.font = 'bold 42px "Inter", "Segoe UI", monospace';
+            ctx.fillStyle = '#fedb7b';
+            ctx.shadowColor = '#fbbf24';
+            ctx.shadowBlur = 24;
+            ctx.textAlign = 'right';
+            ctx.fillText(referralCount + '', 330, 110);
+            ctx.font = 'bold 22px "Inter"';
+            ctx.fillStyle = '#8fa6d1';
+            ctx.fillText('referrals', 325, 155);
+            ctx.textAlign = 'left';
+            ctx.shadowBlur = 0;
+
+            // +500 effect
+            if (frame > REFERRAL_COUNT_END - 15 && frame < REFERRAL_COUNT_END + 30) {
+                ctx.font = 'bold 32px "Inter"';
+                ctx.fillStyle = '#b1f74a';
+                ctx.shadowBlur = 28;
+                ctx.shadowColor = '#a3e635';
+                ctx.fillText('+500', 40, 190);
+            }
+
+            // SIGMA Token appears
+            if (frame >= SIGMA_TOKEN_SHOW) {
+                let tokenPop = Math.min(1, (frame - SIGMA_TOKEN_SHOW) / 25);
+                sigmaScale = tokenPop * 1.2;
+                if (sigmaScale > 1) sigmaScale = 1;
+
+                ctx.shadowBlur = 40;
+                ctx.shadowColor = '#ffdb8e';
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.ellipse(180, 280, 40 * sigmaScale, 40 * sigmaScale, 0, 0, Math.PI*2);
+                ctx.fill();
+
+                ctx.fillStyle = '#0b1e33';
+                ctx.font = 'bold 44px "Times New Roman", serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Σ', 180, 300);
+                ctx.textAlign = 'left';
+
+                ctx.font = 'bold 14px "Inter"';
+                ctx.fillStyle = '#fcf3d7';
+                ctx.fillText('SIGMA TOKEN', 135, 340);
+            }
+
+            // Cash conversion
+            if (frame >= CASH_CONVERT) {
+                if (!cashMode) {
+                    createCashExplosion(180, 280);
+                    cashMode = true;
+                }
+
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    let p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.1;
+                    p.life *= 0.99;
+
+                    ctx.globalAlpha = p.life * 0.9;
+                    ctx.shadowBlur = 18;
+                    ctx.shadowColor = '#c6ff8a';
+
+                    ctx.fillStyle = '#6fcf97';
+                    ctx.beginPath();
+                    ctx.rect(p.x, p.y, 18, 10);
+                    ctx.fill();
+                    ctx.fillStyle = '#1f7a3d';
+                    ctx.font = 'bold 14px monospace';
+                    ctx.fillText('$', p.x+4, p.y+9);
+                }
+                ctx.globalAlpha = 1;
+
+                if (frame > CASH_CONVERT + 40) {
+                    ctx.fillStyle = '#ffd966';
+                    ctx.font = 'bold 30px "Segoe UI"';
+                    ctx.fillText('💰 💰', 140, 270);
+                }
+            }
+
+            // Wealth explosion
+            if (frame >= WEALTH_EXPLOSION) {
+                let wealthFactor = Math.min(1, (frame - WEALTH_EXPLOSION) / 150);
+                wealthValue = Math.floor(98500 * Math.pow(wealthFactor, 0.7) + 15000 * wealthFactor);
+                if (wealthValue > 999999) wealthValue = 999999;
+
+                ctx.shadowBlur = 45;
+                ctx.shadowColor = '#fedb7b';
+                ctx.font = 'bold 48px "Inter", "Segoe UI", sans-serif';
+                ctx.fillStyle = '#fcd34d';
+                ctx.textAlign = 'center';
+                ctx.fillText('$' + wealthValue.toLocaleString(), 180, 550);
+
+                ctx.globalAlpha = 0.7;
+                ctx.fillStyle = '#e3b34c';
+                for (let i=0; i<5; i++) {
+                    ctx.fillRect(40 + i*60, 590, 35, 18);
+                }
+                ctx.globalAlpha = 1;
+                ctx.font = 'bold 24px "Inter"';
+                ctx.fillStyle = '#fcf1cf';
+                ctx.fillText('WEALTH', 145, 630);
+            } else if (frame > 200) {
+                ctx.font = 'bold 36px "Inter"';
+                ctx.fillStyle = '#ffdb8e';
+                ctx.textAlign = 'center';
+                ctx.fillText('$' + Math.floor(frame * 1500).toLocaleString(), 180, 540);
+            }
+
+            // Time indicator (small)
+            ctx.font = 'bold 12px monospace';
+            ctx.fillStyle = '#7c8caa';
+            ctx.textAlign = 'right';
+            ctx.fillText((frame/FPS).toFixed(1) + 's', 330, 40);
+            ctx.textAlign = 'left';
+
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+        }
+
+        // INFINITE LOOP ANIMATION
+        function animate() {
+            drawAnimation();
+            frame++;
+            
+            // Reset when animation completes (after 10 seconds)
+            if (frame >= TOTAL_FRAMES) {
+                frame = 0;
+                walkOffset = 360;
+                referralCount = 0;
+                sigmaScale = 0;
+                cashMode = false;
+                particles = [];
+                wealthValue = 0;
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        // Start infinite animation when page loads
+        setTimeout(() => {
+            animate();
+        }, 500);
+
+        // Click to manually restart
+        canvas.addEventListener('click', () => {
+            frame = 0;
+            walkOffset = 360;
+            referralCount = 0;
+            sigmaScale = 0;
+            cashMode = false;
+            particles = [];
+            wealthValue = 0;
+        });
         
         // Initialize on load
         window.onload = function() {
