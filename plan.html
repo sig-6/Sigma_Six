@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>SIGMA SIX | Investment Plan</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00ffcc;
+            --secondary: #9d4edd;
+            --bg: #0a0b10;
+            --card: #161821;
+            --text: #ffffff;
+            --border: #2d2f3e;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff4d4d;
+            --gradient: linear-gradient(90deg, #00ffcc, #9d4edd, #ff2a6d, #00ffcc);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Premium Crypto Background */
+        .crypto-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.5;
+        }
+        
+        .crypto-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                repeating-linear-gradient(90deg, 
+                    transparent 0px, 
+                    transparent 49px,
+                    rgba(0, 255, 204, 0.15) 49px,
+                    rgba(0, 255, 204, 0.15) 50px),
+                repeating-linear-gradient(0deg, 
+                    transparent 0px, 
+                    transparent 49px,
+                    rgba(157, 78, 221, 0.15) 49px,
+                    rgba(157, 78, 221, 0.15) 50px);
+            animation: gridMove 20s linear infinite;
+            transform-origin: center;
+        }
+        
+        .crypto-bg::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                repeating-linear-gradient(45deg, 
+                    transparent 0px, 
+                    transparent 69px,
+                    rgba(255, 42, 109, 0.1) 69px,
+                    rgba(255, 42, 109, 0.1) 70px),
+                repeating-linear-gradient(-45deg, 
+                    transparent 0px, 
+                    transparent 89px,
+                    rgba(0, 255, 204, 0.1) 89px,
+                    rgba(0, 255, 204, 0.1) 90px);
+            animation: diagonalMove 15s linear infinite reverse;
+            transform-origin: center;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(50px, 50px) rotate(0.5deg); }
+        }
+        
+        @keyframes diagonalMove {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-70px, -70px) rotate(-0.5deg); }
+        }
+        
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            box-shadow: 0 0 15px var(--primary);
+            animation: particleFloat 20s infinite linear;
+        }
+        
+        .particle:nth-child(3n) { background: var(--secondary); box-shadow: 0 0 15px var(--secondary); }
+        .particle:nth-child(5n) { background: #ff2a6d; box-shadow: 0 0 15px #ff2a6d; }
+        
+        @keyframes particleFloat {
+            0% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+            25% { transform: translate(150px, -150px) scale(1.8); opacity: 0.6; }
+            50% { transform: translate(300px, 0) scale(1); opacity: 0.3; }
+            75% { transform: translate(150px, 150px) scale(1.3); opacity: 0.6; }
+            100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+        }
+        
+        .rainbow-border {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+            background-size: 400% 400%;
+            animation: rainbow 8s ease infinite;
+            z-index: 1000;
+        }
+        
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Back to Dashboard Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--primary);
+            border-radius: 50px;
+            padding: 12px 25px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .back-btn:hover {
+            background: rgba(0, 255, 204, 0.1);
+            transform: translateX(-5px);
+            box-shadow: 0 5px 20px rgba(0, 255, 204, 0.3);
+        }
+        
+        .back-btn i {
+            font-size: 16px;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .header h1 {
+            background: var(--gradient);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: clamp(36px, 6vw, 52px);
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            animation: rainbow 8s ease infinite;
+        }
+        
+        .header p {
+            color: #aaa;
+            font-size: clamp(14px, 3vw, 18px);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* Section Styles */
+        .section {
+            background: rgba(22, 24, 33, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+            background-size: 400% 400%;
+            animation: rainbow 8s ease infinite;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #000;
+        }
+        
+        .section-title h2 {
+            color: var(--primary);
+            font-size: clamp(20px, 4vw, 28px);
+            font-weight: 700;
+        }
+        
+        .section-subtitle {
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        /* Steps Grid */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .step-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 255, 204, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .step-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 204, 0.2);
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #000;
+            margin: 0 auto 20px;
+            font-size: 20px;
+        }
+        
+        .step-card i {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .step-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .step-card p {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .step-card .highlight {
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        /* Bonus Card */
+        .bonus-card {
+            background: linear-gradient(135deg, rgba(0, 255, 204, 0.1), rgba(157, 78, 221, 0.1));
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .bonus-card h3 {
+            color: var(--primary);
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .bonus-card .bonus-value {
+            font-size: 48px;
+            font-weight: 800;
+            background: var(--gradient);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: rainbow 8s ease infinite;
+            margin-bottom: 10px;
+        }
+        
+        .bonus-card p {
+            color: #aaa;
+            font-size: 16px;
+        }
+        
+        /* Level Cards */
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .level-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(157, 78, 221, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .level-card:hover {
+            border-color: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(157, 78, 221, 0.2);
+        }
+        
+        .level-number {
+            color: var(--secondary);
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .level-percent {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .level-desc {
+            color: #aaa;
+            font-size: 12px;
+        }
+        
+        /* Expandable Section */
+        .expand-section {
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+        }
+        
+        .expand-btn {
+            background: none;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        
+        .expand-btn:hover {
+            background: rgba(157, 78, 221, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(157, 78, 221, 0.3);
+        }
+        
+        .expand-btn i {
+            transition: transform 0.3s;
+        }
+        
+        .expand-btn.active i {
+            transform: rotate(180deg);
+        }
+        
+        .expand-content {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .expand-content.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        /* Unlock Requirements */
+        .unlock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .unlock-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--warning);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        
+        .unlock-item .level {
+            color: var(--warning);
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .unlock-item .percent {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .unlock-item .condition {
+            color: #aaa;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .unlock-item .condition i {
+            color: var(--success);
+            margin-right: 5px;
+        }
+        
+        /* Condition Cards */
+        .conditions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .condition-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 170, 0, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+        
+        .condition-card:hover {
+            border-color: var(--warning);
+            transform: translateY(-3px);
+        }
+        
+        .condition-card .warning-icon {
+            color: var(--warning);
+            font-size: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .condition-card h4 {
+            color: var(--warning);
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .condition-card p {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .condition-card .highlight {
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        /* 5X Rule Card */
+        .fiver-card {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 204, 0.1));
+            border: 2px solid var(--success);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .fiver-card .fiver-value {
+            font-size: 60px;
+            font-weight: 800;
+            color: var(--success);
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+        
+        .fiver-card p {
+            color: #fff;
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .fiver-card .small {
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+        
+        /* Rules Grid */
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .rule-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .rule-card i {
+            font-size: 30px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .rule-card .rule-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .rule-card .rule-label {
+            color: #aaa;
+            font-size: 13px;
+        }
+        
+        /* CTA Button */
+        .cta-button {
+            display: inline-block;
+            background: var(--gradient);
+            background-size: 400% 400%;
+            color: #000;
+            text-decoration: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 18px;
+            margin-top: 30px;
+            animation: rainbow 8s ease infinite;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 255, 204, 0.4);
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #888;
+            font-size: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .step-card {
+                padding: 20px;
+            }
+            
+            .bonus-card .bonus-value {
+                font-size: 36px;
+            }
+            
+            .fiver-card .fiver-value {
+                font-size: 48px;
+            }
+            
+            .level-percent {
+                font-size: 28px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .section-title {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .step-card i {
+                font-size: 32px;
+            }
+            
+            .step-card h3 {
+                font-size: 16px;
+            }
+            
+            .step-card p {
+                font-size: 13px;
+            }
+            
+            .bonus-card {
+                padding: 20px;
+            }
+            
+            .bonus-card .bonus-value {
+                font-size: 32px;
+            }
+            
+            .fiver-card .fiver-value {
+                font-size: 40px;
+            }
+            
+            .cta-button {
+                padding: 15px 30px;
+                font-size: 16px;
+                width: 100%;
+                text-align: center;
+            }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--gradient);
+            border-radius: 4px;
+            background-size: 400% 400%;
+            animation: rainbow 8s ease infinite;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Premium Background -->
+    <div class="crypto-bg"></div>
+    <div class="floating-particles" id="particles"></div>
+    <div class="rainbow-border"></div>
+    
+    <div class="container">
+        <!-- Back to Dashboard Button -->
+        <a href="index.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Dashboard</span>
+        </a>
+        
+        <!-- Header -->
+        <div class="header fade-in">
+            <h1>🚀 INVESTMENT PLAN</h1>
+            <p>Your complete guide to earning with SIGMA SIX • Premium Rewards • Lifetime Income</p>
+        </div>
+        
+        <!-- Step 1: Crypto Wallet Installation -->
+        <div class="section fade-in">
+            <div class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div>
+                    <h2>Step 1: Crypto Wallet Setup</h2>
+                    <div class="section-subtitle">Start your journey in 4 simple steps</div>
+                </div>
+            </div>
+            
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <i class="fab fa-google-play"></i>
+                    <h3>Install MetaMask</h3>
+                    <p>Download from <span class="highlight">Google Play Store</span> or App Store</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <i class="fas fa-key"></i>
+                    <h3>Recovery Phrase</h3>
+                    <p><span class="highlight">Secret phrase</span> recover karein aur wallet start karein</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <i class="fas fa-link"></i>
+                    <h3>Referral Link</h3>
+                    <p>Apne <span class="highlight">explorer mein paste karein</span> aur start karein</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Start Trading</h3>
+                    <p><span class="highlight">Buy/Sell</span> start karein aur earn karein</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ICO Bonus Section -->
+        <div class="section fade-in">
+            <div class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <div>
+                    <h2>🎁 ICO BONUS</h2>
+                    <div class="section-subtitle">Limited time offer • One time only</div>
+                </div>
+            </div>
+            
+            <div class="bonus-card">
+                <h3>First Purchase Bonus</h3>
+                <div class="bonus-value">10% REWARD</div>
+                <p>🚀 1st Buy me aapko milega <strong>10% extra SIGMA</strong> (One time only)</p>
+                <p style="color: var(--warning); margin-top: 10px;">⏰ Limited time offer • Grab it now!</p>
+            </div>
+        </div>
+        
+        <!-- Team Referral Section -->
+        <div class="section fade-in">
+            <div class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <h2>👥 TEAM REFERRAL</h2>
+                    <div class="section-subtitle">Refer karo aur unlimited earn karo</div>
+                </div>
+            </div>
+            
+            <!-- Level 1-5 -->
+            <div class="levels-grid">
+                <div class="level-card">
+                    <div class="level-number">Level 1</div>
+                    <div class="level-percent">10%</div>
+                    <div class="level-desc">Direct Referral</div>
+                </div>
+                
+                <div class="level-card">
+                    <div class="level-number">Level 2</div>
+                    <div class="level-percent">4%</div>
+                    <div class="level-desc">2nd Level</div>
+                </div>
+                
+                <div class="level-card">
+                    <div class="level-number">Level 3</div>
+                    <div class="level-percent">3%</div>
+                    <div class="level-desc">3rd Level</div>
+                </div>
+                
+                <div class="level-card">
+                    <div class="level-number">Level 4</div>
+                    <div class="level-percent">2%</div>
+                    <div class="level-desc">4th Level</div>
+                </div>
+                
+                <div class="level-card">
+                    <div class="level-number">Level 5</div>
+                    <div class="level-percent">1%</div>
+                    <div class="level-desc">5th Level</div>
+                </div>
+            </div>
+            
+            <!-- Expand Button for Higher Levels -->
+            <div class="expand-section">
+                <button class="expand-btn" id="expandBtn" onclick="toggleLevels()">
+                    <i class="fas fa-chevron-down" id="expandIcon"></i>
+                    <span id="expandText">Click to view Higher Levels (6-10)</span>
+                </button>
+                
+                <div class="expand-content" id="expandContent">
+                    <div class="unlock-grid">
+                        <div class="unlock-item">
+                            <div class="level">Level 6</div>
+                            <div class="percent">0.50%</div>
+                            <div class="condition">
+                                <i class="fas fa-check-circle"></i> 11 Directs Required<br>
+                                <i class="fas fa-coins"></i> 10 USDT SIGMA Balance
+                            </div>
+                        </div>
+                        
+                        <div class="unlock-item">
+                            <div class="level">Level 7</div>
+                            <div class="percent">0.50%</div>
+                            <div class="condition">
+                                <i class="fas fa-check-circle"></i> 12 Directs Required<br>
+                                <i class="fas fa-coins"></i> 10 USDT SIGMA Balance
+                            </div>
+                        </div>
+                        
+                        <div class="unlock-item">
+                            <div class="level">Level 8</div>
+                            <div class="percent">0.50%</div>
+                            <div class="condition">
+                                <i class="fas fa-check-circle"></i> 13 Directs Required<br>
+                                <i class="fas fa-coins"></i> 10 USDT SIGMA Balance
+                            </div>
+                        </div>
+                        
+                        <div class="unlock-item">
+                            <div class="level">Level 9</div>
+                            <div class="percent">0.50%</div>
+                            <div class="condition">
+                                <i class="fas fa-check-circle"></i> 14 Directs Required<br>
+                                <i class="fas fa-coins"></i> 10 USDT SIGMA Balance
+                            </div>
+                        </div>
+                        
+                        <div class="unlock-item">
+                            <div class="level">Level 10</div>
+                            <div class="percent">0.50%</div>
+                            <div class="condition">
+                                <i class="fas fa-check-circle"></i> 15 Directs Required<br>
+                                <i class="fas fa-coins"></i> 10 USDT SIGMA Balance
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Team Referral Conditions -->
+        <div class="section fade-in">
+            <div class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <h2>⚠️ REFERRAL CONDITIONS</h2>
+                    <div class="section-subtitle">Important rules for earning</div>
+                </div>
+            </div>
+            
+            <div class="conditions-grid">
+                <div class="condition-card">
+                    <i class="fas fa-calendar-alt warning-icon"></i>
+                    <h4>Monthly Activity</h4>
+                    <p>Every Month <span class="highlight">10 USDT value</span> ka SIGMA buy karna hoga</p>
+                    <p style="color: var(--danger);">⚠️ Otherwise income lapse ho jayega</p>
+                </div>
+                
+                <div class="condition-card">
+                    <i class="fas fa-chart-line warning-icon"></i>
+                    <h4>5X Rule</h4>
+                    <p>Aapke available wallet balance ka <span class="highlight">5X tak</span> at a time receive kar sakte hain</p>
+                    <p>Balance update hote hi <span class="highlight">new 5X</span> calculate hoga</p>
+                </div>
+                
+                <div class="condition-card">
+                    <i class="fas fa-clock warning-icon"></i>
+                    <h4>Cooldown Period</h4>
+                    <p>Every buy ke baad <span class="highlight">3 minutes</span> ka wait period</p>
+                    <p>Uske baad hi sell kar sakte hain</p>
+                </div>
+            </div>
+            
+            <!-- 5X Rule Highlight -->
+            <div class="fiver-card">
+                <div class="fiver-value">5X</div>
+                <p>🔥 Aapke available wallet balance ka 5X tak ek saath SIGMA receive kar sakte hain</p>
+                <p class="small">Balance update hote hi new 5X calculate ho jayega • Instant • Automatic</p>
+            </div>
+        </div>
+        
+        <!-- Trading Rules -->
+        <div class="section fade-in">
+            <div class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div>
+                    <h2>💎 TRADING RULES</h2>
+                    <div class="section-subtitle">Maximum limits & restrictions</div>
+                </div>
+            </div>
+            
+            <div class="rules-grid">
+                <div class="rule-card">
+                    <i class="fas fa-arrow-up"></i>
+                    <div class="rule-value">1,000 USDT</div>
+                    <div class="rule-label">Max Buy (At a time)</div>
+                </div>
+                
+                <div class="rule-card">
+                    <i class="fas fa-hourglass-half"></i>
+                    <div class="rule-value">3 Minutes</div>
+                    <div class="rule-label">Sell Cooldown</div>
+                </div>
+                
+                <div class="rule-card">
+                    <i class="fas fa-infinity"></i>
+                    <div class="rule-value">5X</div>
+                    <div class="rule-label">Receive Limit</div>
+                </div>
+                
+                <div class="rule-card">
+                    <i class="fas fa-calendar"></i>
+                    <div class="rule-value">Monthly</div>
+                    <div class="rule-label">10 USDT Activity</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA Button -->
+        <div style="text-align: center; margin: 40px 0;">
+            <a href="index.html" class="cta-button">
+                <i class="fas fa-rocket"></i> START EARNING NOW
+            </a>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>SIGMA SIX • Premium Investment Plan • 10-Level Referral System</p>
+            <p style="margin-top: 10px;">© 2025 SIGMA SIX. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 20 + 's';
+                p.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(p);
+            }
+        }
+        
+        // Toggle higher levels
+        function toggleLevels() {
+            const content = document.getElementById('expandContent');
+            const btn = document.getElementById('expandBtn');
+            const icon = document.getElementById('expandIcon');
+            const text = document.getElementById('expandText');
+            
+            content.classList.toggle('show');
+            btn.classList.toggle('active');
+            
+            if (content.classList.contains('show')) {
+                icon.style.transform = 'rotate(180deg)';
+                text.textContent = 'Click to hide Higher Levels';
+            } else {
+                icon.style.transform = 'rotate(0deg)';
+                text.textContent = 'Click to view Higher Levels (6-10)';
+            }
+        }
+        
+        // Initialize on load
+        window.onload = function() {
+            createParticles();
+            
+            // Check URL for referral
+            const params = new URLSearchParams(window.location.search);
+            const ref = params.get('ref');
+            if (ref) {
+                localStorage.setItem('sigma_referrer', ref);
+            }
+        };
+    </script>
+</body>
+</html>
