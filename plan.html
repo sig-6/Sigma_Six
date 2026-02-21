@@ -36,7 +36,7 @@
             position: relative;
         }
         
-        /* Premium Crypto Background */
+        /* Premium Crypto Background - Enhanced Crisscross Animation */
         .crypto-bg {
             position: fixed;
             top: 0;
@@ -44,9 +44,10 @@
             width: 100%;
             height: 100%;
             z-index: -2;
-            opacity: 0.5;
+            opacity: 0.6;
         }
         
+        /* Primary grid - thin lines moving */
         .crypto-bg::before {
             content: '';
             position: absolute;
@@ -55,20 +56,23 @@
             width: 200%;
             height: 200%;
             background-image: 
+                /* Vertical cyan lines */
                 repeating-linear-gradient(90deg, 
                     transparent 0px, 
-                    transparent 49px,
-                    rgba(0, 255, 204, 0.15) 49px,
-                    rgba(0, 255, 204, 0.15) 50px),
+                    transparent 39px,
+                    rgba(0, 255, 204, 0.2) 39px,
+                    rgba(0, 255, 204, 0.2) 40px),
+                /* Horizontal purple lines */
                 repeating-linear-gradient(0deg, 
                     transparent 0px, 
-                    transparent 49px,
-                    rgba(157, 78, 221, 0.15) 49px,
-                    rgba(157, 78, 221, 0.15) 50px);
-            animation: gridMove 20s linear infinite;
+                    transparent 39px,
+                    rgba(157, 78, 221, 0.2) 39px,
+                    rgba(157, 78, 221, 0.2) 40px);
+            animation: gridMove 25s linear infinite;
             transform-origin: center;
         }
         
+        /* Secondary diagonal grid - crisscross effect */
         .crypto-bg::after {
             content: '';
             position: absolute;
@@ -77,30 +81,50 @@
             width: 200%;
             height: 200%;
             background-image: 
+                /* Diagonal pink lines 45deg */
                 repeating-linear-gradient(45deg, 
                     transparent 0px, 
-                    transparent 69px,
-                    rgba(255, 42, 109, 0.1) 69px,
-                    rgba(255, 42, 109, 0.1) 70px),
+                    transparent 59px,
+                    rgba(255, 42, 109, 0.15) 59px,
+                    rgba(255, 42, 109, 0.15) 60px),
+                /* Diagonal cyan lines -45deg */
                 repeating-linear-gradient(-45deg, 
                     transparent 0px, 
-                    transparent 89px,
-                    rgba(0, 255, 204, 0.1) 89px,
-                    rgba(0, 255, 204, 0.1) 90px);
-            animation: diagonalMove 15s linear infinite reverse;
+                    transparent 79px,
+                    rgba(0, 255, 204, 0.15) 79px,
+                    rgba(0, 255, 204, 0.15) 80px);
+            animation: diagonalMove 20s linear infinite reverse;
             transform-origin: center;
+        }
+        
+        /* Third layer - moving dots for extra depth */
+        .crypto-bg .dots-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: dotsMove 30s linear infinite;
         }
         
         @keyframes gridMove {
             0% { transform: translate(0, 0) rotate(0deg); }
-            100% { transform: translate(50px, 50px) rotate(0.5deg); }
+            100% { transform: translate(80px, 80px) rotate(1deg); }
         }
         
         @keyframes diagonalMove {
             0% { transform: translate(0, 0) rotate(0deg); }
-            100% { transform: translate(-70px, -70px) rotate(-0.5deg); }
+            100% { transform: translate(-100px, -100px) rotate(-1deg); }
         }
         
+        @keyframes dotsMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Floating particles for extra premium feel */
         .floating-particles {
             position: fixed;
             top: 0;
@@ -496,7 +520,7 @@
             margin-right: 5px;
         }
         
-        /* Condition Cards */
+        /* Condition Cards - UPDATED */
         .conditions-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -541,7 +565,7 @@
             font-weight: 600;
         }
         
-        /* 5X Rule Card */
+        /* 5X Rule Card - UPDATED */
         .fiver-card {
             background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 255, 204, 0.1));
             border: 2px solid var(--success);
@@ -573,15 +597,15 @@
             margin-top: 15px;
         }
         
-        /* Rules Grid */
-        .rules-grid {
+        /* Earning Rules Grid - UPDATED (renamed from Trading Rules) */
+        .earning-rules-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-top: 20px;
         }
         
-        .rule-card {
+        .earning-rule-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border);
             border-radius: 16px;
@@ -589,20 +613,20 @@
             text-align: center;
         }
         
-        .rule-card i {
+        .earning-rule-card i {
             font-size: 30px;
             color: var(--primary);
             margin-bottom: 15px;
         }
         
-        .rule-card .rule-value {
+        .earning-rule-card .rule-value {
             font-size: 24px;
             font-weight: 700;
             color: var(--primary);
             margin-bottom: 5px;
         }
         
-        .rule-card .rule-label {
+        .earning-rule-card .rule-label {
             color: #aaa;
             font-size: 13px;
         }
@@ -739,8 +763,10 @@
     </style>
 </head>
 <body>
-    <!-- Premium Background -->
-    <div class="crypto-bg"></div>
+    <!-- Premium Background - Enhanced Crisscross Animation -->
+    <div class="crypto-bg">
+        <div class="dots-layer"></div>
+    </div>
     <div class="floating-particles" id="particles"></div>
     <div class="rainbow-border"></div>
     
@@ -922,7 +948,7 @@
             </div>
         </div>
         
-        <!-- Team Referral Conditions -->
+        <!-- Team Referral Conditions - UPDATED -->
         <div class="section fade-in">
             <div class="section-title">
                 <div class="section-icon">
@@ -936,6 +962,12 @@
             
             <div class="conditions-grid">
                 <div class="condition-card">
+                    <i class="fas fa-coins warning-icon"></i>
+                    <h4>Minimum Buy</h4>
+                    <p>Start your referral income with <span class="highlight">minimum 10 USDT</span> value ka SIGMA buy</p>
+                </div>
+                
+                <div class="condition-card">
                     <i class="fas fa-calendar-alt warning-icon"></i>
                     <h4>Monthly Activity</h4>
                     <p>Every Month <span class="highlight">10 USDT value</span> ka SIGMA buy karna hoga</p>
@@ -948,58 +980,32 @@
                     <p>Aapke available wallet balance ka <span class="highlight">5X tak</span> at a time receive kar sakte hain</p>
                     <p>Balance update hote hi <span class="highlight">new 5X</span> calculate hoga</p>
                 </div>
-                
-                <div class="condition-card">
-                    <i class="fas fa-clock warning-icon"></i>
-                    <h4>Cooldown Period</h4>
-                    <p>Every buy ke baad <span class="highlight">3 minutes</span> ka wait period</p>
-                    <p>Uske baad hi sell kar sakte hain</p>
-                </div>
-            </div>
-            
-            <!-- 5X Rule Highlight -->
-            <div class="fiver-card">
-                <div class="fiver-value">5X</div>
-                <p>🔥 Aapke available wallet balance ka 5X tak ek saath SIGMA receive kar sakte hain</p>
-                <p class="small">Balance update hote hi new 5X calculate ho jayega • Instant • Automatic</p>
             </div>
         </div>
         
-        <!-- Trading Rules -->
+        <!-- EARNING RULES - UPDATED (renamed from Trading Rules) -->
         <div class="section fade-in">
             <div class="section-title">
                 <div class="section-icon">
                     <i class="fas fa-coins"></i>
                 </div>
                 <div>
-                    <h2>💎 TRADING RULES</h2>
+                    <h2>💎 EARNING RULES</h2>
                     <div class="section-subtitle">Maximum limits & restrictions</div>
                 </div>
             </div>
             
-            <div class="rules-grid">
-                <div class="rule-card">
+            <div class="earning-rules-grid">
+                <div class="earning-rule-card">
                     <i class="fas fa-arrow-up"></i>
                     <div class="rule-value">1,000 USDT</div>
                     <div class="rule-label">Max Buy (At a time)</div>
                 </div>
                 
-                <div class="rule-card">
+                <div class="earning-rule-card">
                     <i class="fas fa-hourglass-half"></i>
                     <div class="rule-value">3 Minutes</div>
                     <div class="rule-label">Sell Cooldown</div>
-                </div>
-                
-                <div class="rule-card">
-                    <i class="fas fa-infinity"></i>
-                    <div class="rule-value">5X</div>
-                    <div class="rule-label">Receive Limit</div>
-                </div>
-                
-                <div class="rule-card">
-                    <i class="fas fa-calendar"></i>
-                    <div class="rule-value">Monthly</div>
-                    <div class="rule-label">10 USDT Activity</div>
                 </div>
             </div>
         </div>
