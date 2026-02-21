@@ -879,8 +879,15 @@
                 document.getElementById('btn-text').textContent = shortAddress;
                 connectBtn.classList.add('connected');
                 
+                // Save connection status
+                localStorage.setItem('sigma_wallet_connected', 'true');
+                
                 // Load data
                 await loadData();
+                
+                // Setup event listeners for account changes
+                window.ethereum.on('accountsChanged', handleAccountsChanged);
+                window.ethereum.on('chainChanged', () => window.location.reload());
                 
             } catch (error) {
                 console.error("Connection error:", error);
@@ -888,9 +895,59 @@
             }
         }
         
+        function handleAccountsChanged(accounts) {
+            if (accounts.length === 0) {
+                // User disconnected their wallet
+                userAddress = null;
+                document.getElementById('btn-text').textContent = 'Connect Wallet';
+                document.getElementById('connectBtn').classList.remove('connected');
+                localStorage.removeItem('sigma_wallet_connected');
+                
+                // Clear tables
+                document.getElementById('active-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="fas fa-wallet"></i><br>
+                            Please connect wallet to view data
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('closed-body').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <i class="fas fa-wallet"></i><br>
+                            Please connect wallet to view data
+                        </td>
+                    </tr>
+                `;
+            } else {
+                // User switched account
+                userAddress = accounts[0];
+                const shortAddress = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
+                document.getElementById('btn-text').textContent = shortAddress;
+                document.getElementById('connectBtn').classList.add('connected');
+                loadData();
+            }
+        }
+        
         async function loadData() {
             if (!userAddress) {
-                alert("Please connect your wallet first");
+                document.getElementById('active-body').innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="fas fa-wallet"></i><br>
+                            Please connect wallet to view data
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('closed-body').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <i class="fas fa-wallet"></i><br>
+                            Please connect wallet to view data
+                        </td>
+                    </tr>
+                `;
                 return;
             }
             
@@ -1287,14 +1344,45 @@
             document.body.removeChild(link);
         }
         
+        // Auto-connect function
+        async function autoConnect() {
+            if (window.ethereum) {
+                try {
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    const accounts = await provider.listAccounts();
+                    
+                    if (accounts.length > 0) {
+                        // Wallet is already connected
+                        userAddress = accounts[0].address;
+                        
+                        sigmaContract = new ethers.Contract(SIGMA_CONTRACT_ADDRESS, sigmaABI, provider);
+                        
+                        // Update connect button
+                        const connectBtn = document.getElementById('connectBtn');
+                        const shortAddress = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
+                        document.getElementById('btn-text').textContent = shortAddress;
+                        connectBtn.classList.add('connected');
+                        
+                        // Load data
+                        await loadData();
+                        
+                        // Setup event listeners for account changes
+                        window.ethereum.on('accountsChanged', handleAccountsChanged);
+                        window.ethereum.on('chainChanged', () => window.location.reload());
+                    }
+                } catch (error) {
+                    console.log("Auto-connect error:", error);
+                    // Silently fail - user can connect manually
+                }
+            }
+        }
+        
         // Initialize when page loads
         window.onload = function() {
             createParticles();
             
-            // Check if wallet is already connected
-            if (window.ethereum && window.ethereum.selectedAddress) {
-                connectWallet();
-            }
+            // Try to auto-connect
+            autoConnect();
         };
     </script>
 </body>
