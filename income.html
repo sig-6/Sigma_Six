@@ -2,311 +2,415 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scaling for Excellence | SIGMA SIX</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>SIGMA SIX | Income Report (v2)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ===== RESET & BASE ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #0a0b10;
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* ===== RAINBOW BORDER ANIMATION ===== */
-        .rainbow-border {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, #00ffcc, #9d4edd, #ff2a6d, #00ffcc);
-            background-size: 400% 400%;
-            animation: rainbow 8s ease infinite;
-            z-index: 1000;
-        }
-
-        @keyframes rainbow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* ===== CRYPTO BACKGROUND ANIMATION ===== */
-        .crypto-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            opacity: 0.15;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(0, 255, 204, 0.2) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(157, 78, 221, 0.2) 0%, transparent 40%),
-                radial-gradient(circle at 40% 80%, rgba(255, 42, 109, 0.15) 0%, transparent 40%);
-            animation: pulseGlow 10s ease-in-out infinite;
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% { opacity: 0.15; }
-            50% { opacity: 0.25; }
-        }
-
-        /* ===== FLOATING CRYPTO ICONS ===== */
-        .floating-icons {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .floating-icon {
-            position: absolute;
-            font-size: clamp(20px, 5vw, 40px);
-            color: rgba(0, 255, 204, 0.3);
-            animation: floatIcon 20s infinite linear;
-            text-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
-        }
-
-        /* Position variations */
-        .floating-icon:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; font-size: 30px; }
-        .floating-icon:nth-child(2) { top: 20%; left: 85%; animation-delay: 2s; color: rgba(157, 78, 221, 0.3); font-size: 45px; }
-        .floating-icon:nth-child(3) { top: 40%; left: 15%; animation-delay: 4s; color: rgba(255, 42, 109, 0.3); font-size: 35px; }
-        .floating-icon:nth-child(4) { top: 60%; left: 90%; animation-delay: 6s; font-size: 50px; }
-        .floating-icon:nth-child(5) { top: 80%; left: 10%; animation-delay: 8s; color: rgba(157, 78, 221, 0.3); font-size: 40px; }
-        .floating-icon:nth-child(6) { top: 30%; left: 70%; animation-delay: 10s; font-size: 55px; }
-        .floating-icon:nth-child(7) { top: 70%; left: 50%; animation-delay: 12s; color: rgba(255, 42, 109, 0.3); font-size: 38px; }
-        .floating-icon:nth-child(8) { top: 50%; left: 30%; animation-delay: 14s; font-size: 42px; }
-        .floating-icon:nth-child(9) { top: 15%; left: 60%; animation-delay: 16s; color: rgba(0, 255, 204, 0.3); font-size: 48px; }
-        .floating-icon:nth-child(10) { top: 85%; left: 80%; animation-delay: 18s; color: rgba(157, 78, 221, 0.3); font-size: 32px; }
-
-        @keyframes floatIcon {
-            0% { 
-                transform: translateY(0) rotate(0deg) scale(1); 
-                opacity: 0.3;
-            }
-            25% { 
-                transform: translateY(-30px) rotate(90deg) scale(1.2); 
-                opacity: 0.7;
-            }
-            50% { 
-                transform: translateY(0) rotate(180deg) scale(1); 
-                opacity: 0.3;
-            }
-            75% { 
-                transform: translateY(30px) rotate(270deg) scale(1.2); 
-                opacity: 0.7;
-            }
-            100% { 
-                transform: translateY(0) rotate(360deg) scale(1); 
-                opacity: 0.3;
-            }
-        }
-
-        /* ===== MAIN CONTENT ===== */
-        .center-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            width: 100%;
-            padding: 20px;
-            z-index: 10;
-        }
-
-        /* Glowing text animation */
-        .main-heading {
-            font-size: clamp(32px, 10vw, 80px);
-            font-weight: 800;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            background: linear-gradient(90deg, #00ffcc, #9d4edd, #ff2a6d, #00ffcc);
-            background-size: 400% 400%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: gradientMove 8s ease infinite, glowPulse 3s ease-in-out infinite;
-            margin-bottom: 20px;
-            line-height: 1.2;
-            text-shadow: 0 0 30px rgba(0, 255, 204, 0.5);
-        }
-
-        @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes glowPulse {
-            0%, 100% { 
-                text-shadow: 0 0 30px rgba(0, 255, 204, 0.5);
-                filter: brightness(1);
-            }
-            50% { 
-                text-shadow: 0 0 60px rgba(157, 78, 221, 0.8), 0 0 30px rgba(0, 255, 204, 0.8);
-                filter: brightness(1.2);
-            }
-        }
-
-        /* Subtitle (optional, but adds to design) */
-        .subtitle {
-            font-size: clamp(14px, 3vw, 18px);
-            color: rgba(255, 255, 255, 0.6);
-            letter-spacing: 6px;
-            text-transform: uppercase;
-            font-weight: 400;
-            margin-top: 20px;
-            animation: fadeInUp 2s ease-out;
-            border-top: 1px solid rgba(0, 255, 204, 0.3);
-            padding-top: 20px;
-            display: inline-block;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Animated particles (dots) */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: rgba(0, 255, 204, 0.5);
-            border-radius: 50%;
-            animation: particleFloat 15s infinite linear;
-        }
-
-        @keyframes particleFloat {
-            0% {
-                transform: translateY(100vh) scale(1);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100vh) scale(2);
-                opacity: 0;
-            }
-        }
-
-        /* Generate multiple particles */
-        .particle:nth-child(1) { left: 10%; animation-duration: 12s; animation-delay: 0s; }
-        .particle:nth-child(2) { left: 20%; animation-duration: 15s; animation-delay: 2s; background: rgba(157, 78, 221, 0.5); }
-        .particle:nth-child(3) { left: 30%; animation-duration: 18s; animation-delay: 4s; }
-        .particle:nth-child(4) { left: 40%; animation-duration: 14s; animation-delay: 1s; background: rgba(255, 42, 109, 0.5); }
-        .particle:nth-child(5) { left: 50%; animation-duration: 16s; animation-delay: 3s; }
-        .particle:nth-child(6) { left: 60%; animation-duration: 13s; animation-delay: 5s; background: rgba(0, 255, 204, 0.5); }
-        .particle:nth-child(7) { left: 70%; animation-duration: 17s; animation-delay: 2s; }
-        .particle:nth-child(8) { left: 80%; animation-duration: 19s; animation-delay: 4s; background: rgba(157, 78, 221, 0.5); }
-        .particle:nth-child(9) { left: 90%; animation-duration: 15s; animation-delay: 1s; }
-        .particle:nth-child(10) { left: 95%; animation-duration: 20s; animation-delay: 3s; background: rgba(255, 42, 109, 0.5); }
-
-        /* ===== RESPONSIVE DESIGN ===== */
-        @media (max-width: 768px) {
-            .floating-icon {
-                font-size: clamp(15px, 4vw, 30px);
-            }
-            
-            .main-heading {
-                font-size: clamp(28px, 8vw, 60px);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .main-heading {
-                font-size: clamp(24px, 7vw, 40px);
-                letter-spacing: 2px;
-            }
-            
-            .subtitle {
-                letter-spacing: 3px;
-                font-size: 12px;
-            }
-        }
-
-        /* Scrollbar hide (optional) */
-        ::-webkit-scrollbar {
-            display: none;
+        :root {
+            --primary: #00ffcc;
+            --secondary: #9d4edd;
+            --bg: #0a0b10;
+            --card: #161821;
+            --text: #ffffff;
+            --border: #2d2f3e;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff4d4d;
+            --gradient: linear-gradient(90deg, #00ffcc, #9d4edd, #ff2a6d, #00ffcc);
         }
         
-        body {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; position: relative; }
+        .rainbow-border { position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: var(--gradient); background-size: 400% 400%; animation: rainbow 8s ease infinite; z-index: 1000; }
+        .crypto-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; opacity: 0.15; background: radial-gradient(circle at 20% 30%, rgba(0, 255, 204, 0.2) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(157, 78, 221, 0.2) 0%, transparent 40%), radial-gradient(circle at 40% 80%, rgba(255, 42, 109, 0.15) 0%, transparent 40%); }
+        .floating-icons { position: fixed; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+        .floating-icon { position: absolute; font-size: 20px; color: rgba(0, 255, 204, 0.3); animation: float 20s infinite linear; }
+        .floating-icon:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
+        .floating-icon:nth-child(2) { top: 20%; left: 85%; animation-delay: 2s; color: rgba(157, 78, 221, 0.3); }
+        .floating-icon:nth-child(3) { top: 40%; left: 15%; animation-delay: 4s; color: rgba(255, 42, 109, 0.3); }
+        .floating-icon:nth-child(4) { top: 60%; left: 90%; animation-delay: 6s; }
+        .floating-icon:nth-child(5) { top: 80%; left: 10%; animation-delay: 8s; color: rgba(157, 78, 221, 0.3); }
+        .floating-icon:nth-child(6) { top: 30%; left: 70%; animation-delay: 10s; }
+        .floating-icon:nth-child(7) { top: 70%; left: 50%; animation-delay: 12s; color: rgba(255, 42, 109, 0.3); }
+        @keyframes rainbow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; } 25% { transform: translateY(-20px) rotate(90deg); opacity: 0.6; } 50% { transform: translateY(0) rotate(180deg); opacity: 0.3; } 75% { transform: translateY(20px) rotate(270deg); opacity: 0.6; } }
+        .container { max-width: 1200px; margin: 0 auto; padding: 15px; position: relative; z-index: 1; }
+        .header { text-align: center; margin-bottom: 30px; padding-top: 20px; }
+        .header h1 { background: var(--gradient); background-size: 400% 400%; -webkit-background-clip: text; background-clip: text; color: transparent; font-size: clamp(28px, 5vw, 42px); font-weight: 800; letter-spacing: 2px; margin-bottom: 10px; animation: rainbow 8s ease infinite; line-height: 1.2; }
+        .header p { color: #aaa; font-size: clamp(14px, 3vw, 16px); letter-spacing: 1px; }
+        .connect-btn { position: fixed; top: 10px; right: 10px; background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #000; border: none; border-radius: 12px; padding: 10px 20px; font-weight: 800; font-size: clamp(12px, 3vw, 14px); cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(0, 255, 204, 0.3); z-index: 1001; white-space: nowrap; max-width: 200px; }
+        .connect-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 255, 204, 0.5); }
+        .connect-btn.connected { background: rgba(0, 255, 204, 0.1); color: var(--primary); border: 1px solid var(--primary); }
+        .wallet-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(20px); z-index: 2000; justify-content: center; align-items: center; }
+        .wallet-modal.active { display: flex; }
+        .wallet-modal-content { background: var(--card); border: 2px solid transparent; border-radius: 32px; padding: 30px; max-width: 400px; width: 90%; text-align: center; position: relative; overflow: hidden; box-shadow: 0 0 30px rgba(0, 255, 204, 0.3); }
+        .wallet-modal-content::before { content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: var(--gradient); background-size: 400% 400%; border-radius: 32px; z-index: -2; animation: rainbow 8s ease infinite; }
+        .wallet-modal-content::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: 30px; z-index: -1; margin: 2px; }
+        .wallet-modal-content h2 { color: var(--primary); margin-bottom: 25px; font-size: 24px; text-shadow: 0 0 10px rgba(0, 255, 204, 0.5); }
+        .wallet-option { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: 20px; padding: 15px; margin-bottom: 12px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 15px; width: 100%; }
+        .wallet-option:hover { border-color: var(--primary); background: rgba(0, 255, 204, 0.1); box-shadow: 0 0 20px rgba(0, 255, 204, 0.3); }
+        .wallet-option img { width: 40px; height: 40px; border-radius: 12px; background: white; padding: 6px; }
+        .wallet-option span { font-size: 18px; font-weight: 700; background: var(--gradient); background-size: 400% 400%; -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .close-modal { margin-top: 15px; background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 10px 25px; border-radius: 20px; cursor: pointer; font-weight: 700; transition: all 0.3s; font-size: 15px; }
+        .close-modal:hover { background: var(--danger); color: white; box-shadow: 0 0 20px rgba(255, 77, 77, 0.5); }
+        .chain-warning { position: fixed; top: 80px; right: 15px; background: rgba(255, 170, 0, 0.1); border: 1px solid var(--warning); border-radius: 12px; padding: 10px 15px; color: var(--warning); font-size: 13px; display: none; z-index: 1000; }
+        .chain-warning.show { display: block; }
+        .filters-section { background: rgba(22, 24, 33, 0.85); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; border: 1px solid rgba(157, 78, 221, 0.2); margin-bottom: 20px; }
+        .filters-title { color: var(--secondary); font-size: clamp(16px, 4vw, 20px); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .filter-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+        .filter-group { flex: 1; min-width: 200px; }
+        .filter-label { color: #aaa; font-size: clamp(12px, 3vw, 14px); margin-bottom: 5px; display: block; }
+        .date-input, .type-select, .search-input { width: 100%; padding: 10px 15px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 10px; color: white; font-size: 14px; }
+        .date-input:focus, .type-select:focus, .search-input:focus { outline: none; border-color: var(--primary); }
+        .apply-btn { background: linear-gradient(90deg, var(--secondary), #7b2cbf); color: white; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 600; font-size: clamp(12px, 3vw, 14px); cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; white-space: nowrap; margin-top: 20px; }
+        .apply-btn:hover { background: linear-gradient(90deg, #7b2cbf, var(--secondary)); transform: translateY(-2px); }
+        .reset-btn { background: rgba(255, 77, 77, 0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 10px; padding: 10px 20px; font-weight: 600; font-size: clamp(12px, 3vw, 14px); cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; white-space: nowrap; margin-top: 20px; }
+        .reset-btn:hover { background: rgba(255, 77, 77, 0.2); transform: translateY(-2px); }
+        .main-card { background: rgba(22, 24, 33, 0.85); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; border: 1px solid rgba(0, 255, 204, 0.2); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); margin-bottom: 20px; position: relative; overflow: hidden; }
+        .main-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--gradient); background-size: 400% 400%; animation: rainbow 8s ease infinite; }
+        .card-title { color: var(--primary); font-size: clamp(18px, 4vw, 24px); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: rgba(255, 255, 255, 0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(45, 47, 62, 0.5); text-align: center; transition: all 0.3s; }
+        .stat-box:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .stat-label { font-size: clamp(12px, 3vw, 14px); color: #888; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
+        .stat-value { font-size: clamp(20px, 4vw, 28px); font-weight: 700; color: var(--primary); word-break: break-word; }
+        .stat-value.positive { color: var(--success); }
+        .stat-value.negative { color: var(--danger); }
+        .table-container { overflow-x: hidden; border-radius: 12px; border: 1px solid var(--border); background: rgba(0, 0, 0, 0.2); }
+        .desktop-table { display: table; width: 100%; border-collapse: collapse; }
+        .mobile-cards { display: none; }
+        .mobile-card { background: rgba(255, 255, 255, 0.02); border-radius: 16px; padding: 15px; margin-bottom: 12px; border: 1px solid rgba(0, 255, 204, 0.1); position: relative; overflow: hidden; }
+        .mobile-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--gradient); background-size: 400% 400%; animation: rainbow 8s ease infinite; }
+        .mobile-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .mobile-card-title { font-size: 16px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+        .mobile-card-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .mobile-card-row:last-child { border-bottom: none; }
+        .mobile-card-label { font-size: 12px; color: #888; display: flex; align-items: center; gap: 5px; }
+        .mobile-card-value { font-size: 13px; font-weight: 600; text-align: right; }
+        .mobile-wallet-address { font-family: monospace; background: rgba(0, 255, 204, 0.1); padding: 4px 8px; border-radius: 6px; font-size: 11px; display: inline-block; cursor: pointer; transition: all 0.2s; }
+        .mobile-wallet-address:hover { background: rgba(0, 255, 204, 0.2); transform: scale(1.05); }
+        .mobile-amount { font-weight: 700; display: flex; align-items: center; gap: 5px; }
+        .mobile-amount.positive { color: var(--success); }
+        .mobile-amount.negative { color: var(--danger); }
+        th { background: rgba(157, 78, 221, 0.1); color: var(--secondary); padding: 12px 10px; text-align: left; font-weight: 700; font-size: clamp(11px, 2.5vw, 14px); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+        td { padding: 12px 10px; border-bottom: 1px solid rgba(45, 47, 62, 0.5); font-size: clamp(12px, 3vw, 14px); vertical-align: top; }
+        tr:hover { background: rgba(255, 255, 255, 0.03); }
+        .status-badge { padding: 4px 8px; border-radius: 16px; font-size: clamp(10px, 2.5vw, 12px); font-weight: 600; display: inline-block; }
+        .status-active { background: rgba(0, 255, 136, 0.1); color: var(--success); border:1px solid rgba(0,255,136,0.2); }
+        .status-lapsed { background: rgba(255, 77, 77, 0.1); color: var(--danger); border:1px solid rgba(255,77,77,0.2); }
+        .status-ico { background: rgba(255, 170, 0, 0.1); color: #ffaa00; border:1px solid rgba(255,170,0,0.2); }
+        .amount-positive { color: var(--success); font-weight: 700; }
+        .amount-negative { color: var(--danger); font-weight: 700; }
+        .loading { text-align: center; padding: 30px 20px; color: var(--primary); }
+        .no-data { text-align: center; padding: 30px 20px; color: #888; }
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--primary); text-decoration: none; font-weight: 600; margin-bottom: 15px; padding: 8px 16px; border-radius: 10px; background: rgba(0, 255, 204, 0.1); border: 1px solid rgba(0, 255, 204, 0.3); transition: all 0.3s; font-size: clamp(12px, 3vw, 14px); }
+        .back-btn:hover { background: rgba(0, 255, 204, 0.2); transform: translateX(-5px); }
+        .refresh-btn { background: linear-gradient(90deg, var(--secondary), #7b2cbf); color: white; border: none; border-radius: 10px; padding: 10px 16px; font-weight: 600; font-size: clamp(12px, 3vw, 14px); cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .refresh-btn:hover { background: linear-gradient(90deg, #7b2cbf, var(--secondary)); transform: translateY(-2px); }
+        .header-actions { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        @media (min-width: 480px) { .header-actions { flex-direction: row; justify-content: space-between; align-items: center; } }
+        .wallet-address { font-family: monospace; font-size: 11px; background: rgba(0, 255, 204, 0.1); padding: 6px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: var(--primary); border: 1px solid rgba(0, 255, 204, 0.2); transition: all 0.2s; }
+        .wallet-address:hover { background: rgba(0, 255, 204, 0.2); border-color: var(--primary); transform: translateY(-2px); }
+        .filter-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        .reason-badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; background: rgba(255, 255, 255, 0.05); }
+        .level-badge { background: rgba(157,78,221,0.15); color: var(--secondary); padding:2px 8px; border-radius:30px; font-size:11px; margin-left:5px; }
+        .percent-badge { background: rgba(0,255,204,0.1); color: var(--primary); padding:2px 6px; border-radius:20px; font-size:10px; margin-left:4px; }
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .connect-btn { position: relative; top: auto; right: auto; margin: 0 auto 15px auto; width: 100%; max-width: 100%; justify-content: center; }
+            .desktop-table { display: none; }
+            .mobile-cards { display: block; }
+            .stats-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <!-- Rainbow Border Animation -->
     <div class="rainbow-border"></div>
-    
-    <!-- Crypto Background Glow -->
     <div class="crypto-bg"></div>
+    <div class="floating-icons"> <div class="floating-icon">₿</div> <div class="floating-icon">Ξ</div> <div class="floating-icon">S</div> <div class="floating-icon">Σ</div> <div class="floating-icon">$</div> <div class="floating-icon">◈</div> <div class="floating-icon">✦</div> </div>
+    <div class="chain-warning" id="chainWarning"><i class="fas fa-exclamation-triangle"></i> Please switch to Polygon network</div>
     
-    <!-- Floating Crypto Icons -->
-    <div class="floating-icons">
-        <div class="floating-icon">₿</div>
-        <div class="floating-icon">Ξ</div>
-        <div class="floating-icon">S</div>
-        <div class="floating-icon">Σ</div>
-        <div class="floating-icon">◈</div>
-        <div class="floating-icon">✦</div>
-        <div class="floating-icon">∆</div>
-        <div class="floating-icon">Ł</div>
-        <div class="floating-icon">Ð</div>
-        <div class="floating-icon">💎</div>
+    <div class="wallet-modal" id="walletModal">
+        <div class="wallet-modal-content">
+            <h2><i class="fas fa-wallet"></i> Connect Wallet</h2>
+            <div class="wallet-option" onclick="connectWallet('metamask')"><img src="https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg" alt="MetaMask" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 fill=%22%23f6851b%22 rx=%228%22/><text x=%225%22 y=%2228%22 fill=%22white%22 font-size=%2224%22>M</text></svg>'"><span>MetaMask</span></div>
+            <div class="wallet-option" onclick="connectWallet('trust')"><img src="https://trustwallet.com/assets/images/favicon.png" alt="Trust Wallet" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 fill=%22%230050ef%22 rx=%228%22/><text x=%225%22 y=%2228%22 fill=%22white%22 font-size=%2224%22>T</text></svg>'"><span>Trust Wallet</span></div>
+            <div class="wallet-option" onclick="connectWallet('bitget')"><img src="https://cdn.prod.website-files.com/64449f9b1fa7be3e7e9aa001/65acd9d3a66cc56a38d4b9c3_favicon%20(1).png" alt="BitGet Wallet" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><rect width=%2240%22 height=%2240%22 fill=%22%2300b2ff%22 rx=%228%22/><text x=%225%22 y=%2228%22 fill=%22white%22 font-size=%2224%22>B</text></svg>'"><span>BitGet Wallet</span></div>
+            <button class="close-modal" onclick="closeWalletModal()">Cancel</button>
+        </div>
     </div>
     
-    <!-- Animated Particles (Dots) -->
-    <div class="particles">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-    </div>
+    <button class="connect-btn" id="connectBtn" onclick="showWalletModal()"><i class="fas fa-wallet"></i> <span id="btn-text">Connect Wallet</span></button>
     
-    <!-- Main Content: Only Heading -->
-    <div class="center-content">
-        <h1 class="main-heading">Scaling for Excellence!</h1>
-        <div class="subtitle">✦ SIGMA SIX ✦</div>
+    <div class="container">
+        <div class="header-actions">
+            <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            <button class="refresh-btn" onclick="loadIncomeData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+        
+        <div class="header"><h1>INCOME REPORT (v2)</h1><p>ICO, Referrals & Lapsed Details</p></div>
+        
+        <div class="filters-section">
+            <h2 class="filters-title"><i class="fas fa-filter"></i> Filter Income Data</h2>
+            <div class="filter-row">
+                <div class="filter-group"><label class="filter-label"><i class="far fa-calendar"></i> Start Date</label><input type="date" id="startDate" class="date-input"></div>
+                <div class="filter-group"><label class="filter-label"><i class="far fa-calendar"></i> End Date</label><input type="date" id="endDate" class="date-input"></div>
+                <div class="filter-group"><label class="filter-label"><i class="fas fa-tag"></i> Income Type</label>
+                    <select id="incomeType" class="type-select"><option value="all">All Types</option><option value="ICO">ICO Bonus</option><option value="REFERRAL">Team Referral</option><option value="lapsed">Lapsed Income</option></select>
+                </div>
+                <div class="filter-group"><label class="filter-label"><i class="fas fa-search"></i> Search Wallet</label><input type="text" id="searchWallet" class="search-input" placeholder="Enter wallet address..."></div>
+            </div>
+            <div class="filter-buttons"><button class="apply-btn" onclick="applyFilters()"><i class="fas fa-check"></i> Apply Filters</button><button class="reset-btn" onclick="resetFilters()"><i class="fas fa-times"></i> Reset Filters</button></div>
+        </div>
+        
+        <div class="main-card">
+            <h2 class="card-title"><i class="fas fa-chart-line"></i> Income Overview</h2>
+            <div class="stats-row">
+                <div class="stat-box"><div class="stat-label"><i class="fas fa-coins"></i> Total SIG6 Income</div><div id="total-sig6" class="stat-value positive">0.0000 SIG6</div></div>
+                <div class="stat-box"><div class="stat-label"><i class="fas fa-exclamation-triangle"></i> Lapsed Income (SIG6)</div><div id="lapsed-income" class="stat-value negative">0.0000 SIG6</div></div>
+                <div class="stat-box"><div class="stat-label"><i class="fas fa-history"></i> Total Transactions</div><div id="total-transactions" class="stat-value">0</div></div>
+            </div>
+        </div>
+        
+        <!-- Referral & ICO Rewards (using ReferralPaid + we'll simulate ICO from Bought?) Actually ICO bonus not directly in events; we'll use IncomeLapsed for lapsed, and ReferralPaid for referrals. ICO bonus could be from Bought? but contract doesn't emit ICO bonus event. We'll rely on ReferralPaid -->
+        <div class="main-card">
+            <h2 class="card-title"><i class="fas fa-gift"></i> Referral & ICO History</h2>
+            <div class="table-container">
+                <table class="desktop-table" id="rewards-table"><thead><tr><th>#</th><th>Type</th><th>From Wallet</th><th>Level</th><th>Amount (SIG6)</th><th>%</th><th>Date</th></tr></thead><tbody id="rewards-body-desktop"></tbody></table>
+                <div class="mobile-cards" id="rewards-body-mobile"></div>
+            </div>
+        </div>
+        
+        <div class="main-card">
+            <h2 class="card-title"><i class="fas fa-exclamation-triangle"></i> Lapsed Income (with Reason)</h2>
+            <div class="table-container">
+                <table class="desktop-table" id="lapsed-table"><thead><tr><th>#</th><th>From Wallet</th><th>Level</th><th>Amount (SIG6)</th><th>Reason</th><th>Date</th></tr></thead><tbody id="lapsed-body-desktop"></tbody></table>
+                <div class="mobile-cards" id="lapsed-body-mobile"></div>
+            </div>
+        </div>
     </div>
+
+    <script>
+        // UPDATED CONTRACT
+        const SIGMA_CONTRACT_ADDRESS = "0x068Aaba73Fd754F21140E2F13DA177ce7251A299";
+        let provider, userAddress, sigmaContract, signer;
+        let allReferralEvents = [];      // ReferralPaid events
+        let allLapsedEvents = [];         // IncomeLapsed events
+        
+        // NEW ABI (filtered relevant events + view functions)
+        const sigmaABI = [{"inputs":[{"internalType":"address","name":"_usdt","type":"address"},{"internalType":"address","name":"_creator","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"usdtAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"sigmaAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"rate","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"Bought","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"level","type":"uint256"},{"indexed":false,"internalType":"string","name":"reason","type":"string"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"IncomeLapsed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"level","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"ReferralPaid","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"sigmaAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"usdtAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"rate","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"Sold","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"BASE_RATE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"INCREMENT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_SIGMA_BUY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MIN_FOR_RENEWAL","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MIN_HOLD_VALUE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_user","type":"address"},{"internalType":"address","name":"_upline","type":"address"}],"name":"adminSetUpline","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"ath","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"atl","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_usdtAmount","type":"uint256"},{"internalType":"address","name":"_upline","type":"address"}],"name":"buy","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"creatorWallet","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"currentRate","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"dailyHistory","outputs":[{"internalType":"uint256","name":"open","type":"uint256"},{"internalType":"uint256","name":"high","type":"uint256"},{"internalType":"uint256","name":"low","type":"uint256"},{"internalType":"uint256","name":"close","type":"uint256"},{"internalType":"uint256","name":"timestamp","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getSellRate","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_upline","type":"address"},{"internalType":"uint256","name":"_level","type":"uint256"}],"name":"isLevelUnlocked","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lastHistoryDay","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"levelRewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"p2pTransfer","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_sigmaAmount","type":"uint256"}],"name":"sell","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"usdt","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"users","outputs":[{"internalType":"address","name":"upline","type":"address"},{"internalType":"uint256","name":"referralExpiry","type":"uint256"},{"internalType":"uint256","name":"totalReferralEarned","type":"uint256"},{"internalType":"uint256","name":"lastBuyTimestamp","type":"uint256"},{"internalType":"uint256","name":"lastActionBlock","type":"uint256"},{"internalType":"uint256","name":"qualifiedDirectsCount","type":"uint256"},{"internalType":"bool","name":"hasBought","type":"bool"},{"internalType":"bool","name":"isInitialized","type":"bool"},{"internalType":"bool","name":"isCurrentlyQualified","type":"bool"}],"stateMutability":"view","type":"function"}];
+
+        async function checkChain() { if(!provider) return false; try{ const net=await provider.getNetwork(); const chainId=Number(net.chainId); if(chainId!==137 && chainId!==80001){ document.getElementById('chainWarning').classList.add('show'); return false; } else { document.getElementById('chainWarning').classList.remove('show'); return true; } }catch{ return false; }}
+        function showWalletModal(){ document.getElementById('walletModal').classList.add('active'); }
+        function closeWalletModal(){ document.getElementById('walletModal').classList.remove('active'); }
+        function getProvider(w){ if(w==='metamask'||w==='trust'||w==='bitget'){ if(typeof window.ethereum!=='undefined') return window.ethereum; if(w==='trust'&&window.trustWallet) return window.trustWallet; if(w==='bitget'&&window.bitkeep?.ethereum) return window.bitkeep.ethereum; } return null; }
+        
+        async function connectWallet(walletType){
+            closeWalletModal();
+            let ethProvider = getProvider(walletType);
+            if(!ethProvider){ alert("Wallet not found"); return; }
+            try{
+                provider = new ethers.BrowserProvider(ethProvider);
+                let accounts = await provider.send("eth_requestAccounts",[]);
+                if(!accounts||accounts.length===0) throw new Error("No accounts");
+                userAddress = accounts[0];
+                signer = await provider.getSigner();
+                sigmaContract = new ethers.Contract(SIGMA_CONTRACT_ADDRESS, sigmaABI, provider);
+                await checkChain();
+                const connectBtn = document.getElementById('connectBtn');
+                let icon = walletType==='metamask'?'🦊':walletType==='trust'?'🔵':'⚡';
+                document.getElementById('btn-text').innerText = icon+" "+userAddress.slice(0,6)+"..."+userAddress.slice(-4);
+                connectBtn.classList.add('connected');
+                localStorage.setItem('sigma_wallet_connected','true');
+                loadIncomeData();
+                
+                ethProvider.on('accountsChanged', async (accs) => { if(accs.length>0){ userAddress=accs[0]; signer=await provider.getSigner(); document.getElementById('btn-text').innerText=icon+" "+userAddress.slice(0,6)+"..."; loadIncomeData(); } else { location.reload(); } });
+                ethProvider.on('chainChanged', () => window.location.reload());
+            } catch(e){ alert("Error: "+e.message); }
+        }
+
+        async function loadIncomeData(){
+            if(!userAddress){ showWalletModal(); return; }
+            if(!(await checkChain())) return;
+            
+            // loading states
+            document.getElementById('rewards-body-desktop').innerHTML = `<tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading referral data...</td></tr>`;
+            document.getElementById('lapsed-body-desktop').innerHTML = `<tr><td colspan="6" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading lapsed data...</td></tr>`;
+            document.getElementById('rewards-body-mobile').innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`;
+            document.getElementById('lapsed-body-mobile').innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>`;
+            
+            try{
+                const currentBlock = await provider.getBlockNumber();
+                const fromBlock = Math.max(0, currentBlock - 2000000); // wider range
+                
+                // fetch ReferralPaid where 'to' == userAddress
+                const referralFilter = sigmaContract.filters.ReferralPaid(null, userAddress);
+                const refEvents = await sigmaContract.queryFilter(referralFilter, fromBlock, currentBlock);
+                console.log("Referral events found:", refEvents.length);
+                
+                // fetch IncomeLapsed where 'to' == userAddress
+                const lapsedFilter = sigmaContract.filters.IncomeLapsed(null, userAddress);
+                const lapEvents = await sigmaContract.queryFilter(lapsedFilter, fromBlock, currentBlock);
+                console.log("Lapsed events found:", lapEvents.length);
+                
+                allReferralEvents = refEvents;
+                allLapsedEvents = lapEvents;
+                
+                displayReferralData(allReferralEvents);
+                displayLapsedData(allLapsedEvents);
+                updateStats(allReferralEvents, allLapsedEvents);
+            } catch(error){
+                console.error(error);
+                document.getElementById('rewards-body-desktop').innerHTML = `<tr><td colspan="7" class="no-data">Error: ${error.message}</td></tr>`;
+                document.getElementById('lapsed-body-desktop').innerHTML = `<tr><td colspan="6" class="no-data">Error</td></tr>`;
+            }
+        }
+
+        // level rewards percentages (as per contract levelRewards mapping)
+        const levelPercent = [0,7,3,2,1,1,1,1,1,1,1]; // index 1..10 (level 1 = 7%)
+        function getPercent(level){ return level>=1 && level<=10 ? levelPercent[level] : 0; }
+
+        function displayReferralData(events){
+            const desktop = document.getElementById('rewards-body-desktop');
+            const mobile = document.getElementById('rewards-body-mobile');
+            if(!events.length){ 
+                desktop.innerHTML = `<tr><td colspan="7" class="no-data">No referral/ICO income</td></tr>`;
+                mobile.innerHTML = `<div class="no-data">No referral/ICO income</div>`;
+                return;
+            }
+            events.sort((a,b)=>Number(b.args.timestamp)-Number(a.args.timestamp));
+            let totalSIG6=0;
+            let html='', mobileHtml='';
+            events.forEach((ev,i)=>{
+                let args = ev.args;
+                let from = args.from;
+                let level = Number(args.level);
+                let amountRaw = BigInt(args.amount);
+                let amount = parseFloat(ethers.formatUnits(amountRaw, 18));
+                totalSIG6 += amount;
+                let ts = Number(args.timestamp);
+                let date = new Date(ts*1000).toLocaleDateString('en-IN');
+                let fromShort = from.slice(0,6)+'...'+from.slice(-4);
+                let percent = getPercent(level);
+                
+                html += `<tr>
+                    <td>${i+1}</td>
+                    <td><span class="status-badge status-active">Team Referral</span></td>
+                    <td><div class="wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</div></td>
+                    <td>${level} <span class="level-badge">Lv${level}</span></td>
+                    <td class="amount-positive">${amount.toFixed(4)} SIG6</td>
+                    <td><span class="percent-badge">${percent}%</span></td>
+                    <td>${date}</td>
+                </tr>`;
+                
+                mobileHtml += `<div class="mobile-card">
+                    <div class="mobile-card-header"><span class="mobile-card-title">Referral Lv${level}</span><span class="status-badge status-active">${percent}%</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">From</span><span class="mobile-card-value"><span class="mobile-wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</span></span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">Amount</span><span class="mobile-card-value mobile-amount positive">${amount.toFixed(4)} SIG6</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">Date</span><span class="mobile-card-value">${date}</span></div>
+                </div>`;
+            });
+            desktop.innerHTML = html;
+            mobile.innerHTML = mobileHtml;
+            document.getElementById('total-sig6').innerText = totalSIG6.toFixed(4)+" SIG6";
+        }
+
+        function displayLapsedData(events){
+            const desktop = document.getElementById('lapsed-body-desktop');
+            const mobile = document.getElementById('lapsed-body-mobile');
+            if(!events.length){
+                desktop.innerHTML = `<tr><td colspan="6" class="no-data">No lapsed income</td></tr>`;
+                mobile.innerHTML = `<div class="no-data">No lapsed income</div>`;
+                return;
+            }
+            events.sort((a,b)=>Number(b.args.timestamp)-Number(a.args.timestamp));
+            let totalLapsed=0;
+            let html='', mobileHtml='';
+            events.forEach((ev,i)=>{
+                let args = ev.args;
+                let from = args.from;
+                let level = Number(args.level);
+                let amountRaw = BigInt(args.amount);
+                let amount = parseFloat(ethers.formatUnits(amountRaw, 18));
+                totalLapsed += amount;
+                let reason = args.reason || "Unknown";
+                let ts = Number(args.timestamp);
+                let date = new Date(ts*1000).toLocaleDateString('en-IN');
+                let fromShort = from.slice(0,6)+'...'+from.slice(-4);
+                let reasonShort = reason.length>20 ? reason.slice(0,20)+'...' : reason;
+                
+                html += `<tr>
+                    <td>${i+1}</td>
+                    <td><div class="wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</div></td>
+                    <td>${level} <span class="level-badge">Lv${level}</span></td>
+                    <td class="amount-negative">${amount.toFixed(4)} SIG6</td>
+                    <td><span class="reason-badge" title="${reason}">${reasonShort}</span></td>
+                    <td>${date}</td>
+                </tr>`;
+                
+                mobileHtml += `<div class="mobile-card">
+                    <div class="mobile-card-header"><span class="mobile-card-title">Lapsed Lv${level}</span><span class="status-badge status-lapsed">${amount.toFixed(2)}</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">From</span><span class="mobile-card-value"><span class="mobile-wallet-address" onclick="copyToClipboard('${from}')"><i class="fas fa-copy"></i> ${fromShort}</span></span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">Amount</span><span class="mobile-card-value mobile-amount negative">${amount.toFixed(4)} SIG6</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">Reason</span><span class="mobile-card-value">${reasonShort}</span></div>
+                    <div class="mobile-card-row"><span class="mobile-card-label">Date</span><span class="mobile-card-value">${date}</span></div>
+                </div>`;
+            });
+            desktop.innerHTML = html;
+            mobile.innerHTML = mobileHtml;
+            document.getElementById('lapsed-income').innerText = totalLapsed.toFixed(4)+" SIG6";
+        }
+
+        function updateStats(refEvents, lapEvents){
+            let total=0, lapsed=0;
+            refEvents.forEach(e=> total += parseFloat(ethers.formatUnits(e.args.amount,18)));
+            lapEvents.forEach(e=> lapsed += parseFloat(ethers.formatUnits(e.args.amount,18)));
+            document.getElementById('total-sig6').innerText = total.toFixed(4)+" SIG6";
+            document.getElementById('lapsed-income').innerText = lapsed.toFixed(4)+" SIG6";
+            document.getElementById('total-transactions').innerText = refEvents.length + lapEvents.length;
+        }
+
+        function applyFilters(){
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            const type = document.getElementById('incomeType').value;
+            const search = document.getElementById('searchWallet').value.toLowerCase().trim();
+            let filteredRef = [...allReferralEvents];
+            let filteredLap = [...allLapsedEvents];
+            if(start){ let st = Math.floor(new Date(start).getTime()/1000); filteredRef = filteredRef.filter(e=>Number(e.args.timestamp)>=st); filteredLap = filteredLap.filter(e=>Number(e.args.timestamp)>=st); }
+            if(end){ let et = Math.floor(new Date(end).getTime()/1000)+86400; filteredRef = filteredRef.filter(e=>Number(e.args.timestamp)<=et); filteredLap = filteredLap.filter(e=>Number(e.args.timestamp)<=et); }
+            if(type!=='all'){
+                if(type==='lapsed') filteredRef = [];
+                else if(type==='REFERRAL') filteredLap = [];
+                else if(type==='ICO') { filteredRef = []; filteredLap = []; } // no ICO event separate
+            }
+            if(search){
+                filteredRef = filteredRef.filter(e=> e.args.from.toLowerCase().includes(search));
+                filteredLap = filteredLap.filter(e=> e.args.from.toLowerCase().includes(search));
+            }
+            displayReferralData(filteredRef);
+            displayLapsedData(filteredLap);
+            updateStats(filteredRef, filteredLap);
+        }
+
+        function resetFilters(){
+            document.getElementById('startDate').value = ''; document.getElementById('endDate').value = ''; 
+            document.getElementById('incomeType').value = 'all'; document.getElementById('searchWallet').value = '';
+            displayReferralData(allReferralEvents); displayLapsedData(allLapsedEvents); updateStats(allReferralEvents, allLapsedEvents);
+        }
+
+        function copyToClipboard(t){ navigator.clipboard.writeText(t).then(()=>alert("Address copied!")); }
+
+        window.onload = function(){
+            const end = new Date(); const start = new Date(); start.setDate(start.getDate()-30);
+            document.getElementById('startDate').valueAsDate = start; document.getElementById('endDate').valueAsDate = end;
+            if(localStorage.getItem('sigma_wallet_connected')==='true' && window.ethereum){
+                provider = new ethers.BrowserProvider(window.ethereum);
+                provider.send("eth_accounts",[]).then(accs=>{ if(accs.length){ userAddress=accs[0]; document.getElementById('btn-text').innerText='🦊 '+userAddress.slice(0,6)+'...'; document.getElementById('connectBtn').classList.add('connected'); sigmaContract = new ethers.Contract(SIGMA_CONTRACT_ADDRESS, sigmaABI, provider); loadIncomeData(); } });
+            }
+        };
+    </script>
 </body>
 </html>
