@@ -586,6 +586,29 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
+        .error-message {
+            text-align: center;
+            padding: 50px;
+            color: var(--danger);
+        }
+        
+        .error-message i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .retry-btn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-weight: 600;
+            margin-top: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -606,9 +629,9 @@
             </button>
             <div class="page-title">
                 <h1>PRICE HISTORY</h1>
-                <p>Daily snapshots at 23:59 • Premium tracking</p>
+                <p>Daily snapshots at 23:59 • Live Blockchain Data</p>
             </div>
-            <div style="width: 100px;"></div> <!-- Spacer for balance -->
+            <div style="width: 100px;"></div>
         </div>
         
         <!-- Live Price Card -->
@@ -690,18 +713,17 @@
                     <thead>
                         <tr>
                             <th>Sl. No</th>
-                            <th>Date</th>
+                            <th>Date (23:59)</th>
                             <th>Rate (USDT)</th>
                             <th>≈ INR</th>
                             <th>24h Change</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <!-- Data will be inserted here -->
                         <tr>
                             <td colspan="5" class="loading-spinner">
                                 <div class="spinner"></div>
-                                <div>Loading price history...</div>
+                                <div>Connecting to blockchain...</div>
                             </td>
                         </tr>
                     </tbody>
@@ -717,9 +739,6 @@
             <div class="export-buttons">
                 <button class="export-btn" onclick="exportCSV()">
                     <i class="fas fa-file-csv"></i> EXPORT CSV
-                </button>
-                <button class="export-btn" onclick="exportPDF()">
-                    <i class="fas fa-file-pdf"></i> EXPORT PDF
                 </button>
                 <button class="export-btn" onclick="refreshData()">
                     <i class="fas fa-sync-alt"></i> REFRESH
@@ -742,20 +761,947 @@
         const SIGMA_ADDRESS = "0x068Aaba73Fd754F21140E2F13DA177ce7251A299";
         const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
         
-        // ABI (simplified for view functions)
+        // COMPLETE ABI FROM CONTRACT - EXACTLY AS PROVIDED
         const SIGMA_ABI = [
-            "function currentRate() view returns (uint256)",
-            "function getSellRate() view returns (uint256)",
-            "function ath() view returns (uint256)",
-            "function atl() view returns (uint256)",
-            "function dailyHistory(uint256) view returns (uint256 open, uint256 high, uint256 low, uint256 close, uint256 timestamp)",
-            "function lastHistoryDay() view returns (uint256)",
-            "function balanceOf(address) view returns (uint256)",
-            "function users(address) view returns (address upline, uint256 referralExpiry, uint256 totalReferralEarned, uint256 lastBuyTimestamp, uint256 lastActionBlock, uint256 qualifiedDirectsCount, bool hasBought, bool isInitialized, bool isCurrentlyQualified)"
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_user",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "_upline",
+                        "type": "address"
+                    }
+                ],
+                "name": "adminSetUpline",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_usdt",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "_creator",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "allowance",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "needed",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "ERC20InsufficientAllowance",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "sender",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "balance",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "needed",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "ERC20InsufficientBalance",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "approver",
+                        "type": "address"
+                    }
+                ],
+                "name": "ERC20InvalidApprover",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "receiver",
+                        "type": "address"
+                    }
+                ],
+                "name": "ERC20InvalidReceiver",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "sender",
+                        "type": "address"
+                    }
+                ],
+                "name": "ERC20InvalidSender",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    }
+                ],
+                "name": "ERC20InvalidSpender",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    }
+                ],
+                "name": "OwnableInvalidOwner",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "account",
+                        "type": "address"
+                    }
+                ],
+                "name": "OwnableUnauthorizedAccount",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "_amount",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "p2pTransfer",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "ReentrancyGuardReentrantCall",
+                "type": "error"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "token",
+                        "type": "address"
+                    }
+                ],
+                "name": "SafeERC20FailedOperation",
+                "type": "error"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "value",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Approval",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "value",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "approve",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "user",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "usdtAmount",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "sigmaAmount",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "rate",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Bought",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "_usdtAmount",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "_upline",
+                        "type": "address"
+                    }
+                ],
+                "name": "buy",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "level",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "string",
+                        "name": "reason",
+                        "type": "string"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "IncomeLapsed",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "previousOwner",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "newOwner",
+                        "type": "address"
+                    }
+                ],
+                "name": "OwnershipTransferred",
+                "type": "event"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "level",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "ReferralPaid",
+                "type": "event"
+            },
+            {
+                "inputs": [],
+                "name": "renounceOwnership",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "_sigmaAmount",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "sell",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "user",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "sigmaAmount",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "usdtAmount",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "rate",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Sold",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "value",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "transfer",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "value",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "Transfer",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "from",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "to",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "value",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "transferFrom",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "newOwner",
+                        "type": "address"
+                    }
+                ],
+                "name": "transferOwnership",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "owner",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "spender",
+                        "type": "address"
+                    }
+                ],
+                "name": "allowance",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "ath",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "atl",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "account",
+                        "type": "address"
+                    }
+                ],
+                "name": "balanceOf",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "BASE_RATE",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "creatorWallet",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "currentRate",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "dailyHistory",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "open",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "high",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "low",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "close",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "decimals",
+                "outputs": [
+                    {
+                        "internalType": "uint8",
+                        "name": "",
+                        "type": "uint8"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "getSellRate",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "INCREMENT",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "_upline",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "_level",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "isLevelUnlocked",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "lastHistoryDay",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "levelRewards",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "MAX_SIGMA_BUY",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "MIN_FOR_RENEWAL",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "MIN_HOLD_VALUE",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "name",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "owner",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "symbol",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "usdt",
+                "outputs": [
+                    {
+                        "internalType": "contract IERC20",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "name": "users",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "upline",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "referralExpiry",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "totalReferralEarned",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "lastBuyTimestamp",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "lastActionBlock",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "qualifiedDirectsCount",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "hasBought",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "isInitialized",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "isCurrentlyQualified",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
         ];
 
         const USDT_ABI = [
-            "function balanceOf(address) view returns (uint256)"
+            "function balanceOf(address) view returns (uint256)",
+            "function allowance(address,address) view returns (uint256)",
+            "function approve(address,uint256) external returns (bool)",
+            "function transfer(address,uint256) external returns (bool)"
         ];
 
         // State
@@ -772,22 +1718,29 @@
             createParticles();
             setupTicker();
             
+            // Try to connect automatically
             if (window.ethereum) {
-                provider = new ethers.BrowserProvider(window.ethereum);
-                const accounts = await provider.send("eth_accounts", []);
-                if (accounts.length > 0) {
-                    await connectWallet(true); // silent connect
-                }
+                await connectWallet(true);
+            } else {
+                document.getElementById('tableBody').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="error-message">
+                            <i class="fas fa-plug"></i>
+                            <h3>MetaMask Not Found</h3>
+                            <p>Please install MetaMask to view live blockchain data</p>
+                            <button class="retry-btn" onclick="window.open('https://metamask.io/download/', '_blank')">
+                                INSTALL METAMASK
+                            </button>
+                        </td>
+                    </tr>
+                `;
             }
-            
-            // Load mock data initially (will be replaced with real data when connected)
-            loadMockData();
-            
-            // Check every minute for new snapshot (23:59)
-            setInterval(checkForNewSnapshot, 60000);
             
             // Update live rate every 10 seconds
             setInterval(updateLiveRate, 10000);
+            
+            // Check for new snapshot every minute
+            setInterval(checkForNewSnapshot, 60000);
         };
 
         function createParticles() {
@@ -823,7 +1776,10 @@
 
         async function connectWallet(silent = false) {
             if (!window.ethereum) {
-                if (!silent) alert("MetaMask not installed!");
+                if (!silent) {
+                    alert("MetaMask not installed!");
+                    window.open("https://metamask.io/download/", "_blank");
+                }
                 return;
             }
             
@@ -836,14 +1792,30 @@
                 
                 const network = await provider.getNetwork();
                 if (network.chainId !== 137n) {
-                    if (!silent) alert("Please switch to Polygon Mainnet");
+                    if (!silent) {
+                        alert("Please switch to Polygon Mainnet");
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_switchEthereumChain',
+                                params: [{ chainId: '0x89' }],
+                            });
+                        } catch (switchError) {
+                            console.log("Network switch error:", switchError);
+                        }
+                    }
                     return;
                 }
                 
                 const accounts = await provider.listAccounts();
-                if (accounts.length === 0) return;
+                if (accounts.length === 0) {
+                    if (!silent) await provider.send("eth_requestAccounts", []);
+                    const newAccounts = await provider.listAccounts();
+                    if (newAccounts.length === 0) return;
+                    userAddress = newAccounts[0].toLowerCase();
+                } else {
+                    userAddress = accounts[0].toLowerCase();
+                }
                 
-                userAddress = accounts[0].toLowerCase();
                 signer = await provider.getSigner();
                 
                 sigmaContract = new ethers.Contract(SIGMA_ADDRESS, SIGMA_ABI, signer);
@@ -855,20 +1827,72 @@
                 document.getElementById('statusDot').className = 'status-dot connected';
                 document.getElementById('statusText').textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
                 
-                // Load real data
+                // Load real data from blockchain
                 await loadRealData();
+                
+                // Listen for account changes
+                window.ethereum.on('accountsChanged', handleAccountsChanged);
+                window.ethereum.on('chainChanged', () => window.location.reload());
                 
             } catch (error) {
                 console.error("Connection error:", error);
-                if (!silent) alert("Connection failed: " + error.message);
+                if (!silent) {
+                    document.getElementById('tableBody').innerHTML = `
+                        <tr>
+                            <td colspan="5" class="error-message">
+                                <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                                <h3>Connection Failed</h3>
+                                <p>${error.message}</p>
+                                <button class="retry-btn" onclick="connectWallet()">RETRY</button>
+                            </td>
+                        </tr>
+                    `;
+                }
             }
+        }
+
+        async function handleAccountsChanged(accounts) {
+            if (accounts.length > 0) {
+                userAddress = accounts[0].toLowerCase();
+                document.getElementById('statusText').textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
+                await loadRealData();
+            } else {
+                disconnectWallet();
+            }
+        }
+
+        function disconnectWallet() {
+            isConnected = false;
+            document.getElementById('statusDot').className = 'status-dot';
+            document.getElementById('statusText').textContent = 'Disconnected';
         }
 
         // ========== LOAD REAL DATA FROM CONTRACT ==========
         async function loadRealData() {
-            if (!isConnected || !sigmaContract) return;
+            if (!isConnected || !sigmaContract) {
+                document.getElementById('tableBody').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="error-message">
+                            <i class="fas fa-plug"></i>
+                            <h3>Not Connected</h3>
+                            <p>Please connect your wallet to view blockchain data</p>
+                            <button class="retry-btn" onclick="connectWallet()">CONNECT WALLET</button>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
             
             try {
+                document.getElementById('tableBody').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="loading-spinner">
+                            <div class="spinner"></div>
+                            <div>Fetching live blockchain data...</div>
+                        </td>
+                    </tr>
+                `;
+                
                 // Get current rate
                 const rate = await sigmaContract.currentRate();
                 const currentRate = parseFloat(ethers.formatUnits(rate, 6));
@@ -881,13 +1905,15 @@
                 document.getElementById('ath').textContent = ethers.formatUnits(ath, 6) + ' USDT';
                 document.getElementById('atl').textContent = ethers.formatUnits(atl, 6) + ' USDT';
                 
-                // Get daily history
+                // Get last history day
                 const lastDay = await sigmaContract.lastHistoryDay();
                 const history = [];
                 
+                // Fetch daily history from contract
                 for (let i = 0; i <= lastDay; i++) {
                     try {
                         const day = await sigmaContract.dailyHistory(i);
+                        // Check if close price exists (not zero)
                         if (day.close > 0) {
                             history.push({
                                 index: i,
@@ -904,90 +1930,54 @@
                 history.sort((a, b) => b.timestamp - a.timestamp);
                 priceHistory = history;
                 
+                if (priceHistory.length === 0) {
+                    document.getElementById('tableBody').innerHTML = `
+                        <tr>
+                            <td colspan="5" class="error-message">
+                                <i class="fas fa-database"></i>
+                                <h3>No History Found</h3>
+                                <p>No daily snapshots available yet</p>
+                            </td>
+                        </tr>
+                    `;
+                    document.getElementById('totalRecords').textContent = '0';
+                    document.getElementById('daysTracked').textContent = '0 days';
+                    return;
+                }
+                
                 // Update stats
                 updateStats();
                 
-                // Render table
-                renderTable();
+                // Find ATH/ATL dates
+                const athRecord = history.reduce((max, item) => parseFloat(item.close) > parseFloat(max.close) ? item : max, history[0]);
+                const atlRecord = history.reduce((min, item) => parseFloat(item.close) < parseFloat(min.close) ? item : min, history[0]);
                 
-                // Update ATH/ATL dates
-                if (history.length > 0) {
-                    const athRecord = history.reduce((max, item) => parseFloat(item.close) > parseFloat(max.close) ? item : max, history[0]);
-                    const atlRecord = history.reduce((min, item) => parseFloat(item.close) < parseFloat(min.close) ? item : min, history[0]);
-                    
+                if (athRecord && athRecord.timestamp) {
                     document.getElementById('athDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(athRecord.timestamp * 1000).toLocaleDateString()}`;
+                }
+                if (atlRecord && atlRecord.timestamp) {
                     document.getElementById('atlDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(atlRecord.timestamp * 1000).toLocaleDateString()}`;
                 }
                 
                 document.getElementById('totalRecords').textContent = history.length;
                 document.getElementById('daysTracked').textContent = history.length + ' days';
                 
+                // Render table
+                renderTable();
+                
             } catch (error) {
                 console.error("Error loading real data:", error);
-                loadMockData(); // Fallback to mock data
+                document.getElementById('tableBody').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="error-message">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                            <h3>Error Loading Data</h3>
+                            <p>${error.message}</p>
+                            <button class="retry-btn" onclick="loadRealData()">RETRY</button>
+                        </td>
+                    </tr>
+                `;
             }
-        }
-
-        // ========== MOCK DATA FOR DEMO ==========
-        function loadMockData() {
-            // Generate mock daily data for the last 30 days
-            const mockHistory = [];
-            const today = new Date();
-            today.setHours(23, 59, 0, 0);
-            
-            let baseRate = 0.0125; // Base rate in USDT
-            
-            for (let i = 30; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                
-                // Random fluctuation
-                const change = (Math.random() * 0.002) - 0.001;
-                baseRate += change;
-                if (baseRate < 0.008) baseRate = 0.008;
-                if (baseRate > 0.018) baseRate = 0.018;
-                
-                mockHistory.push({
-                    index: i,
-                    close: baseRate.toFixed(6),
-                    timestamp: Math.floor(date.getTime() / 1000)
-                });
-            }
-            
-            priceHistory = mockHistory;
-            
-            // Set live rate
-            const lastRate = priceHistory[priceHistory.length - 1].close;
-            document.getElementById('liveRate').textContent = lastRate + ' USDT';
-            document.getElementById('liveRateInr').textContent = '≈ ₹' + (parseFloat(lastRate) * INR_RATE).toFixed(2);
-            
-            // Set ATH/ATL
-            const rates = priceHistory.map(h => parseFloat(h.close));
-            const ath = Math.max(...rates);
-            const atl = Math.min(...rates);
-            
-            document.getElementById('ath').textContent = ath.toFixed(6) + ' USDT';
-            document.getElementById('atl').textContent = atl.toFixed(6) + ' USDT';
-            
-            // Find ATH/ATL dates
-            const athIndex = rates.indexOf(ath);
-            const atlIndex = rates.indexOf(atl);
-            
-            if (athIndex >= 0) {
-                document.getElementById('athDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(priceHistory[athIndex].timestamp * 1000).toLocaleDateString()}`;
-            }
-            if (atlIndex >= 0) {
-                document.getElementById('atlDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(priceHistory[atlIndex].timestamp * 1000).toLocaleDateString()}`;
-            }
-            
-            // Update stats
-            updateStats();
-            
-            // Render table
-            renderTable();
-            
-            document.getElementById('totalRecords').textContent = priceHistory.length;
-            document.getElementById('daysTracked').textContent = priceHistory.length + ' days';
         }
 
         function updateStats() {
@@ -1049,7 +2039,8 @@
                 const changeIcon = change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
                 
                 // Check if this is today's snapshot
-                const isToday = new Date().toDateString() === date.toDateString();
+                const today = new Date();
+                const isToday = today.toDateString() === date.toDateString();
                 
                 html += `
                     <tr>
@@ -1110,11 +2101,7 @@
             const now = new Date();
             // Check if it's 23:59
             if (now.getHours() === 23 && now.getMinutes() === 59) {
-                // In a real app, you would fetch new data from contract
-                // For demo, we'll add a mock new record
-                if (Math.random() > 0.5) { // Simulate new record every other minute
-                    loadRealData();
-                }
+                loadRealData(); // Refresh data at snapshot time
             }
         }
 
@@ -1137,6 +2124,11 @@
         }
 
         function exportCSV() {
+            if (priceHistory.length === 0) {
+                alert("No data to export");
+                return;
+            }
+            
             let csv = "Sl.No,Date,Rate (USDT),INR,24h Change\n";
             
             priceHistory.forEach((item, index) => {
@@ -1156,17 +2148,8 @@
             a.click();
         }
 
-        function exportPDF() {
-            // For demo, just show alert
-            alert('PDF export will be available in premium version');
-        }
-
         function refreshData() {
-            if (isConnected) {
-                loadRealData();
-            } else {
-                loadMockData();
-            }
+            loadRealData();
         }
 
         function goBack() {
