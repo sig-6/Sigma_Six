@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>SIGMA SIX | PREMIUM PRICE HISTORY</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <!-- Chart.js for candlestick -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Chart.js Financial Charting -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@2.0.0/dist/chartjs-chart-financial.min.js"></script>
-    <!-- Date adapter for Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -44,14 +38,6 @@
             --border-radius-md: 16px;
             --border-radius-lg: 24px;
             --border-radius-xl: 32px;
-            
-            /* Candle colors - TradingView style */
-            --candle-up: #00ff88;
-            --candle-down: #ff4d4d;
-            --candle-border-up: #00cc66;
-            --candle-border-down: #cc0000;
-            --wick-up: #00cc66;
-            --wick-down: #cc0000;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -68,7 +54,6 @@
             -moz-osx-font-smoothing: grayscale;
         }
         
-        /* ===== PREMIUM ANIMATED BACKGROUND ===== */
         .crypto-bg {
             position: fixed;
             top: 0;
@@ -488,111 +473,6 @@
             font-weight: 600;
         }
         
-        /* ===== CHART CARD - NAYA ADD Kiya ===== */
-        .chart-card {
-            background: var(--card);
-            backdrop-filter: var(--blur);
-            border-radius: var(--border-radius-xl);
-            padding: 25px;
-            border: 1px solid var(--border-light);
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-            position: relative;
-        }
-        
-        .chart-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: var(--gradient);
-            background-size: 400% 400%;
-            animation: rainbow 8s ease infinite;
-        }
-        
-        .chart-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .chart-title {
-            color: var(--primary);
-            font-size: 20px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .chart-legend {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-        }
-        
-        .legend-up {
-            width: 16px;
-            height: 16px;
-            background: var(--candle-up);
-            border: 1px solid var(--candle-border-up);
-        }
-        
-        .legend-down {
-            width: 16px;
-            height: 16px;
-            background: var(--candle-down);
-            border: 1px solid var(--candle-border-down);
-        }
-        
-        .chart-container {
-            position: relative;
-            width: 100%;
-            height: 400px;
-            margin-bottom: 15px;
-        }
-        
-        .chart-timeframes {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-        }
-        
-        .timeframe-btn {
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-muted);
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .timeframe-btn.active {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: #000;
-        }
-        
-        .timeframe-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-        
-        /* ===== STATS GRID - UPDATED with INR ===== */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -692,7 +572,6 @@
         .trend-up { color: var(--success); }
         .trend-down { color: var(--danger); }
         
-        /* ===== HISTORY CARD (TABLE) - Aapka original ===== */
         .history-card {
             background: var(--card);
             backdrop-filter: var(--blur);
@@ -1011,14 +890,6 @@
                 font-size: 28px;
             }
             
-            .chart-container {
-                height: 300px;
-            }
-            
-            .chart-legend {
-                flex-wrap: wrap;
-            }
-            
             .stat-card {
                 padding: 15px;
             }
@@ -1153,8 +1024,8 @@
             <h1>SIGMA PRICE HISTORY</h1>
             <p>
                 <i class="fas fa-bolt" style="color: var(--warning);"></i>
-                Professional Candlestick Chart + Real rates from blockchain
-                <span class="event-badge"><i class="fas fa-chart-line"></i> LIVE</span>
+                Real rates from blockchain events
+                <span class="event-badge"><i class="fas fa-database"></i> LIVE</span>
             </p>
         </div>
         
@@ -1172,7 +1043,7 @@
             </div>
         </div>
         
-        <!-- STATS GRID - UPDATED with INR -->
+        <!-- STATS GRID - WITH INR VALUES -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-arrow-up"></i></div>
@@ -1206,37 +1077,7 @@
             </div>
         </div>
         
-        <!-- ===== NEW: PROFESSIONAL CANDLESTICK CHART - TradingView Style ===== -->
-        <div class="chart-card">
-            <div class="chart-header">
-                <div class="chart-title">
-                    <i class="fas fa-chart-line"></i> SIG6/USDT · Candlestick
-                </div>
-                <div class="chart-legend">
-                    <div class="legend-item">
-                        <div class="legend-up"></div>
-                        <span>Bullish (↑)</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-down"></div>
-                        <span>Bearish (↓)</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="chart-container">
-                <canvas id="candlestickChart"></canvas>
-            </div>
-            
-            <div class="chart-timeframes">
-                <button class="timeframe-btn active" onclick="changeTimeframe('all')">ALL</button>
-                <button class="timeframe-btn" onclick="changeTimeframe('30')">30D</button>
-                <button class="timeframe-btn" onclick="changeTimeframe('7')">7D</button>
-                <button class="timeframe-btn" onclick="changeTimeframe('1')">24H</button>
-            </div>
-        </div>
-        
-        <!-- HISTORY CARD - Aapka original table -->
+        <!-- HISTORY CARD -->
         <div class="history-card">
             <div class="card-header">
                 <div class="card-title">
@@ -1318,7 +1159,6 @@
         let displayedRecords = 20;
         let currentRate = 0;
         const INR_RATE = 95;
-        let chart = null;
 
         // ========== INIT ==========
         window.onload = async () => {
@@ -1462,7 +1302,7 @@
                 document.getElementById('liveRate').textContent = currentRate.toFixed(6) + ' USDT';
                 document.getElementById('liveRateInr').textContent = '₹' + (currentRate * INR_RATE).toFixed(2);
                 
-                // Get ATH and ATL
+                // Get ATH and ATL with INR values
                 const ath = await sigmaContract.ath();
                 const atl = await sigmaContract.atl();
                 const athVal = parseFloat(ethers.formatUnits(ath, 6));
@@ -1473,6 +1313,11 @@
                 document.getElementById('atl').textContent = atlVal.toFixed(6) + ' USDT';
                 document.getElementById('atlInr').textContent = '₹' + (atlVal * INR_RATE).toFixed(2);
                 
+                // Get 30D average with INR
+                const avg30Val = (await sigmaContract.getSellRate()) ? parseFloat(ethers.formatUnits(await sigmaContract.getSellRate(), 6)) : currentRate;
+                document.getElementById('avg30').textContent = avg30Val.toFixed(6) + ' USDT';
+                document.getElementById('avg30Inr').textContent = '₹' + (avg30Val * INR_RATE).toFixed(2);
+                
                 // Fetch events
                 const boughtFilter = sigmaContract.filters.Bought();
                 const boughtEvents = await sigmaContract.queryFilter(boughtFilter, 0, 'latest');
@@ -1480,36 +1325,25 @@
                 const soldFilter = sigmaContract.filters.Sold();
                 const soldEvents = await sigmaContract.queryFilter(soldFilter, 0, 'latest');
                 
-                // Process events into daily rates - STORE OPEN, HIGH, LOW, CLOSE for candlestick
-                const dailyCandles = {};
+                // Process events into daily rates
+                const dailyRates = {};
                 
                 [...boughtEvents, ...soldEvents].forEach(event => {
                     try {
-                        const timestamp = event.args.timestamp.toNumber() * 1000; // Convert to ms
+                        const timestamp = event.args.timestamp.toNumber();
                         const rate = parseFloat(ethers.formatUnits(event.args.rate, 6));
                         
-                        const date = new Date(timestamp);
+                        const date = new Date(timestamp * 1000);
                         const dateKey = date.toISOString().split('T')[0];
                         
-                        if (!dailyCandles[dateKey]) {
-                            // First transaction of the day
-                            dailyCandles[dateKey] = {
-                                open: rate,
-                                high: rate,
-                                low: rate,
-                                close: rate,
-                                timestamp: timestamp,
-                                txCount: 1,
-                                rates: [rate]
-                            };
-                        } else {
-                            // Update candle data
-                            dailyCandles[dateKey].high = Math.max(dailyCandles[dateKey].high, rate);
-                            dailyCandles[dateKey].low = Math.min(dailyCandles[dateKey].low, rate);
-                            dailyCandles[dateKey].close = rate; // Last transaction of day is close
-                            dailyCandles[dateKey].txCount++;
-                            dailyCandles[dateKey].rates.push(rate);
+                        if (!dailyRates[dateKey]) {
+                            dailyRates[dateKey] = [];
                         }
+                        
+                        dailyRates[dateKey].push({
+                            rate,
+                            timestamp
+                        });
                     } catch (e) {}
                 });
                 
@@ -1517,37 +1351,31 @@
                 const history = [];
                 const today = new Date().toISOString().split('T')[0];
                 
-                for (const [dateKey, candle] of Object.entries(dailyCandles)) {
+                for (const [dateKey, rates] of Object.entries(dailyRates)) {
+                    rates.sort((a, b) => a.timestamp - b.timestamp);
+                    const lastRate = rates[rates.length - 1].rate;
+                    
                     history.push({
                         date: dateKey,
-                        open: candle.open,
-                        high: candle.high,
-                        low: candle.low,
-                        close: candle.close,
-                        timestamp: candle.timestamp,
-                        txCount: candle.txCount
+                        close: lastRate,
+                        timestamp: new Date(dateKey + 'T23:59:00').getTime() / 1000,
+                        txCount: rates.length
                     });
                 }
                 
-                // Add today if not exists and there are transactions today
+                // Add today if not exists
                 if (!history.some(h => h.date === today)) {
-                    // Try to find previous day's close for open price
-                    const sortedHistory = [...history].sort((a, b) => b.timestamp - a.timestamp);
-                    const prevClose = sortedHistory.length > 0 ? sortedHistory[0].close : currentRate;
-                    
                     history.push({
                         date: today,
-                        open: prevClose,
-                        high: Math.max(prevClose, currentRate),
-                        low: Math.min(prevClose, currentRate),
                         close: currentRate,
-                        timestamp: Date.now(),
+                        timestamp: new Date(today + 'T23:59:00').getTime() / 1000,
                         txCount: 0
                     });
                 }
                 
-                // Sort by date (newest first for table, oldest first for chart)
-                priceHistory = history.sort((a, b) => b.timestamp - a.timestamp); // Newest first for table
+                // Sort by date (newest first)
+                history.sort((a, b) => b.timestamp - a.timestamp);
+                priceHistory = history;
                 
                 if (priceHistory.length === 0) {
                     document.getElementById('price-body').innerHTML = `
@@ -1576,9 +1404,9 @@
                 
                 // Update stats
                 const last30 = priceHistory.slice(0, Math.min(30, priceHistory.length));
-                const avg30 = last30.reduce((sum, item) => sum + item.close, 0) / last30.length;
-                document.getElementById('avg30').textContent = avg30.toFixed(6) + ' USDT';
-                document.getElementById('avg30Inr').textContent = '₹' + (avg30 * INR_RATE).toFixed(2);
+                const avg30Calc = last30.reduce((sum, item) => sum + item.close, 0) / last30.length;
+                document.getElementById('avg30').textContent = avg30Calc.toFixed(6) + ' USDT';
+                document.getElementById('avg30Inr').textContent = '₹' + (avg30Calc * INR_RATE).toFixed(2);
                 
                 if (last30.length >= 2) {
                     const first = last30[last30.length - 1].close;
@@ -1592,7 +1420,6 @@
                 document.getElementById('daysTracked').textContent = priceHistory.length + ' days';
                 
                 renderTable();
-                renderChart('all'); // Render candlestick chart
                 
             } catch (error) {
                 console.error("Error:", error);
@@ -1605,133 +1432,9 @@
             }
         }
 
-        // ===== RENDER CANDLESTICK CHART - TradingView Style =====
-        function renderChart(timeframe) {
-            // Get chart-ready data (oldest first)
-            let chartData = [...priceHistory].sort((a, b) => a.timestamp - b.timestamp);
-            
-            if (timeframe === '30') {
-                chartData = chartData.slice(-30);
-            } else if (timeframe === '7') {
-                chartData = chartData.slice(-7);
-            } else if (timeframe === '1') {
-                chartData = chartData.slice(-1);
-            }
-            
-            if (chartData.length === 0) return;
-            
-            const ctx = document.getElementById('candlestickChart').getContext('2d');
-            
-            // Destroy old chart
-            if (chart) {
-                chart.destroy();
-            }
-            
-            // Check if candlestick controller is available
-            if (typeof Chart.registry.getController !== 'function' || !Chart.registry.getController('candlestick')) {
-                console.log("Candlestick not available - make sure chartjs-chart-financial is loaded");
-                return;
-            }
-            
-            // Prepare candlestick data
-            const candlestickData = chartData.map(d => ({
-                x: new Date(d.date).getTime(),
-                o: d.open,
-                h: d.high,
-                l: d.low,
-                c: d.close
-            }));
-            
-            chart = new Chart(ctx, {
-                type: 'candlestick',
-                data: {
-                    datasets: [{
-                        label: 'SIG6/USDT',
-                        data: candlestickData,
-                        borderColor: (ctx) => {
-                            const data = ctx.dataset.data[ctx.dataIndex];
-                            return data.c >= data.o ? 'var(--candle-border-up)' : 'var(--candle-border-down)';
-                        },
-                        backgroundColor: (ctx) => {
-                            const data = ctx.dataset.data[ctx.dataIndex];
-                            return data.c >= data.o ? 'var(--candle-up)' : 'var(--candle-down)';
-                        },
-                        borderWidth: 1,
-                        // Wick colors
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            backgroundColor: 'rgba(0,0,0,0.8)',
-                            titleColor: 'var(--primary)',
-                            bodyColor: 'var(--text)',
-                            borderColor: 'var(--primary)',
-                            borderWidth: 1,
-                            callbacks: {
-                                label: (ctx) => {
-                                    const d = ctx.raw;
-                                    return [
-                                        `Open: ${d.o.toFixed(6)} USDT`,
-                                        `High: ${d.h.toFixed(6)} USDT`,
-                                        `Low: ${d.l.toFixed(6)} USDT`,
-                                        `Close: ${d.c.toFixed(6)} USDT`,
-                                        `INR: ₹${(d.c * INR_RATE).toFixed(2)}`
-                                    ];
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'day',
-                                displayFormats: {
-                                    day: 'dd MMM'
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(255,255,255,0.1)'
-                            },
-                            ticks: {
-                                color: 'var(--text-muted)'
-                            }
-                        },
-                        y: {
-                            position: 'right',
-                            grid: {
-                                color: 'rgba(255,255,255,0.1)'
-                            },
-                            ticks: {
-                                color: 'var(--primary)',
-                                callback: function(value) {
-                                    return value.toFixed(6);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function changeTimeframe(tf) {
-            document.querySelectorAll('.timeframe-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            renderChart(tf);
-        }
-
         function renderTable() {
             const tbody = document.getElementById('price-body');
-            let filteredHistory = priceHistory; // Already newest first
+            let filteredHistory = priceHistory;
             
             if (currentFilter === '30') {
                 filteredHistory = priceHistory.slice(0, 30);
@@ -1821,11 +1524,11 @@
         function exportCSV() {
             if (priceHistory.length === 0) return alert("No data");
             
-            let csv = "Date,Open,High,Low,Close (USDT),INR,Change %,Transactions\n";
+            let csv = "Date,Rate (USDT),INR,Change %,Transactions\n";
             priceHistory.forEach((item, index) => {
                 const prevRate = index < priceHistory.length - 1 ? priceHistory[index + 1].close : item.close;
                 const change = ((item.close - prevRate) / prevRate * 100).toFixed(2);
-                csv += `${item.date},${item.open.toFixed(6)},${item.high.toFixed(6)},${item.low.toFixed(6)},${item.close.toFixed(6)},${(item.close * INR_RATE).toFixed(2)},${change}%,${item.txCount || 0}\n`;
+                csv += `${item.date},${item.close.toFixed(6)},${(item.close * INR_RATE).toFixed(2)},${change}%,${item.txCount || 0}\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv' });
