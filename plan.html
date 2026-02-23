@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>SIGMA SIX | PREMIUM CHART + HISTORY</title>
+    <title>SIGMA SIX | PREMIUM PRICE HISTORY</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <!-- Chart.js core -->
+    <!-- Chart.js for candlestick -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Date adapter -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.min.js"></script>
-    <!-- Chart.js Financial (CDN fix) -->
+    <!-- Chart.js Financial Charting -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@2.0.0/dist/chartjs-chart-financial.min.js"></script>
+    <!-- Date adapter for Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ===== CRYPTO PREMIUM VARIABLES ===== */
         :root {
             --primary: #00ffcc;
             --primary-dark: #00ccaa;
@@ -35,16 +36,22 @@
             --warning: #ffaa00;
             --danger: #ff4d4d;
             --gradient: linear-gradient(90deg, #00ffcc, #9d4edd, #ff2a6d, #00ffcc);
+            --gradient-secondary: linear-gradient(135deg, #00ffcc, #9d4edd);
             --shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             --shadow-glow: 0 0 30px var(--primary-glow);
             --blur: blur(12px);
+            --border-radius-sm: 12px;
+            --border-radius-md: 16px;
             --border-radius-lg: 24px;
             --border-radius-xl: 32px;
             
+            /* Candle colors - TradingView style */
             --candle-up: #00ff88;
             --candle-down: #ff4d4d;
             --candle-border-up: #00cc66;
             --candle-border-down: #cc0000;
+            --wick-up: #00cc66;
+            --wick-down: #cc0000;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -56,8 +63,12 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
+        /* ===== PREMIUM ANIMATED BACKGROUND ===== */
         .crypto-bg {
             position: fixed;
             top: 0;
@@ -141,6 +152,16 @@
             animation: float 20s infinite linear;
         }
         
+        .particle:nth-child(3n) {
+            background: var(--secondary);
+            box-shadow: 0 0 10px var(--secondary);
+        }
+        
+        .particle:nth-child(5n) {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+        
         @keyframes float {
             0% { transform: translateY(100vh) scale(0); opacity: 0; }
             10% { opacity: 0.3; }
@@ -158,6 +179,7 @@
             background-size: 400% 400%;
             animation: rainbow 8s ease infinite;
             z-index: 1000;
+            box-shadow: var(--shadow-glow);
         }
         
         @keyframes rainbow {
@@ -219,14 +241,33 @@
             margin-right: 8px;
         }
         
-        .positive { color: var(--success); background: rgba(0, 255, 136, 0.1); }
-        .negative { color: var(--danger); background: rgba(255, 77, 77, 0.1); }
+        .ticker-price {
+            font-weight: 600;
+        }
+        
+        .ticker-change {
+            font-size: 11px;
+            margin-left: 8px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .positive {
+            color: var(--success);
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .negative {
+            color: var(--danger);
+            background: rgba(255, 77, 77, 0.1);
+        }
         
         .connect-btn {
             position: fixed;
             top: 20px;
             right: 20px;
             background: var(--gradient);
+            background-size: 200% auto;
             color: #000;
             border: none;
             border-radius: 40px;
@@ -240,17 +281,21 @@
             box-shadow: 0 4px 20px var(--primary-glow);
             z-index: 1001;
             transition: all 0.3s ease;
+            backdrop-filter: var(--blur);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .connect-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 30px var(--primary-glow);
+            background-position: right center;
         }
         
         .connect-btn.connected {
             background: rgba(0, 255, 204, 0.1);
             color: var(--primary);
             border: 1px solid var(--primary);
+            backdrop-filter: var(--blur);
         }
         
         .container {
@@ -319,11 +364,13 @@
         
         .header h1 {
             background: var(--gradient);
+            background-size: 400% 400%;
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             font-size: clamp(32px, 6vw, 52px);
             font-weight: 800;
+            letter-spacing: -0.5px;
             margin-bottom: 8px;
             animation: rainbow 8s ease infinite;
         }
@@ -359,6 +406,8 @@
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow);
             margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -374,6 +423,7 @@
             width: 100%;
             height: 4px;
             background: var(--gradient);
+            background-size: 400% 400%;
             animation: rainbow 8s ease infinite;
         }
         
@@ -398,18 +448,26 @@
             50% { opacity: 0.5; transform: scale(1.5); }
         }
         
+        .live-price-text {
+            font-size: clamp(16px, 3vw, 18px);
+            color: var(--text-muted);
+        }
+        
         .live-price-value {
             font-size: clamp(28px, 5vw, 42px);
             font-weight: 800;
             color: var(--primary);
+            line-height: 1;
         }
         
         .live-price-inr {
             font-size: clamp(16px, 3vw, 20px);
             color: var(--warning);
+            font-weight: 600;
             background: rgba(255, 170, 0, 0.1);
             padding: 4px 12px;
             border-radius: 30px;
+            border: 1px solid rgba(255, 170, 0, 0.2);
         }
         
         .next-update {
@@ -420,91 +478,17 @@
             font-size: 14px;
         }
         
-        .next-update i { color: var(--warning); margin-right: 8px; }
-        .next-update span { color: var(--warning); font-weight: 600; }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        @media (max-width: 992px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } }
-        
-        .stat-card {
-            background: var(--card);
-            backdrop-filter: var(--blur);
-            border-radius: var(--border-radius-lg);
-            padding: 20px;
-            border: 1px solid var(--border-light);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: 0 10px 30px var(--primary-glow);
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: var(--gradient);
-            animation: rainbow 8s ease infinite;
-            opacity: 0.5;
-        }
-        
-        .stat-icon {
-            width: 45px;
-            height: 45px;
-            background: rgba(157, 78, 221, 0.1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-        
-        .stat-icon i { font-size: 22px; color: var(--secondary); }
-        
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
-        
-        .stat-number {
-            font-size: clamp(18px, 3vw, 22px);
-            font-weight: 700;
-            color: var(--secondary);
-            margin-bottom: 5px;
-        }
-        
-        .stat-inr {
-            font-size: 14px;
+        .next-update i {
             color: var(--warning);
-            margin-top: 5px;
+            margin-right: 8px;
+        }
+        
+        .next-update span {
+            color: var(--warning);
             font-weight: 600;
         }
         
-        .stat-trend {
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--text-muted);
-        }
-        
+        /* ===== CHART CARD - NAYA ADD Kiya ===== */
         .chart-card {
             background: var(--card);
             backdrop-filter: var(--blur);
@@ -513,6 +497,7 @@
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow);
             margin-bottom: 30px;
+            position: relative;
         }
         
         .chart-card::before {
@@ -523,6 +508,7 @@
             width: 100%;
             height: 4px;
             background: var(--gradient);
+            background-size: 400% 400%;
             animation: rainbow 8s ease infinite;
         }
         
@@ -592,6 +578,7 @@
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
         
         .timeframe-btn.active {
@@ -600,24 +587,119 @@
             color: #000;
         }
         
-        .history-card {
-            background: var(--card);
-            backdrop-filter: var(--blur);
-            border-radius: var(--border-radius-xl);
-            padding: 25px;
-            border: 1px solid var(--border-light);
-            box-shadow: var(--shadow);
+        .timeframe-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
         
-        .history-card::before {
+        /* ===== STATS GRID - UPDATED with INR ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 992px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .stat-card {
+            background: var(--card);
+            backdrop-filter: var(--blur);
+            border-radius: var(--border-radius-lg);
+            padding: 20px;
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px var(--primary-glow);
+        }
+        
+        .stat-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 4px;
+            height: 3px;
             background: var(--gradient);
+            background-size: 400% 400%;
             animation: rainbow 8s ease infinite;
+            opacity: 0.5;
+        }
+        
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(157, 78, 221, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .stat-icon i {
+            font-size: 22px;
+            color: var(--secondary);
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-number {
+            font-size: clamp(18px, 3vw, 22px);
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 5px;
+            word-break: break-word;
+        }
+        
+        .stat-inr {
+            font-size: 14px;
+            color: var(--warning);
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        
+        .stat-trend {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-muted);
+        }
+        
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--danger); }
+        
+        /* ===== HISTORY CARD (TABLE) - Aapka original ===== */
+        .history-card {
+            background: var(--card);
+            backdrop-filter: var(--blur);
+            border-radius: var(--border-radius-xl);
+            padding: clamp(20px, 4vw, 25px);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow);
         }
         
         .card-header {
@@ -631,11 +713,12 @@
         
         .card-title {
             color: var(--primary);
-            font-size: 24px;
+            font-size: clamp(20px, 4vw, 24px);
             font-weight: 700;
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-wrap: wrap;
         }
         
         .filter-buttons {
@@ -653,12 +736,18 @@
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
         
         .filter-btn.active {
             background: var(--primary);
             border-color: var(--primary);
             color: #000;
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
         
         .results-count {
@@ -675,16 +764,17 @@
         
         .table-responsive {
             overflow-x: auto;
-            border-radius: 16px;
+            border-radius: var(--border-radius-md);
             border: 1px solid var(--border-light);
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 900px;
+            min-width: 600px;
         }
         
         thead {
@@ -701,7 +791,9 @@
             font-size: 13px;
             color: var(--primary);
             text-transform: uppercase;
+            letter-spacing: 0.5px;
             border-bottom: 2px solid rgba(0, 255, 204, 0.2);
+            white-space: nowrap;
         }
         
         td {
@@ -710,8 +802,37 @@
             font-size: 14px;
         }
         
-        .rate-cell { color: var(--primary); font-weight: 700; }
-        .inr-cell { color: var(--warning); }
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .sl-no {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .date-cell {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .rate-cell {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 15px;
+        }
+        
+        .inr-cell {
+            color: var(--warning);
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .change-cell {
+            font-weight: 600;
+            white-space: nowrap;
+        }
         
         .badge-new {
             background: var(--success);
@@ -721,6 +842,7 @@
             border-radius: 20px;
             margin-left: 8px;
             font-weight: 700;
+            text-transform: uppercase;
         }
         
         .tx-badge {
@@ -744,7 +866,15 @@
             padding: 12px 35px;
             border-radius: 40px;
             font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .load-more-btn:hover {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            color: #000;
         }
         
         .export-buttons {
@@ -767,6 +897,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            transition: all 0.3s ease;
         }
         
         .export-btn:hover {
@@ -781,6 +912,13 @@
             color: var(--primary);
         }
         
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: var(--secondary);
+            opacity: 0.5;
+        }
+        
         .spinner {
             width: 40px;
             height: 40px;
@@ -791,7 +929,9 @@
             margin: 0 auto 20px;
         }
         
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
         
         .connection-status {
             position: fixed;
@@ -822,12 +962,20 @@
             animation: pulseDot 2s infinite;
         }
         
+        .status-dot.disconnected {
+            background: var(--danger);
+        }
+        
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
         
-        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        
         ::-webkit-scrollbar-thumb {
             background: var(--gradient);
             border-radius: 4px;
@@ -835,61 +983,203 @@
         }
         
         @media (max-width: 768px) {
-            .connect-btn { padding: 8px 16px; font-size: 12px; }
-            .chart-container { height: 300px; }
-            .filter-btn { flex: 1; text-align: center; }
+            .connect-btn {
+                top: 10px;
+                right: 10px;
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            
+            .container {
+                padding: 70px 12px 20px;
+            }
+            
+            .nav-container {
+                gap: 8px;
+            }
+            
+            .back-btn, .nav-btn {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            
+            .live-price-card {
+                padding: 20px;
+            }
+            
+            .live-price-value {
+                font-size: 28px;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+            
+            .chart-legend {
+                flex-wrap: wrap;
+            }
+            
+            .stat-card {
+                padding: 15px;
+            }
+            
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                margin-bottom: 10px;
+            }
+            
+            .stat-icon i {
+                font-size: 18px;
+            }
+            
+            .stat-number {
+                font-size: 18px;
+            }
+            
+            .card-title {
+                font-size: 20px;
+            }
+            
+            .filter-buttons {
+                width: 100%;
+            }
+            
+            .filter-btn {
+                flex: 1;
+                text-align: center;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+            
+            td {
+                padding: 12px 10px;
+                font-size: 13px;
+            }
+            
+            .rate-cell {
+                font-size: 14px;
+            }
+            
+            .export-buttons {
+                justify-content: center;
+            }
+            
+            .export-btn {
+                flex: 1;
+                justify-content: center;
+            }
+            
+            .connection-status {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .live-price-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .live-price-value {
+                font-size: 24px;
+            }
+            
+            .next-update {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .results-count {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .date-cell {
+                font-size: 12px;
+            }
+            
+            .badge-new {
+                display: block;
+                margin-left: 0;
+                margin-top: 5px;
+                width: fit-content;
+            }
+            
+            .tx-badge {
+                display: block;
+                margin-left: 0;
+                margin-top: 3px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- PREMIUM BACKGROUND -->
     <div class="crypto-bg"></div>
     <div class="particles" id="particles"></div>
     <div class="rainbow-border"></div>
     <div class="bg-glow"></div>
     
+    <!-- TICKER -->
     <div class="ticker-container">
         <div class="ticker-wrapper" id="tickerWrapper"></div>
     </div>
     
+    <!-- CONNECT BUTTON -->
     <button class="connect-btn" id="connectBtn" onclick="connectWallet()">
         <i class="fas fa-wallet"></i> <span id="btn-text">Connect Wallet</span>
     </button>
     
+    <!-- MAIN CONTAINER -->
     <div class="container">
+        <!-- NAVIGATION -->
         <div class="nav-container">
             <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Dashboard</a>
             <button class="nav-btn" onclick="loadPriceHistory()"><i class="fas fa-sync-alt"></i> Refresh</button>
             <button class="nav-btn" onclick="exportCSV()"><i class="fas fa-download"></i> CSV</button>
         </div>
         
+        <!-- HEADER -->
         <div class="header">
-            <h1>SIGMA CHARTS & HISTORY</h1>
+            <h1>SIGMA PRICE HISTORY</h1>
             <p>
                 <i class="fas fa-bolt" style="color: var(--warning);"></i>
-                Professional candlestick chart
+                Professional Candlestick Chart + Real rates from blockchain
                 <span class="event-badge"><i class="fas fa-chart-line"></i> LIVE</span>
             </p>
         </div>
         
+        <!-- LIVE PRICE CARD -->
         <div class="live-price-card">
             <div class="live-price-info">
                 <div class="pulse-dot"></div>
+                <span class="live-price-text">LIVE RATE</span>
                 <span class="live-price-value" id="liveRate">--</span>
                 <span class="live-price-inr" id="liveRateInr">--</span>
             </div>
             <div class="next-update">
                 <i class="fas fa-clock"></i>
-                <span>Updates every 10s</span>
+                <span id="nextUpdate">Auto-updates every 10s</span>
             </div>
         </div>
         
+        <!-- STATS GRID - UPDATED with INR -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-arrow-up"></i></div>
                 <div class="stat-label">ALL TIME HIGH</div>
                 <div class="stat-number" id="ath">--</div>
                 <div class="stat-inr" id="athInr">--</div>
-                <div class="stat-trend" id="athDate"><i class="fas fa-calendar"></i> --</div>
+                <div class="stat-trend trend-up" id="athDate"><i class="fas fa-calendar"></i> --</div>
             </div>
             
             <div class="stat-card">
@@ -897,7 +1187,7 @@
                 <div class="stat-label">ALL TIME LOW</div>
                 <div class="stat-number" id="atl">--</div>
                 <div class="stat-inr" id="atlInr">--</div>
-                <div class="stat-trend" id="atlDate"><i class="fas fa-calendar"></i> --</div>
+                <div class="stat-trend trend-down" id="atlDate"><i class="fas fa-calendar"></i> --</div>
             </div>
             
             <div class="stat-card">
@@ -905,26 +1195,32 @@
                 <div class="stat-label">30D AVG</div>
                 <div class="stat-number" id="avg30">--</div>
                 <div class="stat-inr" id="avg30Inr">--</div>
-                <div class="stat-trend"><span id="avg30Change">--</span></div>
+                <div class="stat-trend"><i class="fas fa-percent"></i> <span id="avg30Change">--</span></div>
             </div>
             
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
                 <div class="stat-label">TRADING DAYS</div>
                 <div class="stat-number" id="totalRecords">--</div>
-                <div class="stat-trend"><span id="daysTracked">-- days</span></div>
+                <div class="stat-trend"><i class="fas fa-history"></i> <span id="daysTracked">-- days</span></div>
             </div>
         </div>
         
-        <!-- CANDLESTICK CHART -->
+        <!-- ===== NEW: PROFESSIONAL CANDLESTICK CHART - TradingView Style ===== -->
         <div class="chart-card">
             <div class="chart-header">
                 <div class="chart-title">
                     <i class="fas fa-chart-line"></i> SIG6/USDT · Candlestick
                 </div>
                 <div class="chart-legend">
-                    <div class="legend-item"><div class="legend-up"></div><span>Bullish</span></div>
-                    <div class="legend-item"><div class="legend-down"></div><span>Bearish</span></div>
+                    <div class="legend-item">
+                        <div class="legend-up"></div>
+                        <span>Bullish (↑)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-down"></div>
+                        <span>Bearish (↓)</span>
+                    </div>
                 </div>
             </div>
             
@@ -940,7 +1236,7 @@
             </div>
         </div>
         
-        <!-- HISTORY TABLE -->
+        <!-- HISTORY CARD - Aapka original table -->
         <div class="history-card">
             <div class="card-header">
                 <div class="card-title">
@@ -963,40 +1259,45 @@
                         <tr>
                             <th>#</th>
                             <th>DATE</th>
-                            <th>OPEN</th>
-                            <th>HIGH</th>
-                            <th>LOW</th>
-                            <th>CLOSE</th>
+                            <th>RATE (USDT)</th>
                             <th>INR</th>
-                            <th>VOLUME</th>
+                            <th>24H</th>
                         </tr>
                     </thead>
                     <tbody id="price-body">
-                        <tr><td colspan="8" class="loading">
+                        <tr><td colspan="5" class="loading">
                             <div class="spinner"></div>
-                            Connect wallet to view data
+                            Connect wallet to view price history
                         </td></tr>
                     </tbody>
                 </table>
             </div>
             
             <div class="load-more" id="loadMoreContainer" style="display: none;">
-                <button class="load-more-btn" onclick="loadMore()">LOAD MORE</button>
+                <button class="load-more-btn" onclick="loadMore()">
+                    <i class="fas fa-history"></i> LOAD MORE
+                </button>
             </div>
             
             <div class="export-buttons">
-                <button class="export-btn" onclick="exportCSV()"><i class="fas fa-file-csv"></i> EXPORT CSV</button>
-                <button class="export-btn" onclick="loadPriceHistory()"><i class="fas fa-sync-alt"></i> REFRESH</button>
+                <button class="export-btn" onclick="exportCSV()">
+                    <i class="fas fa-file-csv"></i> EXPORT CSV
+                </button>
+                <button class="export-btn" onclick="loadPriceHistory()">
+                    <i class="fas fa-sync-alt"></i> REFRESH
+                </button>
             </div>
         </div>
     </div>
     
-    <div class="connection-status">
+    <!-- CONNECTION STATUS -->
+    <div class="connection-status" id="connectionStatus">
         <div class="status-dot" id="statusDot"></div>
         <span id="statusText">Disconnected</span>
     </div>
 
     <script>
+        // ========== CONTRACT CONFIG ==========
         const SIGMA_ADDRESS = "0x068Aaba73Fd754F21140E2F13DA177ce7251A299";
         
         const SIGMA_ABI = [
@@ -1008,15 +1309,18 @@
             "event Sold(address indexed user, uint256 sigmaAmount, uint256 usdtAmount, uint256 rate, uint256 timestamp)"
         ];
 
-        let provider, userAddress, sigmaContract;
+        // ========== STATE ==========
+        let provider, userAddress;
+        let sigmaContract;
         let isConnected = false;
         let priceHistory = [];
         let currentFilter = 'all';
         let displayedRecords = 20;
         let currentRate = 0;
-        let chart = null;
         const INR_RATE = 95;
+        let chart = null;
 
+        // ========== INIT ==========
         window.onload = async () => {
             createParticles();
             setupTicker();
@@ -1025,7 +1329,9 @@
                 provider = new ethers.BrowserProvider(window.ethereum);
                 try {
                     const accounts = await provider.send("eth_accounts", []);
-                    if (accounts?.length) await connectWallet(true);
+                    if (accounts && accounts.length > 0) {
+                        await connectWallet(true);
+                    }
                 } catch (e) {}
             }
         };
@@ -1048,28 +1354,47 @@
             const symbols = ['BTC', 'ETH', 'BNB', 'SOL', 'ADA', 'DOT', 'MATIC', 'LINK'];
             wrapper.innerHTML = '';
             for (let i = 0; i < 20; i++) {
-                const symbol = symbols[i % 8];
+                const symbol = symbols[i % symbols.length];
                 const price = (Math.random() * 1000 + 100).toFixed(2);
                 const change = (Math.random() * 10 - 5).toFixed(2);
                 const cls = parseFloat(change) >= 0 ? 'positive' : 'negative';
-                wrapper.innerHTML += `<div class="ticker-item"><span class="ticker-symbol">${symbol}</span><span>$${price}</span><span class="ticker-change ${cls}">${change}%</span></div>`;
+                wrapper.innerHTML += `
+                    <div class="ticker-item">
+                        <span class="ticker-symbol">${symbol}</span>
+                        <span class="ticker-price">$${price}</span>
+                        <span class="ticker-change ${cls}">${change}%</span>
+                    </div>
+                `;
             }
         }
 
+        // ========== CONNECT WALLET ==========
         async function connectWallet(silent = false) {
             if (!window.ethereum) {
-                if (!silent) alert("Please install MetaMask!");
+                if (!silent) {
+                    alert("Please install MetaMask!");
+                    window.open("https://metamask.io/download/", "_blank");
+                }
                 return;
             }
             
             try {
                 provider = new ethers.BrowserProvider(window.ethereum);
+                
                 const accounts = await provider.send("eth_requestAccounts", []);
                 userAddress = accounts[0].toLowerCase();
                 
                 const network = await provider.getNetwork();
                 if (network.chainId !== 137n) {
-                    if (!silent) alert("Please switch to Polygon Mainnet");
+                    if (!silent) {
+                        alert("Please switch to Polygon Mainnet");
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_switchEthereumChain',
+                                params: [{ chainId: '0x89' }],
+                            });
+                        } catch (switchError) {}
+                    }
                     return;
                 }
                 
@@ -1082,46 +1407,62 @@
                 document.getElementById('statusText').textContent = 'Connected';
                 
                 await loadPriceHistory();
+                
                 setInterval(updateLiveRate, 10000);
                 
                 window.ethereum.on('accountsChanged', handleAccountsChanged);
-                window.ethereum.on('chainChanged', () => location.reload());
+                window.ethereum.on('chainChanged', () => window.location.reload());
                 
             } catch (error) {
-                console.error(error);
-                if (!silent) alert("Connection failed");
+                console.error("Connection error:", error);
+                if (!silent) alert("Connection failed: " + error.message);
             }
         }
 
         async function handleAccountsChanged(accounts) {
-            if (accounts?.length) {
+            if (accounts && accounts.length > 0) {
                 userAddress = accounts[0].toLowerCase();
+                document.getElementById('btn-text').textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
+                document.getElementById('statusDot').className = 'status-dot connected';
+                document.getElementById('statusText').textContent = 'Connected';
                 await loadPriceHistory();
             } else {
                 isConnected = false;
                 document.getElementById('connectBtn').classList.remove('connected');
                 document.getElementById('btn-text').textContent = 'Connect Wallet';
-                document.getElementById('statusDot').className = '';
+                document.getElementById('statusDot').className = 'status-dot disconnected';
                 document.getElementById('statusText').textContent = 'Disconnected';
             }
         }
 
+        // ========== LOAD PRICE HISTORY FROM EVENTS ==========
         async function loadPriceHistory() {
             if (!isConnected || !sigmaContract) {
-                document.getElementById('price-body').innerHTML = `<tr><td colspan="8" class="loading"><div class="spinner"></div>Connect wallet</td></tr>`;
+                document.getElementById('price-body').innerHTML = `
+                    <tr><td colspan="5" class="loading">
+                        <div class="spinner"></div>
+                        Connect wallet to view history
+                    </td></tr>
+                `;
                 return;
             }
             
             try {
-                document.getElementById('price-body').innerHTML = `<tr><td colspan="8" class="loading"><div class="spinner"></div>Fetching data...</td></tr>`;
+                document.getElementById('price-body').innerHTML = `
+                    <tr><td colspan="5" class="loading">
+                        <div class="spinner"></div>
+                        Fetching blockchain events...
+                    </td></tr>
+                `;
                 
-                // Current rate
+                // Get current rate
                 const rateBN = await sigmaContract.currentRate();
                 currentRate = parseFloat(ethers.formatUnits(rateBN, 6));
+                
                 document.getElementById('liveRate').textContent = currentRate.toFixed(6) + ' USDT';
                 document.getElementById('liveRateInr').textContent = '₹' + (currentRate * INR_RATE).toFixed(2);
                 
-                // ATH & ATL
+                // Get ATH and ATL
                 const ath = await sigmaContract.ath();
                 const atl = await sigmaContract.atl();
                 const athVal = parseFloat(ethers.formatUnits(ath, 6));
@@ -1133,168 +1474,216 @@
                 document.getElementById('atlInr').textContent = '₹' + (atlVal * INR_RATE).toFixed(2);
                 
                 // Fetch events
-                const bought = await sigmaContract.queryFilter(sigmaContract.filters.Bought(), 0, 'latest');
-                const sold = await sigmaContract.queryFilter(sigmaContract.filters.Sold(), 0, 'latest');
+                const boughtFilter = sigmaContract.filters.Bought();
+                const boughtEvents = await sigmaContract.queryFilter(boughtFilter, 0, 'latest');
                 
-                // Group by date
-                const daily = {};
+                const soldFilter = sigmaContract.filters.Sold();
+                const soldEvents = await sigmaContract.queryFilter(soldFilter, 0, 'latest');
                 
-                [...bought, ...sold].forEach(event => {
-                    const ts = event.args.timestamp.toNumber() * 1000;
-                    const rate = parseFloat(ethers.formatUnits(event.args.rate, 6));
-                    const amount = event.args.usdtAmount ? 
-                        parseFloat(ethers.formatUnits(event.args.usdtAmount, 6)) : 
-                        parseFloat(ethers.formatUnits(event.args.sigmaAmount, 18)) * rate;
-                    
-                    const date = new Date(ts).toISOString().split('T')[0];
-                    
-                    if (!daily[date]) {
-                        daily[date] = { open: rate, high: rate, low: rate, close: rate, volume: amount, ts };
-                    } else {
-                        daily[date].high = Math.max(daily[date].high, rate);
-                        daily[date].low = Math.min(daily[date].low, rate);
-                        daily[date].close = rate;
-                        daily[date].volume += amount;
-                    }
+                // Process events into daily rates - STORE OPEN, HIGH, LOW, CLOSE for candlestick
+                const dailyCandles = {};
+                
+                [...boughtEvents, ...soldEvents].forEach(event => {
+                    try {
+                        const timestamp = event.args.timestamp.toNumber() * 1000; // Convert to ms
+                        const rate = parseFloat(ethers.formatUnits(event.args.rate, 6));
+                        
+                        const date = new Date(timestamp);
+                        const dateKey = date.toISOString().split('T')[0];
+                        
+                        if (!dailyCandles[dateKey]) {
+                            // First transaction of the day
+                            dailyCandles[dateKey] = {
+                                open: rate,
+                                high: rate,
+                                low: rate,
+                                close: rate,
+                                timestamp: timestamp,
+                                txCount: 1,
+                                rates: [rate]
+                            };
+                        } else {
+                            // Update candle data
+                            dailyCandles[dateKey].high = Math.max(dailyCandles[dateKey].high, rate);
+                            dailyCandles[dateKey].low = Math.min(dailyCandles[dateKey].low, rate);
+                            dailyCandles[dateKey].close = rate; // Last transaction of day is close
+                            dailyCandles[dateKey].txCount++;
+                            dailyCandles[dateKey].rates.push(rate);
+                        }
+                    } catch (e) {}
                 });
                 
                 // Build history array
-                priceHistory = Object.entries(daily).map(([date, d]) => ({
-                    date,
-                    open: d.open,
-                    high: d.high,
-                    low: d.low,
-                    close: d.close,
-                    volume: d.volume,
-                    timestamp: d.ts,
-                    inr: d.close * INR_RATE
-                })).sort((a, b) => a.timestamp - b.timestamp);
-                
-                // Add today if no transaction
+                const history = [];
                 const today = new Date().toISOString().split('T')[0];
-                if (!priceHistory.find(d => d.date === today) && priceHistory.length) {
-                    const last = priceHistory[priceHistory.length - 1].close;
-                    priceHistory.push({
-                        date: today,
-                        open: last,
-                        high: Math.max(last, currentRate),
-                        low: Math.min(last, currentRate),
-                        close: currentRate,
-                        volume: 0,
-                        timestamp: Date.now(),
-                        inr: currentRate * INR_RATE
+                
+                for (const [dateKey, candle] of Object.entries(dailyCandles)) {
+                    history.push({
+                        date: dateKey,
+                        open: candle.open,
+                        high: candle.high,
+                        low: candle.low,
+                        close: candle.close,
+                        timestamp: candle.timestamp,
+                        txCount: candle.txCount
                     });
                 }
                 
-                if (!priceHistory.length) {
-                    document.getElementById('price-body').innerHTML = `<tr><td colspan="8" class="empty-state">No data</td></tr>`;
+                // Add today if not exists and there are transactions today
+                if (!history.some(h => h.date === today)) {
+                    // Try to find previous day's close for open price
+                    const sortedHistory = [...history].sort((a, b) => b.timestamp - a.timestamp);
+                    const prevClose = sortedHistory.length > 0 ? sortedHistory[0].close : currentRate;
+                    
+                    history.push({
+                        date: today,
+                        open: prevClose,
+                        high: Math.max(prevClose, currentRate),
+                        low: Math.min(prevClose, currentRate),
+                        close: currentRate,
+                        timestamp: Date.now(),
+                        txCount: 0
+                    });
+                }
+                
+                // Sort by date (newest first for table, oldest first for chart)
+                priceHistory = history.sort((a, b) => b.timestamp - a.timestamp); // Newest first for table
+                
+                if (priceHistory.length === 0) {
+                    document.getElementById('price-body').innerHTML = `
+                        <tr><td colspan="5" class="empty-state">
+                            <i class="fas fa-database"></i><br>
+                            No transaction history yet
+                        </td></tr>
+                    `;
                     return;
                 }
                 
                 // Update ATH/ATL dates
-                const rates = priceHistory.map(d => d.close);
-                const athIdx = rates.indexOf(Math.max(...rates));
-                const atlIdx = rates.indexOf(Math.min(...rates));
+                const rates = priceHistory.map(h => h.close);
+                const athRate = Math.max(...rates);
+                const atlRate = Math.min(...rates);
                 
-                if (athIdx >= 0) document.getElementById('athDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(priceHistory[athIdx].date).toLocaleDateString()}`;
-                if (atlIdx >= 0) document.getElementById('atlDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(priceHistory[atlIdx].date).toLocaleDateString()}`;
+                const athRecord = priceHistory.find(h => h.close === athRate);
+                const atlRecord = priceHistory.find(h => h.close === atlRate);
                 
-                // 30D avg
-                const last30 = priceHistory.slice(-30);
-                const avg30 = last30.reduce((s, i) => s + i.close, 0) / last30.length;
+                if (athRecord) {
+                    document.getElementById('athDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(athRecord.date).toLocaleDateString()}`;
+                }
+                if (atlRecord) {
+                    document.getElementById('atlDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(atlRecord.date).toLocaleDateString()}`;
+                }
+                
+                // Update stats
+                const last30 = priceHistory.slice(0, Math.min(30, priceHistory.length));
+                const avg30 = last30.reduce((sum, item) => sum + item.close, 0) / last30.length;
                 document.getElementById('avg30').textContent = avg30.toFixed(6) + ' USDT';
                 document.getElementById('avg30Inr').textContent = '₹' + (avg30 * INR_RATE).toFixed(2);
                 
                 if (last30.length >= 2) {
-                    const first = last30[0].close;
-                    const last = last30[last30.length - 1].close;
-                    document.getElementById('avg30Change').textContent = ((last - first) / first * 100).toFixed(2) + '%';
+                    const first = last30[last30.length - 1].close;
+                    const last = last30[0].close;
+                    const change = ((last - first) / first * 100).toFixed(2);
+                    document.getElementById('avg30Change').textContent = change + '%';
+                    document.getElementById('avg30Change').style.color = change >= 0 ? 'var(--success)' : 'var(--danger)';
                 }
                 
                 document.getElementById('totalRecords').textContent = priceHistory.length;
                 document.getElementById('daysTracked').textContent = priceHistory.length + ' days';
                 
                 renderTable();
-                renderChart('all');
+                renderChart('all'); // Render candlestick chart
                 
             } catch (error) {
-                console.error(error);
-                document.getElementById('price-body').innerHTML = `<tr><td colspan="8" class="empty-state">Error: ${error.message}</td></tr>`;
+                console.error("Error:", error);
+                document.getElementById('price-body').innerHTML = `
+                    <tr><td colspan="5" class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i><br>
+                        Error: ${error.message}
+                    </td></tr>
+                `;
             }
         }
 
+        // ===== RENDER CANDLESTICK CHART - TradingView Style =====
         function renderChart(timeframe) {
-            let data = [...priceHistory];
-            if (timeframe === '30') data = data.slice(-30);
-            else if (timeframe === '7') data = data.slice(-7);
-            else if (timeframe === '1') data = data.slice(-1);
+            // Get chart-ready data (oldest first)
+            let chartData = [...priceHistory].sort((a, b) => a.timestamp - b.timestamp);
             
-            if (!data.length) return;
+            if (timeframe === '30') {
+                chartData = chartData.slice(-30);
+            } else if (timeframe === '7') {
+                chartData = chartData.slice(-7);
+            } else if (timeframe === '1') {
+                chartData = chartData.slice(-1);
+            }
+            
+            if (chartData.length === 0) return;
             
             const ctx = document.getElementById('candlestickChart').getContext('2d');
-            if (chart) chart.destroy();
             
-            // Check if Chart is registered with candlestick
-            if (!Chart.registry.controllers.get('candlestick')) {
-                console.log("Candlestick not available, using line chart fallback");
-                // Fallback to line chart
-                chart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.map(d => d.date),
-                        datasets: [{
-                            label: 'Close Price',
-                            data: data.map(d => d.close),
-                            borderColor: 'var(--primary)',
-                            backgroundColor: 'rgba(0,255,204,0.1)',
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { ticks: { callback: v => v.toFixed(6) } } }
-                    }
-                });
+            // Destroy old chart
+            if (chart) {
+                chart.destroy();
+            }
+            
+            // Check if candlestick controller is available
+            if (typeof Chart.registry.getController !== 'function' || !Chart.registry.getController('candlestick')) {
+                console.log("Candlestick not available - make sure chartjs-chart-financial is loaded");
                 return;
             }
             
-            // Use candlestick if available
+            // Prepare candlestick data
+            const candlestickData = chartData.map(d => ({
+                x: new Date(d.date).getTime(),
+                o: d.open,
+                h: d.high,
+                l: d.low,
+                c: d.close
+            }));
+            
             chart = new Chart(ctx, {
                 type: 'candlestick',
                 data: {
                     datasets: [{
                         label: 'SIG6/USDT',
-                        data: data.map(d => ({
-                            x: new Date(d.date).getTime(),
-                            o: d.open,
-                            h: d.high,
-                            l: d.low,
-                            c: d.close
-                        })),
+                        data: candlestickData,
                         borderColor: (ctx) => {
-                            const d = ctx.dataset.data[ctx.dataIndex];
-                            return d.c >= d.o ? 'var(--candle-border-up)' : 'var(--candle-border-down)';
+                            const data = ctx.dataset.data[ctx.dataIndex];
+                            return data.c >= data.o ? 'var(--candle-border-up)' : 'var(--candle-border-down)';
                         },
                         backgroundColor: (ctx) => {
-                            const d = ctx.dataset.data[ctx.dataIndex];
-                            return d.c >= d.o ? 'var(--candle-up)' : 'var(--candle-down)';
-                        }
+                            const data = ctx.dataset.data[ctx.dataIndex];
+                            return data.c >= data.o ? 'var(--candle-up)' : 'var(--candle-down)';
+                        },
+                        borderWidth: 1,
+                        // Wick colors
+                        borderSkipped: false,
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
+                        legend: {
+                            display: false
+                        },
                         tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: 'var(--primary)',
+                            bodyColor: 'var(--text)',
+                            borderColor: 'var(--primary)',
+                            borderWidth: 1,
                             callbacks: {
                                 label: (ctx) => {
                                     const d = ctx.raw;
                                     return [
-                                        `O: ${d.o.toFixed(6)}`,
-                                        `H: ${d.h.toFixed(6)}`,
-                                        `L: ${d.l.toFixed(6)}`,
-                                        `C: ${d.c.toFixed(6)}`,
+                                        `Open: ${d.o.toFixed(6)} USDT`,
+                                        `High: ${d.h.toFixed(6)} USDT`,
+                                        `Low: ${d.l.toFixed(6)} USDT`,
+                                        `Close: ${d.c.toFixed(6)} USDT`,
                                         `INR: ₹${(d.c * INR_RATE).toFixed(2)}`
                                     ];
                                 }
@@ -1302,57 +1691,105 @@
                         }
                     },
                     scales: {
-                        x: { type: 'time', time: { unit: 'day' } },
-                        y: { ticks: { callback: v => v.toFixed(6) } }
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'dd MMM'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            },
+                            ticks: {
+                                color: 'var(--text-muted)'
+                            }
+                        },
+                        y: {
+                            position: 'right',
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            },
+                            ticks: {
+                                color: 'var(--primary)',
+                                callback: function(value) {
+                                    return value.toFixed(6);
+                                }
+                            }
+                        }
                     }
                 }
             });
         }
 
         function changeTimeframe(tf) {
-            document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.timeframe-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             renderChart(tf);
         }
 
         function renderTable() {
             const tbody = document.getElementById('price-body');
-            let filtered = [...priceHistory].reverse(); // newest first
+            let filteredHistory = priceHistory; // Already newest first
             
-            if (currentFilter === '30') filtered = filtered.slice(0, 30);
-            else if (currentFilter === '7') filtered = filtered.slice(0, 7);
+            if (currentFilter === '30') {
+                filteredHistory = priceHistory.slice(0, 30);
+            } else if (currentFilter === '7') {
+                filteredHistory = priceHistory.slice(0, 7);
+            }
             
-            const display = filtered.slice(0, displayedRecords);
+            const displayHistory = filteredHistory.slice(0, displayedRecords);
             
-            if (!display.length) {
-                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No records</td></tr>`;
+            if (displayHistory.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No records</td></tr>`;
                 document.getElementById('results-count').style.display = 'none';
                 document.getElementById('loadMoreContainer').style.display = 'none';
                 return;
             }
             
             document.getElementById('results-count').style.display = 'inline-block';
-            document.getElementById('results-text').textContent = `${filtered.length} days (showing ${display.length})`;
+            document.getElementById('results-text').textContent = `${filteredHistory.length} days (showing ${displayHistory.length})`;
             
             let html = '';
-            display.forEach((item, i) => {
-                const date = new Date(item.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-                const isToday = item.date === new Date().toISOString().split('T')[0];
+            displayHistory.forEach((item, index) => {
+                const date = new Date(item.date);
+                const formattedDate = date.toLocaleDateString('en-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
                 
-                html += `<tr>
-                    <td>#${priceHistory.length - i}</td>
-                    <td>${date}${isToday ? '<span class="badge-new">LIVE</span>' : ''}</td>
-                    <td class="rate-cell">${item.open.toFixed(6)}</td>
-                    <td class="rate-cell">${item.high.toFixed(6)}</td>
-                    <td class="rate-cell">${item.low.toFixed(6)}</td>
-                    <td class="rate-cell">${item.close.toFixed(6)}</td>
-                    <td class="inr-cell">₹${item.inr.toFixed(2)}</td>
-                    <td>${item.volume.toFixed(2)}</td>
-                </tr>`;
+                const rate = item.close;
+                const prevRate = index < displayHistory.length - 1 ? displayHistory[index + 1].close : rate;
+                const change = ((rate - prevRate) / prevRate * 100).toFixed(2);
+                const changeClass = change >= 0 ? 'positive' : 'negative';
+                const changeIcon = change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                
+                const today = new Date().toISOString().split('T')[0];
+                const isToday = item.date === today;
+                
+                html += `
+                    <tr>
+                        <td><span class="sl-no">#${priceHistory.length - index}</span></td>
+                        <td class="date-cell">
+                            ${formattedDate}
+                            ${isToday ? '<span class="badge-new">LIVE</span>' : ''}
+                            ${item.txCount > 0 ? `<span class="tx-badge">${item.txCount} txs</span>` : ''}
+                        </td>
+                        <td class="rate-cell">${rate.toFixed(6)}</td>
+                        <td class="inr-cell">₹${(rate * INR_RATE).toFixed(2)}</td>
+                        <td class="change-cell ${changeClass}">
+                            <i class="fas ${changeIcon}"></i> ${Math.abs(change)}%
+                        </td>
+                    </tr>
+                `;
             });
             
             tbody.innerHTML = html;
-            document.getElementById('loadMoreContainer').style.display = displayedRecords < filtered.length ? 'block' : 'none';
+            
+            document.getElementById('loadMoreContainer').style.display = 
+                displayedRecords < filteredHistory.length ? 'block' : 'none';
         }
 
         async function updateLiveRate() {
@@ -1362,15 +1799,17 @@
                     currentRate = parseFloat(ethers.formatUnits(rateBN, 6));
                     document.getElementById('liveRate').textContent = currentRate.toFixed(6) + ' USDT';
                     document.getElementById('liveRateInr').textContent = '₹' + (currentRate * INR_RATE).toFixed(2);
-                } catch (e) {}
+                } catch (error) {}
             }
         }
 
         function filterHistory(filter) {
             currentFilter = filter;
             displayedRecords = 20;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
+            
             renderTable();
         }
 
@@ -1380,14 +1819,20 @@
         }
 
         function exportCSV() {
-            if (!priceHistory.length) return alert("No data");
-            let csv = "Date,Open,High,Low,Close,INR,Volume\n";
-            priceHistory.forEach(d => csv += `${d.date},${d.open.toFixed(6)},${d.high.toFixed(6)},${d.low.toFixed(6)},${d.close.toFixed(6)},${d.inr.toFixed(2)},${d.volume.toFixed(2)}\n`);
+            if (priceHistory.length === 0) return alert("No data");
+            
+            let csv = "Date,Open,High,Low,Close (USDT),INR,Change %,Transactions\n";
+            priceHistory.forEach((item, index) => {
+                const prevRate = index < priceHistory.length - 1 ? priceHistory[index + 1].close : item.close;
+                const change = ((item.close - prevRate) / prevRate * 100).toFixed(2);
+                csv += `${item.date},${item.open.toFixed(6)},${item.high.toFixed(6)},${item.low.toFixed(6)},${item.close.toFixed(6)},${(item.close * INR_RATE).toFixed(2)},${change}%,${item.txCount || 0}\n`;
+            });
+            
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `sigma_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `sigma_history_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
         }
     </script>
