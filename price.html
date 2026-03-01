@@ -461,11 +461,13 @@
             border-radius: 40px;
             border: 1px solid rgba(255, 170, 0, 0.2);
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .next-update i {
             color: var(--warning);
-            margin-right: 8px;
         }
         
         .next-update span {
@@ -724,6 +726,36 @@
             text-transform: uppercase;
         }
         
+        .badge-saved {
+            background: var(--secondary);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 8px;
+            font-weight: 700;
+        }
+        
+        .badge-missing {
+            background: var(--warning);
+            color: #000;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 8px;
+            font-weight: 700;
+        }
+        
+        .badge-1158 {
+            background: #ff2a6d;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 8px;
+            font-weight: 700;
+        }
+        
         .tx-badge {
             font-size: 11px;
             color: var(--text-muted);
@@ -845,6 +877,30 @@
             background: var(--danger);
         }
         
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--card);
+            backdrop-filter: var(--blur);
+            border-left: 4px solid var(--primary);
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-glow);
+            z-index: 2000;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 4.7s;
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        
+        @keyframes slideIn {
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            to { transform: translateX(400px); opacity: 0; }
+        }
+        
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -948,6 +1004,13 @@
                 width: auto;
                 justify-content: center;
             }
+            
+            .notification {
+                top: 70px;
+                right: 10px;
+                left: 10px;
+                font-size: 13px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -978,7 +1041,7 @@
                 font-size: 12px;
             }
             
-            .badge-new {
+            .badge-new, .badge-saved, .badge-missing, .badge-1158 {
                 display: block;
                 margin-left: 0;
                 margin-top: 5px;
@@ -1010,6 +1073,9 @@
         <i class="fas fa-wallet"></i> <span id="btn-text">Connect Wallet</span>
     </button>
     
+    <!-- NOTIFICATION CONTAINER -->
+    <div id="notificationContainer"></div>
+    
     <!-- MAIN CONTAINER -->
     <div class="container">
         <!-- NAVIGATION -->
@@ -1017,6 +1083,8 @@
             <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Dashboard</a>
             <button class="nav-btn" onclick="loadPriceHistory()"><i class="fas fa-sync-alt"></i> Refresh</button>
             <button class="nav-btn" onclick="exportCSV()"><i class="fas fa-download"></i> CSV</button>
+            <button class="nav-btn" onclick="clearHistory()"><i class="fas fa-trash"></i> Clear Cache</button>
+            <button class="nav-btn" onclick="fillMissingDays()"><i class="fas fa-calendar-plus"></i> Fill Missing</button>
         </div>
         
         <!-- HEADER -->
@@ -1024,8 +1092,8 @@
             <h1>SIGMA PRICE HISTORY</h1>
             <p>
                 <i class="fas fa-bolt" style="color: var(--warning);"></i>
-                Real rates from blockchain events
-                <span class="event-badge"><i class="fas fa-database"></i> LIVE</span>
+                Auto-saves every day at 11:58 PM
+                <span class="event-badge"><i class="fas fa-clock"></i> 23:58</span>
             </p>
         </div>
         
@@ -1039,7 +1107,7 @@
             </div>
             <div class="next-update">
                 <i class="fas fa-clock"></i>
-                <span id="nextUpdate">Auto-updates every 10s</span>
+                <span id="nextUpdate">Auto-saves at 11:58 PM</span>
             </div>
         </div>
         
@@ -1159,11 +1227,28 @@
         let displayedRecords = 20;
         let currentRate = 0;
         const INR_RATE = 95;
+        const STORAGE_KEY = 'sigma_price_history_1158';
 
         // ========== INIT ==========
         window.onload = async () => {
             createParticles();
             setupTicker();
+            
+            // Load saved history from localStorage
+            loadSavedHistory();
+            
+            // Check for missing days and fill them
+            await checkAndFillMissingDays();
+            
+            // Check if we need to save today's rate at 11:58 PM
+            checkAndSave1158Rate();
+            
+            // Check every minute for 11:58 PM
+            setInterval(checkAndSave1158Rate, 60000);
+            
+            // Update next save time display
+            updateNextSaveTime();
+            setInterval(updateNextSaveTime, 1000);
             
             if (window.ethereum) {
                 provider = new ethers.BrowserProvider(window.ethereum);
@@ -1205,6 +1290,262 @@
                         <span class="ticker-change ${cls}">${change}%</span>
                     </div>
                 `;
+            }
+        }
+
+        function updateNextSaveTime() {
+            const now = new Date();
+            const target = new Date(now);
+            target.setHours(23, 58, 0, 0);
+            
+            if (now > target) {
+                target.setDate(target.getDate() + 1);
+            }
+            
+            const diffMs = target - now;
+            const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const diffSecs = Math.floor((diffMs % (1000 * 60)) / 1000);
+            
+            document.getElementById('nextUpdate').innerHTML = 
+                `⏰ Next save in: ${diffHrs}h ${diffMins}m ${diffSecs}s`;
+        }
+
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-clock'}" 
+                   style="color: ${type === 'success' ? 'var(--success)' : 'var(--primary)'}; margin-right: 10px;"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // ========== SAVE HISTORY TO LOCALSTORAGE ==========
+        function saveHistoryToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(priceHistory));
+                console.log('History saved to localStorage');
+            } catch (e) {
+                console.error('Failed to save history:', e);
+            }
+        }
+
+        function loadSavedHistory() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    priceHistory = JSON.parse(saved);
+                    console.log('Loaded history from localStorage:', priceHistory.length, 'records');
+                    
+                    // Sort by date (newest first)
+                    priceHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
+                    // Update stats if we have data
+                    if (priceHistory.length > 0) {
+                        updateStatsFromHistory();
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load history:', e);
+                priceHistory = [];
+            }
+        }
+
+        // ========== CHECK AND SAVE 11:58 PM RATE ==========
+        async function checkAndSave1158Rate() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentSecond = now.getSeconds();
+            
+            // Check if it's 11:58 PM (23:58) - within 30 seconds window
+            if (currentHour === 23 && currentMinute === 58 && currentSecond < 30) {
+                // Check if we already saved today's rate
+                const today = now.toISOString().split('T')[0];
+                const alreadySaved = priceHistory.some(item => item.date === today && item.savedAt === '23:58');
+                
+                if (!alreadySaved && currentRate > 0) {
+                    // Save today's rate at 11:58 PM
+                    const newRecord = {
+                        date: today,
+                        close: currentRate,
+                        timestamp: now.getTime() / 1000,
+                        txCount: 0,
+                        isSaved: true,
+                        savedAt: '23:58',
+                        is1158: true
+                    };
+                    
+                    // Remove any existing record for today (from other times)
+                    priceHistory = priceHistory.filter(item => item.date !== today);
+                    
+                    // Add new record
+                    priceHistory.unshift(newRecord);
+                    
+                    // Keep only last 365 days
+                    if (priceHistory.length > 365) {
+                        priceHistory = priceHistory.slice(0, 365);
+                    }
+                    
+                    saveHistoryToStorage();
+                    
+                    // Update display
+                    if (isConnected) {
+                        renderTable();
+                        updateStatsFromHistory();
+                    }
+                    
+                    console.log('✅ Auto-saved 11:58 PM rate for', today, '=', currentRate);
+                    showNotification(`📊 Today's rate saved at 11:58 PM: ${currentRate.toFixed(6)} USDT`, 'success');
+                }
+            }
+        }
+
+        // ========== CHECK AND FILL MISSING DAYS ==========
+        async function checkAndFillMissingDays() {
+            if (priceHistory.length === 0) return;
+            
+            // Sort by date (oldest first for processing)
+            const sortedHistory = [...priceHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            const firstDate = new Date(sortedHistory[0].date);
+            const today = new Date();
+            
+            // Set to start of day for comparison
+            firstDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            
+            const daysDiff = Math.floor((today - firstDate) / (1000 * 60 * 60 * 24));
+            
+            if (daysDiff <= 1) return; // No missing days
+            
+            // Create a set of existing dates
+            const existingDates = new Set(sortedHistory.map(item => item.date));
+            
+            let missingCount = 0;
+            let filledCount = 0;
+            
+            // Check each day from first date to today
+            for (let i = 0; i <= daysDiff; i++) {
+                const checkDate = new Date(firstDate);
+                checkDate.setDate(firstDate.getDate() + i);
+                const dateStr = checkDate.toISOString().split('T')[0];
+                
+                if (!existingDates.has(dateStr)) {
+                    missingCount++;
+                    
+                    // Try to find rate from closest available day
+                    const prevDay = [...sortedHistory].reverse().find(item => new Date(item.date) < checkDate);
+                    const nextDay = sortedHistory.find(item => new Date(item.date) > checkDate);
+                    
+                    let fillRate = currentRate || 0.285492; // Default rate if nothing available
+                    
+                    if (prevDay && nextDay) {
+                        // Interpolate between prev and next
+                        const prevDate = new Date(prevDay.date);
+                        const nextDate = new Date(nextDay.date);
+                        const totalDays = (nextDate - prevDate) / (1000 * 60 * 60 * 24);
+                        const daysFromPrev = (checkDate - prevDate) / (1000 * 60 * 60 * 24);
+                        const ratio = daysFromPrev / totalDays;
+                        
+                        fillRate = prevDay.close + (nextDay.close - prevDay.close) * ratio;
+                    } else if (prevDay) {
+                        fillRate = prevDay.close;
+                    } else if (nextDay) {
+                        fillRate = nextDay.close;
+                    }
+                    
+                    // Add missing day
+                    priceHistory.push({
+                        date: dateStr,
+                        close: fillRate,
+                        timestamp: checkDate.getTime() / 1000,
+                        txCount: 0,
+                        isMissing: true,
+                        filledFrom: prevDay ? prevDay.date : (nextDay ? nextDay.date : 'default')
+                    });
+                    
+                    filledCount++;
+                }
+            }
+            
+            if (missingCount > 0) {
+                console.log(`Found ${missingCount} missing days, filled ${filledCount} days`);
+                
+                // Sort again (newest first)
+                priceHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Save to storage
+                saveHistoryToStorage();
+                
+                // Update display
+                renderTable();
+                updateStatsFromHistory();
+                
+                showNotification(`📅 Filled ${filledCount} missing days`, 'info');
+            }
+        }
+
+        // ========== UPDATE STATS FROM HISTORY ==========
+        function updateStatsFromHistory() {
+            if (priceHistory.length === 0) return;
+            
+            const rates = priceHistory.map(h => h.close);
+            const athRate = Math.max(...rates);
+            const atlRate = Math.min(...rates);
+            
+            const athRecord = priceHistory.find(h => h.close === athRate);
+            const atlRecord = priceHistory.find(h => h.close === atlRate);
+            
+            document.getElementById('ath').textContent = athRate.toFixed(6) + ' USDT';
+            document.getElementById('athInr').textContent = '₹' + (athRate * INR_RATE).toFixed(2);
+            document.getElementById('atl').textContent = atlRate.toFixed(6) + ' USDT';
+            document.getElementById('atlInr').textContent = '₹' + (atlRate * INR_RATE).toFixed(2);
+            
+            if (athRecord) {
+                document.getElementById('athDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(athRecord.date).toLocaleDateString()}`;
+            }
+            if (atlRecord) {
+                document.getElementById('atlDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(atlRecord.date).toLocaleDateString()}`;
+            }
+            
+            // Update 30D average
+            const last30 = priceHistory.slice(0, Math.min(30, priceHistory.length));
+            const avg30Calc = last30.reduce((sum, item) => sum + item.close, 0) / last30.length;
+            document.getElementById('avg30').textContent = avg30Calc.toFixed(6) + ' USDT';
+            document.getElementById('avg30Inr').textContent = '₹' + (avg30Calc * INR_RATE).toFixed(2);
+            
+            if (last30.length >= 2) {
+                const first = last30[last30.length - 1].close;
+                const last = last30[0].close;
+                const change = ((last - first) / first * 100).toFixed(2);
+                document.getElementById('avg30Change').textContent = change + '%';
+                document.getElementById('avg30Change').style.color = change >= 0 ? 'var(--success)' : 'var(--danger)';
+            }
+            
+            document.getElementById('totalRecords').textContent = priceHistory.length;
+            document.getElementById('daysTracked').textContent = priceHistory.length + ' days';
+        }
+
+        // ========== FILL MISSING DAYS MANUALLY ==========
+        async function fillMissingDays() {
+            await checkAndFillMissingDays();
+        }
+
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all saved history?')) {
+                priceHistory = [];
+                localStorage.removeItem(STORAGE_KEY);
+                renderTable();
+                showNotification('🗑️ History cleared!', 'info');
             }
         }
 
@@ -1278,12 +1619,18 @@
         // ========== LOAD PRICE HISTORY FROM EVENTS ==========
         async function loadPriceHistory() {
             if (!isConnected || !sigmaContract) {
-                document.getElementById('price-body').innerHTML = `
-                    <tr><td colspan="5" class="loading">
-                        <div class="spinner"></div>
-                        Connect wallet to view history
-                    </td></tr>
-                `;
+                // Show saved history even if not connected
+                if (priceHistory.length > 0) {
+                    renderTable();
+                    updateStatsFromHistory();
+                } else {
+                    document.getElementById('price-body').innerHTML = `
+                        <tr><td colspan="5" class="loading">
+                            <div class="spinner"></div>
+                            Connect wallet to view full history
+                        </td></tr>
+                    `;
+                }
                 return;
             }
             
@@ -1302,21 +1649,11 @@
                 document.getElementById('liveRate').textContent = currentRate.toFixed(6) + ' USDT';
                 document.getElementById('liveRateInr').textContent = '₹' + (currentRate * INR_RATE).toFixed(2);
                 
-                // Get ATH and ATL with INR values
+                // Get ATH and ATL from contract
                 const ath = await sigmaContract.ath();
                 const atl = await sigmaContract.atl();
                 const athVal = parseFloat(ethers.formatUnits(ath, 6));
                 const atlVal = parseFloat(ethers.formatUnits(atl, 6));
-                
-                document.getElementById('ath').textContent = athVal.toFixed(6) + ' USDT';
-                document.getElementById('athInr').textContent = '₹' + (athVal * INR_RATE).toFixed(2);
-                document.getElementById('atl').textContent = atlVal.toFixed(6) + ' USDT';
-                document.getElementById('atlInr').textContent = '₹' + (atlVal * INR_RATE).toFixed(2);
-                
-                // Get 30D average with INR
-                const avg30Val = (await sigmaContract.getSellRate()) ? parseFloat(ethers.formatUnits(await sigmaContract.getSellRate(), 6)) : currentRate;
-                document.getElementById('avg30').textContent = avg30Val.toFixed(6) + ' USDT';
-                document.getElementById('avg30Inr').textContent = '₹' + (avg30Val * INR_RATE).toFixed(2);
                 
                 // Fetch events
                 const boughtFilter = sigmaContract.filters.Bought();
@@ -1347,35 +1684,53 @@
                     } catch (e) {}
                 });
                 
-                // Build history array
-                const history = [];
-                const today = new Date().toISOString().split('T')[0];
-                
+                // Build history from events
+                const eventHistory = [];
                 for (const [dateKey, rates] of Object.entries(dailyRates)) {
                     rates.sort((a, b) => a.timestamp - b.timestamp);
                     const lastRate = rates[rates.length - 1].rate;
                     
-                    history.push({
+                    eventHistory.push({
                         date: dateKey,
                         close: lastRate,
                         timestamp: new Date(dateKey + 'T23:59:00').getTime() / 1000,
-                        txCount: rates.length
+                        txCount: rates.length,
+                        fromEvent: true
                     });
                 }
                 
+                // Merge with saved history
+                // First, add all saved history that's not from events
+                const savedDates = new Set(eventHistory.map(h => h.date));
+                const mergedHistory = [...eventHistory];
+                
+                priceHistory.forEach(savedItem => {
+                    if (!savedDates.has(savedItem.date) && !savedItem.isMissing) {
+                        mergedHistory.push(savedItem);
+                    }
+                });
+                
                 // Add today if not exists
-                if (!history.some(h => h.date === today)) {
-                    history.push({
+                const today = new Date().toISOString().split('T')[0];
+                if (!mergedHistory.some(h => h.date === today)) {
+                    mergedHistory.push({
                         date: today,
                         close: currentRate,
                         timestamp: new Date(today + 'T23:59:00').getTime() / 1000,
-                        txCount: 0
+                        txCount: 0,
+                        isLive: true
                     });
                 }
                 
                 // Sort by date (newest first)
-                history.sort((a, b) => b.timestamp - a.timestamp);
-                priceHistory = history;
+                mergedHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+                priceHistory = mergedHistory;
+                
+                // Check for missing days and fill them
+                await checkAndFillMissingDays();
+                
+                // Save to localStorage
+                saveHistoryToStorage();
                 
                 if (priceHistory.length === 0) {
                     document.getElementById('price-body').innerHTML = `
@@ -1387,37 +1742,8 @@
                     return;
                 }
                 
-                // Update ATH/ATL dates
-                const rates = priceHistory.map(h => h.close);
-                const athRate = Math.max(...rates);
-                const atlRate = Math.min(...rates);
-                
-                const athRecord = priceHistory.find(h => h.close === athRate);
-                const atlRecord = priceHistory.find(h => h.close === atlRate);
-                
-                if (athRecord) {
-                    document.getElementById('athDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(athRecord.date).toLocaleDateString()}`;
-                }
-                if (atlRecord) {
-                    document.getElementById('atlDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(atlRecord.date).toLocaleDateString()}`;
-                }
-                
                 // Update stats
-                const last30 = priceHistory.slice(0, Math.min(30, priceHistory.length));
-                const avg30Calc = last30.reduce((sum, item) => sum + item.close, 0) / last30.length;
-                document.getElementById('avg30').textContent = avg30Calc.toFixed(6) + ' USDT';
-                document.getElementById('avg30Inr').textContent = '₹' + (avg30Calc * INR_RATE).toFixed(2);
-                
-                if (last30.length >= 2) {
-                    const first = last30[last30.length - 1].close;
-                    const last = last30[0].close;
-                    const change = ((last - first) / first * 100).toFixed(2);
-                    document.getElementById('avg30Change').textContent = change + '%';
-                    document.getElementById('avg30Change').style.color = change >= 0 ? 'var(--success)' : 'var(--danger)';
-                }
-                
-                document.getElementById('totalRecords').textContent = priceHistory.length;
-                document.getElementById('daysTracked').textContent = priceHistory.length + ' days';
+                updateStatsFromHistory();
                 
                 renderTable();
                 
@@ -1474,10 +1800,13 @@
                 
                 html += `
                     <tr>
-                        <td><span class="sl-no">#${priceHistory.length - index}</span></td>
+                        <td><span class="sl-no">#${priceHistory.length - priceHistory.findIndex(h => h.date === item.date)}</span></td>
                         <td class="date-cell">
                             ${formattedDate}
                             ${isToday ? '<span class="badge-new">LIVE</span>' : ''}
+                            ${item.is1158 ? '<span class="badge-1158">23:58</span>' : ''}
+                            ${item.isSaved && !item.is1158 ? '<span class="badge-saved">SAVED</span>' : ''}
+                            ${item.isMissing ? '<span class="badge-missing">FILLED</span>' : ''}
                             ${item.txCount > 0 ? `<span class="tx-badge">${item.txCount} txs</span>` : ''}
                         </td>
                         <td class="rate-cell">${rate.toFixed(6)}</td>
@@ -1524,11 +1853,17 @@
         function exportCSV() {
             if (priceHistory.length === 0) return alert("No data");
             
-            let csv = "Date,Rate (USDT),INR,Change %,Transactions\n";
+            let csv = "Date,Rate (USDT),INR,Change %,Transactions,Source,Save Time\n";
             priceHistory.forEach((item, index) => {
                 const prevRate = index < priceHistory.length - 1 ? priceHistory[index + 1].close : item.close;
                 const change = ((item.close - prevRate) / prevRate * 100).toFixed(2);
-                csv += `${item.date},${item.close.toFixed(6)},${(item.close * INR_RATE).toFixed(2)},${change}%,${item.txCount || 0}\n`;
+                let source = 'Live';
+                if (item.fromEvent) source = 'Blockchain';
+                else if (item.is1158) source = '11:58 PM Save';
+                else if (item.isSaved) source = 'Manual Save';
+                else if (item.isMissing) source = 'Filled';
+                
+                csv += `${item.date},${item.close.toFixed(6)},${(item.close * INR_RATE).toFixed(2)},${change}%,${item.txCount || 0},${source},${item.savedAt || 'N/A'}\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv' });
