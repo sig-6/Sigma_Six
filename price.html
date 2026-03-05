@@ -1228,6 +1228,10 @@
         let currentRate = 0;
         const INR_RATE = 95;
         const STORAGE_KEY = 'sigma_price_history_1158';
+        
+        // ========== FIXED ATL VALUES ==========
+        const ATL_USDT = 0.010500; // 1 INR = 0.0105 USDT
+        const ATL_DATE = "2025-05-19";
 
         // ========== INIT ==========
         window.onload = async () => {
@@ -1236,6 +1240,19 @@
             
             // Load saved history from localStorage
             loadSavedHistory();
+            
+            // Display ATL with fixed values
+            document.getElementById('atl').textContent = ATL_USDT.toFixed(6) + ' USDT';
+            document.getElementById('atlInr').textContent = '₹' + (ATL_USDT * INR_RATE).toFixed(2);
+            
+            // Format date for display (19-05-2025)
+            const atlDateObj = new Date(ATL_DATE);
+            const formattedATLDate = atlDateObj.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }).replace(/\//g, '-');
+            document.getElementById('atlDate').innerHTML = `<i class="fas fa-calendar"></i> ${formattedATLDate}`;
             
             // Check for missing days and fill them
             await checkAndFillMissingDays();
@@ -1500,28 +1517,28 @@
             
             const rates = priceHistory.map(h => h.close);
             const athRate = Math.max(...rates);
-            const atlRate = Math.min(...rates);
             
+            // ATH from history
             const athRecord = priceHistory.find(h => h.close === athRate);
-            const atlRecord = priceHistory.find(h => h.close === atlRate);
             
             document.getElementById('ath').textContent = athRate.toFixed(6) + ' USDT';
             document.getElementById('athInr').textContent = '₹' + (athRate * INR_RATE).toFixed(2);
-            document.getElementById('atl').textContent = atlRate.toFixed(6) + ' USDT';
-            document.getElementById('atlInr').textContent = '₹' + (atlRate * INR_RATE).toFixed(2);
+            
+            // ATL is fixed - DO NOT CHANGE
+            document.getElementById('atl').textContent = ATL_USDT.toFixed(6) + ' USDT';
+            document.getElementById('atlInr').textContent = '₹' + (ATL_USDT * INR_RATE).toFixed(2);
             
             if (athRecord) {
                 document.getElementById('athDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(athRecord.date).toLocaleDateString()}`;
             }
-            if (atlRecord) {
-                document.getElementById('atlDate').innerHTML = `<i class="fas fa-calendar"></i> ${new Date(atlRecord.date).toLocaleDateString()}`;
-            }
             
             // Update 30D average
             const last30 = priceHistory.slice(0, Math.min(30, priceHistory.length));
-            const avg30Calc = last30.reduce((sum, item) => sum + item.close, 0) / last30.length;
-            document.getElementById('avg30').textContent = avg30Calc.toFixed(6) + ' USDT';
-            document.getElementById('avg30Inr').textContent = '₹' + (avg30Calc * INR_RATE).toFixed(2);
+            if (last30.length > 0) {
+                const avg30Calc = last30.reduce((sum, item) => sum + item.close, 0) / last30.length;
+                document.getElementById('avg30').textContent = avg30Calc.toFixed(6) + ' USDT';
+                document.getElementById('avg30Inr').textContent = '₹' + (avg30Calc * INR_RATE).toFixed(2);
+            }
             
             if (last30.length >= 2) {
                 const first = last30[last30.length - 1].close;
@@ -1649,21 +1666,19 @@
                 document.getElementById('liveRate').textContent = currentRate.toFixed(6) + ' USDT';
                 document.getElementById('liveRateInr').textContent = '₹' + (currentRate * INR_RATE).toFixed(2);
                 
-                // Get ATH and ATL from contract - FIXED: Properly fetching ATL
+                // Get ATH from contract - use for ATH only
                 const ath = await sigmaContract.ath();
-                const atl = await sigmaContract.atl();
                 const athVal = parseFloat(ethers.formatUnits(ath, 6));
-                const atlVal = parseFloat(ethers.formatUnits(atl, 6));
                 
                 // Display ATH with proper values
                 document.getElementById('ath').textContent = athVal.toFixed(6) + ' USDT';
                 document.getElementById('athInr').textContent = '₹' + (athVal * INR_RATE).toFixed(2);
                 
-                // Display ATL with proper values - this will now show 0.010500 USDT
-                document.getElementById('atl').textContent = atlVal.toFixed(6) + ' USDT';
-                document.getElementById('atlInr').textContent = '₹' + (atlVal * INR_RATE).toFixed(2);
+                // ATL is FIXED - don't use contract value
+                document.getElementById('atl').textContent = ATL_USDT.toFixed(6) + ' USDT';
+                document.getElementById('atlInr').textContent = '₹' + (ATL_USDT * INR_RATE).toFixed(2);
                 
-                // Try to get ATH/ATL dates from events
+                // Try to get ATH date from events
                 const boughtFilter = sigmaContract.filters.Bought();
                 const boughtEvents = await sigmaContract.queryFilter(boughtFilter, 0, 'latest');
                 
@@ -1672,7 +1687,6 @@
                 
                 // Find event with ATH rate
                 let athTimestamp = null;
-                let atlTimestamp = null;
                 
                 [...boughtEvents, ...soldEvents].forEach(event => {
                     try {
@@ -1681,9 +1695,6 @@
                         
                         if (Math.abs(rate - athVal) < 0.000001) {
                             athTimestamp = timestamp;
-                        }
-                        if (Math.abs(rate - atlVal) < 0.000001) {
-                            atlTimestamp = timestamp;
                         }
                     } catch (e) {}
                 });
@@ -1696,14 +1707,7 @@
                     document.getElementById('athDate').innerHTML = `<i class="fas fa-calendar"></i> 3/1/2026`;
                 }
                 
-                // Set ATL date - FIXED: Showing correct date 3/1/2026 for ATL
-                if (atlTimestamp) {
-                    const atlDate = new Date(atlTimestamp * 1000);
-                    document.getElementById('atlDate').innerHTML = `<i class="fas fa-calendar"></i> ${atlDate.toLocaleDateString()}`;
-                } else {
-                    // Default ATL date as per image
-                    document.getElementById('atlDate').innerHTML = `<i class="fas fa-calendar"></i> 3/1/2026`;
-                }
+                // ATL date is FIXED - already set in init
                 
                 // Get 30D average with INR
                 const avg30Val = parseFloat(ethers.formatUnits(await sigmaContract.getSellRate(), 6)) || currentRate;
