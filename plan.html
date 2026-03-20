@@ -183,6 +183,16 @@
             z-index: 1;
         }
         
+        /* Navigation Buttons Container - NEW */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
         /* Back to Dashboard Button */
         .back-btn {
             display: inline-flex;
@@ -196,7 +206,6 @@
             text-decoration: none;
             font-weight: 600;
             font-size: 14px;
-            margin-bottom: 30px;
             transition: all 0.3s;
             backdrop-filter: blur(10px);
         }
@@ -208,6 +217,52 @@
         }
         
         .back-btn i {
+            font-size: 16px;
+        }
+        
+        /* White Paper Button - NEW */
+        .whitepaper-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, rgba(157, 78, 221, 0.2), rgba(0, 255, 204, 0.1));
+            border: 1px solid var(--secondary);
+            border-radius: 50px;
+            padding: 12px 25px;
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .whitepaper-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(157, 78, 221, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .whitepaper-btn:hover::before {
+            left: 100%;
+        }
+        
+        .whitepaper-btn:hover {
+            background: rgba(157, 78, 221, 0.2);
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(157, 78, 221, 0.3);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .whitepaper-btn i {
             font-size: 16px;
         }
         
@@ -807,6 +862,15 @@
             .journey-steps {
                 flex-direction: column;
             }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .back-btn, .whitepaper-btn {
+                justify-content: center;
+            }
         }
         
         @media (max-width: 480px) {
@@ -879,11 +943,20 @@
     <div class="rainbow-border"></div>
     
     <div class="container">
-        <!-- Back to Dashboard Button -->
-        <a href="index.html" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            <span>Back to Dashboard</span>
-        </a>
+        <!-- Navigation Buttons Container - UPDATED with White Paper Button -->
+        <div class="nav-buttons">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+            
+            <!-- NEW: White Paper Button -->
+            <a href="white-paper.html" class="whitepaper-btn">
+                <i class="fas fa-file-alt"></i>
+                <span>📄 White Paper</span>
+                <i class="fas fa-external-link-alt" style="font-size: 12px;"></i>
+            </a>
+        </div>
         
         <!-- Header -->
         <div class="header fade-in">
