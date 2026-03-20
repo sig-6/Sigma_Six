@@ -392,6 +392,7 @@
                 <div style="display:flex; gap:15px; justify-content:center; margin-bottom:10px; flex-wrap:wrap;">
                     <span id="sellCooldownBadge" class="cooldown-badge"><i class="fas fa-hourglass-half"></i> Sell cooldown: --</span>
                     <span id="buyCooldownBadge" class="cooldown-badge"><i class="fas fa-calendar-alt"></i> 30-day: --</span>
+                    <span id="buySellCooldownBadge" class="cooldown-badge" style="display:none;"></span>
                 </div>
                 
                 <!-- Approval Steps (Hidden by default, shown only when needed) -->
@@ -452,7 +453,6 @@
                 <div class="contract-box">
                     <div class="contract-info">
                         <div class="contract-label"><i class="fas fa-file-contract"></i> CONTRACT (NEW)</div>
-                        <!-- UPDATED CONTRACT ADDRESS -->
                         <div class="contract-address">0x068Aaba73Fd754F21140E2F13DA177ce7251A299</div>
                     </div>
                     <button class="copy-btn" onclick="copyContract()"><i class="fas fa-copy"></i> COPY</button>
@@ -505,11 +505,8 @@
                     <button class="menu-btn" onclick="window.location.href='income.html'"><i class="fas fa-chart-line"></i><div><div>Income</div><div style="font-size:12px; color:#aaa;">Rewards report</div></div></button>
                     <button class="menu-btn" onclick="window.location.href='buy_sell.html'"><i class="fas fa-exchange-alt"></i><div><div>Buy/Sell History</div><div style="font-size:12px; color:#aaa;">Complete Open/Close report</div></div></button>
                     <button class="menu-btn" onclick="window.location.href='transfer.html'"><i class="fas fa-history"></i><div><div>Transfers</div><div style="font-size:12px; color:#aaa;">P2P history</div></div></button>
-                    <!-- NEW PRICE HISTORY BUTTON ADDED -->
                     <button class="menu-btn" onclick="window.location.href='price.html'"><i class="fas fa-chart-line"></i><div><div>Price History</div><div style="font-size:12px; color:#aaa;">Rate & volume history</div></div></button>
-                    <!-- NEW UTILITY BUTTON ADDED -->
                     <button class="menu-btn" onclick="window.location.href='utility.html'"><i class="fas fa-cogs"></i><div><div>Utility</div><div style="font-size:12px; color:#aaa;">Tools & features</div></div></button>
-                    <!-- NEW PLAN BUTTON ADDED -->
                     <button class="menu-btn" onclick="window.location.href='plan.html'"><i class="fas fa-crown"></i><div><div>Details</div><div style="font-size:12px; color:#aaa;">Offical SIGMA Details</div></div></button>
                 </div>
             </div>
@@ -540,11 +537,11 @@
     </div>
 
     <script>
-        // ========== UPDATED CONTRACT CONFIGURATION ==========
+        // ========== CONTRACT CONFIGURATION ==========
         const SIGMA_ADDRESS = "0x068Aaba73Fd754F21140E2F13DA177ce7251A299";
         const USDT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F";
         
-        // UPDATED ABI - COMPLETE ABI FROM CONTRACT
+        // ABI - COMPLETE FROM CONTRACT
         const SIGMA_ABI = [
             {
                 "inputs": [
@@ -1500,9 +1497,17 @@
         let currentUSDTNeeded = 0;
         let isApproved = false;
         let hasUserBought = false;
+        
+        // Track last transaction time for buy-sell cooldown
+        let lastTransactionTimestamp = 0;
+        const COOLDOWN_SECONDS = 180; // 3 minutes
+        
+        // FIXED: Track referral expiry separately
+        let referralExpiry = 0;
 
         const INR_RATE = 95;
         const DEFAULT_UPLINE = "0x0000000000000000000000000000000000000000";
+        const MAX_SIGMA_PER_TX = 1000; // Max 1000 SIG6 per transaction
 
         window.onload = async () => {
             createParticles();
@@ -1621,6 +1626,12 @@
                     lastSellTimestamp = parseInt(saved);
                 }
                 
+                // Load last transaction timestamp
+                const lastTx = localStorage.getItem(`lastTx_${userAddress}`);
+                if (lastTx) {
+                    lastTransactionTimestamp = parseInt(lastTx);
+                }
+                
                 await loadData();
                 
                 window.ethereum.on('accountsChanged', handleAccountsChanged);
@@ -1643,6 +1654,13 @@
                     lastSellTimestamp = parseInt(saved);
                 } else {
                     lastSellTimestamp = 0;
+                }
+                
+                const lastTx = localStorage.getItem(`lastTx_${userAddress}`);
+                if (lastTx) {
+                    lastTransactionTimestamp = parseInt(lastTx);
+                } else {
+                    lastTransactionTimestamp = 0;
                 }
                 
                 await loadData();
@@ -1669,7 +1687,7 @@
             document.getElementById('statusMessage').innerHTML = '';
         }
 
-        // ========== MAIN LOADDATA FUNCTION - UPDATED REFERRAL CONDITION ==========
+        // ========== MAIN LOADDATA FUNCTION - FIXED 30-DAY RESET LOGIC ==========
         async function loadData() {
             if (!isConnected || !userAddress) return;
             
@@ -1689,6 +1707,10 @@
                 if (userStruct) {
                     lastBuyTimestamp = Number(userStruct.lastBuyTimestamp);
                     hasUserBought = userStruct.hasBought || lastBuyTimestamp > 0;
+                    
+                    // FIXED: Get referral expiry from contract
+                    referralExpiry = Number(userStruct.referralExpiry);
+                    
                 } else {
                     hasUserBought = false;
                 }
@@ -1710,7 +1732,7 @@
                 
                 document.getElementById('polBalance').textContent = polBalanceNum.toFixed(4) + ' POL';
                 
-                // ✅ UPDATED: Show referral box ONLY if SIG6 balance > 0
+                // Show referral box ONLY if SIG6 balance > 0
                 if (sigmaBalanceNum > 0 && userAddress) {
                     document.getElementById('referralMiniBox').style.display = 'flex';
                     const link = window.location.origin + window.location.pathname + '?ref=' + userAddress;
@@ -1728,6 +1750,7 @@
             }
         }
 
+        // FIXED: updateCooldownUI function with proper referral expiry
         function updateCooldownUI() {
             const now = Math.floor(Date.now() / 1000);
             
@@ -1745,20 +1768,28 @@
                 sellBadge.className = 'cooldown-badge';
             }
 
-            const buyDiff = now - lastBuyTimestamp;
-            const thirtyDays = 30 * 24 * 3600;
+            // FIXED: Use referralExpiry from contract (set by MIN_FOR_RENEWAL condition)
             const buyBadge = document.getElementById('buyCooldownBadge');
             
-            if (lastBuyTimestamp === 0) {
-                buyBadge.innerHTML = `<i class="fas fa-calendar-alt"></i> No buy yet`;
+            if (!userAddress) {
+                buyBadge.innerHTML = `<i class="fas fa-calendar-alt"></i> 30-day: --`;
+                return;
+            }
+            
+            if (referralExpiry === 0) {
+                buyBadge.innerHTML = `<i class="fas fa-calendar-alt"></i> No active referral`;
                 buyBadge.className = 'cooldown-badge';
-            } else if (buyDiff < thirtyDays) {
-                const daysRem = Math.ceil((thirtyDays - buyDiff) / 86400);
-                buyBadge.className = 'cooldown-badge cooldown-danger';
-                buyBadge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> 30-day: ${daysRem}d left`;
             } else {
-                buyBadge.className = 'cooldown-badge';
-                buyBadge.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success)"></i> 30-day passed`;
+                const timeLeft = referralExpiry - now;
+                
+                if (timeLeft <= 0) {
+                    buyBadge.className = 'cooldown-badge';
+                    buyBadge.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success)"></i> 30-day expired`;
+                } else {
+                    const daysLeft = Math.ceil(timeLeft / 86400);
+                    buyBadge.className = 'cooldown-badge cooldown-danger';
+                    buyBadge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> 30-day: ${daysLeft}d left`;
+                }
             }
         }
 
@@ -1780,6 +1811,21 @@
                 }
                 return;
             }
+            
+            // Check max limit per transaction
+            if (amount > MAX_SIGMA_PER_TX) {
+                document.getElementById('calcValue').textContent = '0.00 USDT';
+                document.getElementById('calcInr').textContent = '0.00 INR';
+                document.getElementById('actionButton').disabled = true;
+                document.getElementById('actionButton').innerHTML = `<i class="fas fa-exclamation-triangle"></i> MAX ${MAX_SIGMA_PER_TX} SIG6 PER TX`;
+                document.getElementById('approvalSteps').style.display = 'none';
+                document.getElementById('statusMessage').innerHTML = `⚠️ Maximum ${MAX_SIGMA_PER_TX} SIG6 allowed per transaction`;
+                return;
+            }
+            
+            // Check cooldown for sell button after buy
+            const now = Math.floor(Date.now() / 1000);
+            const txDiff = now - lastTransactionTimestamp;
             
             if (currentMode === 'buy') {
                 const totalUsdt = amount * buyRate;
@@ -1804,6 +1850,17 @@
                 await checkAllowance(usdtWithTax);
                 
             } else { // SELL mode
+                // Check cooldown after buy
+                if (txDiff < COOLDOWN_SECONDS && lastTransactionTimestamp > 0) {
+                    const mins = Math.floor((COOLDOWN_SECONDS - txDiff) / 60);
+                    const secs = (COOLDOWN_SECONDS - txDiff) % 60;
+                    document.getElementById('actionButton').disabled = true;
+                    document.getElementById('actionButton').innerHTML = `<i class="fas fa-hourglass-half"></i> WAIT ${mins}m ${secs}s AFTER BUY`;
+                    document.getElementById('approvalSteps').style.display = 'none';
+                    document.getElementById('statusMessage').innerHTML = `⏳ Please wait ${mins}m ${secs}s after your last buy before selling`;
+                    return;
+                }
+                
                 const totalUsdt = amount * sellRate;
                 
                 document.getElementById('calcLabel').textContent = 'Total USDT to Receive:';
@@ -1868,7 +1925,7 @@
             }
         }
 
-        // ========== EXECUTE ACTION - UPDATED SELL COOLDOWN MESSAGE ==========
+        // ========== EXECUTE ACTION - UPDATED WITH COOLDOWN AND LIMITS ==========
         async function executeAction() {
             if (!isConnected) {
                 connectWallet();
@@ -1878,6 +1935,12 @@
             const amount = parseFloat(document.getElementById('amount').value);
             if (isNaN(amount) || amount <= 0) {
                 alert("Enter valid amount");
+                return;
+            }
+            
+            // Check max limit
+            if (amount > MAX_SIGMA_PER_TX) {
+                alert(`Maximum ${MAX_SIGMA_PER_TX} SIG6 allowed per transaction`);
                 return;
             }
             
@@ -1905,6 +1968,10 @@
                     msg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Waiting for confirmation...';
                     const receipt = await tx.wait();
                     
+                    // Update last transaction timestamp
+                    lastTransactionTimestamp = Math.floor(Date.now() / 1000);
+                    localStorage.setItem(`lastTx_${userAddress}`, lastTransactionTimestamp.toString());
+                    
                     msg.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success)"></i> Purchase Successful!';
                     
                     document.getElementById('step2').className = 'step completed';
@@ -1912,22 +1979,32 @@
                     
                     hasUserBought = true;
                     
+                    // Reload data to get updated referralExpiry from contract
                     setTimeout(async () => {
-                        await loadData();
+                        await loadData(); // This will fetch fresh referralExpiry from contract
                         document.getElementById('amount').value = '';
                         document.getElementById('approvalSteps').style.display = 'none';
                         calculate();
                     }, 2000);
                     
                 } else { // SELL mode
+                    // Check sell cooldown
                     const now = Math.floor(Date.now() / 1000);
                     const sellDiff = now - lastSellTimestamp;
                     
-                    // ✅ FIXED: Proper cooldown message with time remaining
                     if (sellDiff < 180) {
                         const mins = Math.floor((180 - sellDiff) / 60);
                         const secs = (180 - sellDiff) % 60;
                         msg.innerHTML = `<i class="fas fa-hourglass-half" style="color:var(--warning)"></i> ⏳ Please wait ${mins}m ${secs}s before selling again`;
+                        return;
+                    }
+                    
+                    // Check cooldown after buy
+                    const txDiff = now - lastTransactionTimestamp;
+                    if (txDiff < COOLDOWN_SECONDS && lastTransactionTimestamp > 0) {
+                        const mins = Math.floor((COOLDOWN_SECONDS - txDiff) / 60);
+                        const secs = (COOLDOWN_SECONDS - txDiff) % 60;
+                        msg.innerHTML = `<i class="fas fa-hourglass-half" style="color:var(--warning)"></i> ⏳ Please wait ${mins}m ${secs}s after your last buy before selling`;
                         return;
                     }
                     
@@ -1962,6 +2039,8 @@
                     errorMsg = "Insufficient POL for gas";
                 } else if (error.message.includes("Cooldown")) {
                     errorMsg = "3-minute cooldown active";
+                } else if (error.message.includes("MAX_SIGMA_BUY")) {
+                    errorMsg = `Maximum ${MAX_SIGMA_PER_TX} SIG6 allowed`;
                 }
                 
                 msg.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i> ❌ ${errorMsg}`;
@@ -2034,10 +2113,13 @@
                 const usdtBal = await usdtContract.balanceOf(userAddress);
                 const usdtNum = parseFloat(ethers.formatUnits(usdtBal, 6));
                 const maxSigma = usdtNum / (buyRate * 1.01);
-                document.getElementById('amount').value = maxSigma.toFixed(6);
+                // Cap at MAX_SIGMA_PER_TX
+                document.getElementById('amount').value = Math.min(maxSigma, MAX_SIGMA_PER_TX).toFixed(6);
             } else {
                 const sigmaBal = await sigmaContract.balanceOf(userAddress);
-                document.getElementById('amount').value = parseFloat(ethers.formatEther(sigmaBal)).toFixed(6);
+                // Cap at MAX_SIGMA_PER_TX
+                const bal = parseFloat(ethers.formatEther(sigmaBal));
+                document.getElementById('amount').value = Math.min(bal, MAX_SIGMA_PER_TX).toFixed(6);
             }
             
             calculate();
