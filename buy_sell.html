@@ -851,7 +851,7 @@
         function updateActiveTable() {
             const tbody = document.getElementById('active-body');
             if (buyTransactions.length === 0) {
-                tbody.innerHTML = '叭<td colspan="7" class="empty-state"><i class="fas fa-chart-bar"></i><br>No active positions found<\/td><\/tr>';
+                tbody.innerHTML = <td colspan="7" class="empty-state"><i class="fas fa-chart-bar"></i><br>No active positions found<\/td><\/tr>';
                 return;
             }
             
@@ -879,7 +879,7 @@
         function updateClosedTable() {
             const tbody = document.getElementById('closed-body');
             if (sellTransactions.length === 0) {
-                tbody.innerHTML = '叭<td colspan="8" class="empty-state"><i class="fas fa-history"></i><br>No closed positions found<\/td><\/tr>';
+                tbody.innerHTML = <td colspan="8" class="empty-state"><i class="fas fa-history"></i><br>No closed positions found<\/td><\/tr>';
                 return;
             }
             
