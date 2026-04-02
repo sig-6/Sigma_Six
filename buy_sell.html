@@ -604,8 +604,19 @@
             </div>
             <div class="table-responsive">
                 <table id="active-table">
-                    <thead><tr><th>#</th><th>Date & Time</th><th>Sigma Quantity</th><th>Buy Rate</th><th>Current Rate</th><th>P&L %</th><th>Status</th></tr></thead>
-                    <tbody id="active-body"><tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Loading active positions... Please connect wallet</td></tr></tbody>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date & Time</th>
+                            <th>Sigma Quantity</th>
+                            <th>Buy Rate</th>
+                            <th>Current Rate</th>
+                            <th>P&L %</th>
+                            <th>Status</th>
+                         </thead>
+                    <tbody id="active-body">
+                        <tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Loading active positions... Please connect wallet</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -617,15 +628,27 @@
             </div>
             <div class="table-responsive">
                 <table id="closed-table">
-                    <thead><tr><th>#</th><th>Date & Time</th><th>Sigma Quantity</th><th>Buy Rate</th><th>Sell Rate</th><th>P&L Amount</th><th>P&L %</th><th>Status</th></tr></thead>
-                    <tbody id="closed-body"><tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Loading closed positions...</td></tr></tbody>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date & Time</th>
+                            <th>Sigma Quantity</th>
+                            <th>Buy Rate</th>
+                            <th>Sell Rate</th>
+                            <th>P&L Amount</th>
+                            <th>P&L %</th>
+                            <th>Status</th>
+                         </thead>
+                    <tbody id="closed-body">
+                        <tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Loading closed positions...</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <script>
-        // ===== UPDATED CONTRACT ADDRESS =====
+        // ===== CONTRACT CONFIGURATION =====
         const SIGMA_CONTRACT_ADDRESS = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
         
         let provider, userAddress, sigmaContract;
@@ -634,7 +657,7 @@
         let sellTransactions = [];
         let currentBuyRate = 0;
         
-        // ===== UPDATED ABI with correct event names (Buy and Sell) =====
+        // ===== ABI with correct event names =====
         const sigmaABI = [
             "function getCurrentBuyRate() view returns (uint256)",
             "function sellSigma(uint256 _sigmaAmount) external",
@@ -649,7 +672,7 @@
             for(let i = 1; i <= 10; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
-                particle.style.animationDelay = `${i * 2}s`;
+                particle.style.animationDelay = (i * 2) + 's';
                 container.appendChild(particle);
             }
         }
@@ -719,9 +742,9 @@
                 const currentBlock = await provider.getBlockNumber();
                 const fromBlock = Math.max(currentBlock - 5000000, 0);
                 
-                // Fetch Buy events (event name is "Buy")
+                // Fetch Buy events
                 const buyFilter = sigmaContract.filters.Buy(userAddress);
-                // Fetch Sell events (event name is "Sell")
+                // Fetch Sell events
                 const sellFilter = sigmaContract.filters.Sell(userAddress);
                 
                 const [buyEvents, sellEvents] = await Promise.all([
@@ -851,7 +874,7 @@
         function updateActiveTable() {
             const tbody = document.getElementById('active-body');
             if (buyTransactions.length === 0) {
-                tbody.innerHTML = <td colspan="7" class="empty-state"><i class="fas fa-chart-bar"></i><br>No active positions found<\/td><\/tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-chart-bar"></i><br>No active positions found<\/td><\/tr>';
                 return;
             }
             
@@ -879,7 +902,7 @@
         function updateClosedTable() {
             const tbody = document.getElementById('closed-body');
             if (sellTransactions.length === 0) {
-                tbody.innerHTML = <td colspan="8" class="empty-state"><i class="fas fa-history"></i><br>No closed positions found<\/td><\/tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-history"></i><br>No closed positions found<\/td><\/tr>';
                 return;
             }
             
@@ -922,7 +945,7 @@
                     const currentValue = tx.sigmaAmount * currentBuyRate;
                     const buyValue = tx.sigmaAmount * tx.rate;
                     const unrealizedPLPercent = ((currentValue - buyValue) / buyValue * 100).toFixed(2);
-                    csvContent += `${i+1},${tx.date.toLocaleDateString()},${tx.date.toLocaleTimeString()},${tx.sigmaAmount.toFixed(4)},${tx.rate.toFixed(4)},${currentBuyRate.toFixed(4)},${unrealizedPLPercent}%,ACTIVE\n`;
+                    csvContent += (i+1) + "," + tx.date.toLocaleDateString() + "," + tx.date.toLocaleTimeString() + "," + tx.sigmaAmount.toFixed(4) + "," + tx.rate.toFixed(4) + "," + currentBuyRate.toFixed(4) + "," + unrealizedPLPercent + "%,ACTIVE\n";
                 });
             } else {
                 csvContent += "Serial No,Date,Time,Sigma Quantity,Buy Rate (USDT),Sell Rate (USDT),P&L Amount (USDT),P&L %,Status\n";
@@ -930,12 +953,12 @@
                     const avgBuyRate = getAverageBuyRateForSell(tx.sigmaAmount, tx.timestamp);
                     const plAmount = (tx.rate - avgBuyRate) * tx.sigmaAmount;
                     const plPercentage = ((tx.rate - avgBuyRate) / avgBuyRate * 100).toFixed(2);
-                    csvContent += `${i+1},${tx.date.toLocaleDateString()},${tx.date.toLocaleTimeString()},${tx.sigmaAmount.toFixed(4)},${avgBuyRate.toFixed(4)},${tx.rate.toFixed(4)},${plAmount.toFixed(2)},${plPercentage}%,CLOSED\n`;
+                    csvContent += (i+1) + "," + tx.date.toLocaleDateString() + "," + tx.date.toLocaleTimeString() + "," + tx.sigmaAmount.toFixed(4) + "," + avgBuyRate.toFixed(4) + "," + tx.rate.toFixed(4) + "," + plAmount.toFixed(2) + "," + plPercentage + "%,CLOSED\n";
                 });
             }
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI(csvContent));
-            link.setAttribute("download", `sigma_${currentTab}_positions.csv`);
+            link.setAttribute("download", "sigma_" + currentTab + "_positions.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
