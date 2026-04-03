@@ -373,7 +373,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 800px;
+            min-width: 600px;
         }
         
         thead {
@@ -608,12 +608,10 @@
                             <th>#</th>
                             <th>Date</th>
                             <th>Buy Rate (USDT)</th>
-                            <th>Sell Rate (USDT)</th>
-                            <th>INR Value (₹)</th>
                             <th>ATH / ATL</th>
-                         </thead>
+                        </thead>
                     <tbody id="price-body">
-                        <tr><td colspan="6" class="loading">
+                        <tr><td colspan="4" class="loading">
                             <i class="fas fa-spinner fa-spin"></i><br>
                             Loading price history...
                           <\/td><\/tr>
@@ -686,7 +684,7 @@
         async function loadPriceHistory() {
             if (!window.ethereum) {
                 document.getElementById('price-body').innerHTML = `
-                    <td colspan="6" class="empty-state">
+                    <td colspan="4" class="empty-state">
                         <i class="fas fa-wallet"></i><br>
                         Please install MetaMask
                     <\/td>
@@ -699,7 +697,7 @@
                 const sigmaContract = new ethers.Contract(SIGMA_ADDRESS, SIGMA_ABI, provider);
                 
                 document.getElementById('price-body').innerHTML = `
-                    <td colspan="6" class="loading">
+                    <td colspan="4" class="loading">
                         <i class="fas fa-spinner fa-spin"></i><br>
                         Fetching price data from blockchain...
                     <\/td>
@@ -762,8 +760,7 @@
                         dailyPrices.set(dateKey, {
                             date: date,
                             dateKey: dateKey,
-                            buyRate: rate,
-                            sellRate: rate * (1 - SELL_TAX)
+                            buyRate: rate
                         });
                     }
                 }
@@ -779,8 +776,7 @@
                         dailyPrices.set(dateKey, {
                             date: date,
                             dateKey: dateKey,
-                            buyRate: buyRateEquivalent,
-                            sellRate: rate
+                            buyRate: buyRateEquivalent
                         });
                     }
                 }
@@ -797,7 +793,7 @@
                 
                 if (priceHistory.length === 0) {
                     document.getElementById('price-body').innerHTML = `
-                        <td colspan="6" class="empty-state">
+                        <td colspan="4" class="empty-state">
                             <i class="fas fa-chart-line"></i><br>
                             No price history found yet
                         <\/td>
@@ -807,7 +803,7 @@
             } catch (error) {
                 console.error("Error loading price history:", error);
                 document.getElementById('price-body').innerHTML = `
-                    <td colspan="6" class="empty-state">
+                    <td colspan="4" class="empty-state">
                         <i class="fas fa-exclamation-triangle"></i><br>
                         Error: ${error.message.substring(0, 100)}
                     <\/td>
@@ -845,7 +841,7 @@
             
             if (filteredHistory.length === 0) {
                 tbody.innerHTML = `
-                    <td colspan="6" class="empty-state">
+                    <td colspan="4" class="empty-state">
                         <i class="fas fa-chart-line"></i><br>
                         No records found for selected filters
                     <\/td>
@@ -860,7 +856,6 @@
             let html = '';
             filteredHistory.forEach((record, i) => {
                 const dateStr = record.date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                const inrValue = record.buyRate * INR_RATE;
                 
                 let badgeHtml = '';
                 if (athValue > 0 && Math.abs(record.buyRate - athValue) / athValue < 0.001) {
@@ -874,8 +869,6 @@
                         <td>${i+1}</td>
                         <td><strong>${dateStr}</strong></td>
                         <td style="color: var(--primary); font-weight: 700;">${record.buyRate.toFixed(6)} USDT</td>
-                        <td>${record.sellRate.toFixed(6)} USDT</td>
-                        <td>₹${inrValue.toFixed(2)}</td>
                         <td>${badgeHtml}</td>
                     </tr>
                 `;
@@ -919,12 +912,11 @@
             }
             
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Serial No,Date,Buy Rate (USDT),Sell Rate (USDT),INR Value (₹)\n";
+            csvContent += "Serial No,Date,Buy Rate (USDT)\n";
             
             filteredHistory.forEach((record, i) => {
                 const dateStr = record.date.toLocaleDateString('en-GB');
-                const inrValue = record.buyRate * INR_RATE;
-                csvContent += `${i+1},${dateStr},${record.buyRate.toFixed(6)},${record.sellRate.toFixed(6)},${inrValue.toFixed(2)}\n`;
+                csvContent += `${i+1},${dateStr},${record.buyRate.toFixed(6)}\n`;
             });
             
             const link = document.createElement("a");
