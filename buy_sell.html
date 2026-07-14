@@ -46,42 +46,6 @@
             z-index: 1000;
         }
         
-        .particles-container {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-        }
-        
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            animation: particle-float 20s infinite linear;
-            opacity: 0.6;
-        }
-        
-        .particle:nth-child(1) { top: 10%; left: 5%; background: var(--primary); animation-delay: 0s; }
-        .particle:nth-child(2) { top: 20%; left: 85%; background: var(--secondary); animation-delay: 2s; }
-        .particle:nth-child(3) { top: 40%; left: 15%; background: #ff2a6d; animation-delay: 4s; }
-        .particle:nth-child(4) { top: 60%; left: 90%; background: var(--primary); animation-delay: 6s; }
-        .particle:nth-child(5) { top: 80%; left: 10%; background: var(--secondary); animation-delay: 8s; }
-        .particle:nth-child(6) { top: 30%; left: 70%; background: var(--primary); animation-delay: 10s; }
-        .particle:nth-child(7) { top: 70%; left: 50%; background: #ff2a6d; animation-delay: 12s; }
-        .particle:nth-child(8) { top: 90%; left: 30%; background: var(--secondary); animation-delay: 14s; }
-        .particle:nth-child(9) { top: 15%; left: 50%; background: var(--primary); animation-delay: 16s; }
-        .particle:nth-child(10) { top: 50%; left: 80%; background: var(--secondary); animation-delay: 18s; }
-        
-        @keyframes particle-float {
-            0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
-            25% { transform: translateY(-100px) translateX(50px) scale(1.5); opacity: 0.8; }
-            50% { transform: translateY(-200px) translateX(0) scale(1); opacity: 0.6; }
-            75% { transform: translateY(-100px) translateX(-50px) scale(0.8); opacity: 0.8; }
-            100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
-        }
-        
         @keyframes rainbow {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -158,13 +122,6 @@
             z-index: 1001;
             white-space: nowrap;
             max-width: 220px;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 4px 20px rgba(0, 255, 204, 0.3); }
-            50% { box-shadow: 0 4px 30px rgba(0, 255, 204, 0.6); }
-            100% { box-shadow: 0 4px 20px rgba(0, 255, 204, 0.3); }
         }
         
         .connect-btn:hover {
@@ -306,16 +263,21 @@
             border-radius: 16px;
             border: 1px solid rgba(45, 47, 62, 0.5);
             -webkit-overflow-scrolling: touch;
+            max-height: 500px;
+            overflow-y: auto;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 900px;
+            min-width: 700px;
         }
         
         thead {
             background: linear-gradient(90deg, rgba(0, 255, 204, 0.1), rgba(157, 78, 221, 0.1));
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
         
         th {
@@ -542,11 +504,33 @@
         }
         
         .fade-in { animation: fadeIn 0.5s ease-out; }
+        
+        .progress-container {
+            background: rgba(0, 255, 204, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .progress-text {
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 8px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="rainbow-border"></div>
-    <div class="particles-container" id="particles"></div>
     <div class="glass-bg"></div>
     
     <button class="connect-btn" id="connectBtn" onclick="connectWallet()">
@@ -613,7 +597,8 @@
                             <th>Current Rate</th>
                             <th>P&L %</th>
                             <th>Status</th>
-                         </thead>
+                        </tr>
+                    </thead>
                     <tbody id="active-body">
                         <tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Loading active positions... Please connect wallet</td></tr>
                     </tbody>
@@ -638,7 +623,8 @@
                             <th>P&L Amount</th>
                             <th>P&L %</th>
                             <th>Status</th>
-                         </thead>
+                        </tr>
+                    </thead>
                     <tbody id="closed-body">
                         <tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Loading closed positions...</td></tr>
                     </tbody>
@@ -648,77 +634,107 @@
     </div>
 
     <script>
-        // ===== CONTRACT CONFIGURATION =====
-        const SIGMA_CONTRACT_ADDRESS = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
+        const SIGMA_ADDR = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
         
-        let provider, userAddress, sigmaContract;
-        let currentTab = 'active';
+        const SIGMA_ABI = [
+            "function getCurrentBuyRate() view returns (uint256)",
+            "function balanceOf(address) view returns (uint256)",
+            "function buySigma(uint256 _usdtAmount, address _upline) external",
+            "function sellSigma(uint256 _sigmaAmount) external",
+            "event Buy(address indexed user, uint256 amount, uint256 rate, uint256 usdtSpent)",
+            "event Sell(address indexed user, uint256 amount, uint256 rate, uint256 usdtReceived)",
+            "event Transfer(address indexed from, address indexed to, uint256 value)"
+        ];
+
+        let provider, signer, userAddress, sigmaContract;
         let buyTransactions = [];
         let sellTransactions = [];
         let currentBuyRate = 0;
-        
-        // ===== ABI with correct event names =====
-        const sigmaABI = [
-            "function getCurrentBuyRate() view returns (uint256)",
-            "function sellSigma(uint256 _sigmaAmount) external",
-            "function buySigma(uint256 _usdtAmount, address _upline) external",
-            "function balanceOf(address) view returns (uint256)",
-            "event Buy(address indexed user, uint256 amount, uint256 rate, uint256 usdtSpent)",
-            "event Sell(address indexed user, uint256 amount, uint256 rate, uint256 usdtReceived)"
-        ];
+        let isLoading = false;
+        let currentTab = 'active';
+        const CHUNK_SIZE = 5000;
 
-        function createParticles() {
-            const container = document.getElementById('particles');
-            for(let i = 1; i <= 10; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.animationDelay = (i * 2) + 's';
-                container.appendChild(particle);
-            }
-        }
-        
         async function connectWallet() {
-            if (!window.ethereum) { alert("Please install MetaMask"); return; }
+            if (!window.ethereum) {
+                alert("Please install MetaMask!");
+                return;
+            }
+            
             try {
                 provider = new ethers.BrowserProvider(window.ethereum);
+                
+                const network = await provider.getNetwork();
+                if (network.chainId !== 137n) {
+                    alert("Please switch to Polygon Mainnet");
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x89' }],
+                        });
+                    } catch (switchError) {}
+                }
+                
                 const accounts = await provider.send("eth_requestAccounts", []);
                 userAddress = accounts[0].toLowerCase();
+                signer = await provider.getSigner();
+                sigmaContract = new ethers.Contract(SIGMA_ADDR, SIGMA_ABI, provider);
                 
-                sigmaContract = new ethers.Contract(SIGMA_CONTRACT_ADDRESS, sigmaABI, provider);
+                document.getElementById('btn-text').textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
+                document.getElementById('connectBtn').classList.add('connected');
                 
-                const connectBtn = document.getElementById('connectBtn');
-                const shortAddress = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
-                document.getElementById('btn-text').textContent = shortAddress;
-                connectBtn.classList.add('connected');
-                
-                localStorage.setItem('sigma_wallet_connected', 'true');
                 await loadData();
                 
-                window.ethereum.on('accountsChanged', handleAccountsChanged);
-                window.ethereum.on('chainChanged', () => window.location.reload());
             } catch (error) {
-                console.error("Connection error:", error);
-                alert("Failed to connect wallet: " + error.message);
+                console.error(error);
+                alert("Connection failed: " + error.message);
             }
         }
-        
-        function handleAccountsChanged(accounts) {
-            if (accounts.length === 0) {
-                userAddress = null;
-                document.getElementById('btn-text').textContent = 'Connect Wallet';
-                document.getElementById('connectBtn').classList.remove('connected');
-                localStorage.removeItem('sigma_wallet_connected');
-                document.getElementById('active-body').innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-wallet"></i><br>Please connect wallet to view data</td></tr>';
-                document.getElementById('closed-body').innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-wallet"></i><br>Please connect wallet to view data</td></tr>';
-            } else {
-                userAddress = accounts[0].toLowerCase();
-                const shortAddress = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
-                document.getElementById('btn-text').textContent = shortAddress;
-                document.getElementById('connectBtn').classList.add('connected');
-                loadData();
+
+        async function fetchEventsInChunks(contract, eventFilter, fromBlock, toBlock) {
+            let allEvents = [];
+            let currentFrom = fromBlock;
+            
+            while (currentFrom <= toBlock) {
+                let currentTo = Math.min(currentFrom + CHUNK_SIZE, toBlock);
+                
+                try {
+                    console.log(`📊 Fetching chunk: ${currentFrom} to ${currentTo}`);
+                    const events = await contract.queryFilter(eventFilter, currentFrom, currentTo);
+                    allEvents = allEvents.concat(events);
+                    
+                    // Update progress
+                    const progress = ((currentFrom - fromBlock) / (toBlock - fromBlock)) * 100;
+                    updateProgress(progress);
+                    
+                } catch (error) {
+                    console.warn(`Error fetching chunk ${currentFrom}-${currentTo}:`, error);
+                    // Try smaller chunk on error
+                    if (currentTo - currentFrom > 1000) {
+                        currentTo = currentFrom + 1000;
+                        continue;
+                    }
+                }
+                
+                currentFrom = currentTo + 1;
+                
+                // Small delay to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            return allEvents;
+        }
+
+        function updateProgress(percent) {
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            if (progressBar) {
+                progressBar.style.width = Math.min(percent, 100) + '%';
+            }
+            if (progressText) {
+                progressText.textContent = `Loading events: ${Math.min(percent, 100).toFixed(1)}%`;
             }
         }
-        
+
         async function loadData() {
             if (!userAddress) {
                 document.getElementById('active-body').innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-wallet"></i><br>Please connect wallet to view data</td></tr>';
@@ -726,9 +742,19 @@
                 return;
             }
             
+            if (isLoading) return;
+            isLoading = true;
+            
             try {
-                document.getElementById('active-body').innerHTML = '<tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Loading data...</td></tr>';
-                document.getElementById('closed-body').innerHTML = '<tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Loading data...</td></tr>';
+                document.getElementById('active-body').innerHTML = `
+                    <tr><td colspan="7" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i><br>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progress-bar"></div>
+                            <div class="progress-text" id="progress-text">Loading events...</div>
+                        </div>
+                    </td></tr>`;
+                document.getElementById('closed-body').innerHTML = '<tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Loading sell history...</td></tr>';
                 
                 // Get current buy rate
                 try {
@@ -739,79 +765,83 @@
                     currentBuyRate = 0;
                 }
                 
+                // Get current block
                 const currentBlock = await provider.getBlockNumber();
-                const fromBlock = Math.max(currentBlock - 5000000, 0);
+                const fromBlock = Math.max(currentBlock - 500000, 0); // Last 500k blocks
                 
-                // Fetch Buy events
+                console.log(`🔍 Fetching events from block ${fromBlock} to ${currentBlock}`);
+                
+                // Fetch events in chunks
                 const buyFilter = sigmaContract.filters.Buy(userAddress);
-                // Fetch Sell events
                 const sellFilter = sigmaContract.filters.Sell(userAddress);
                 
                 const [buyEvents, sellEvents] = await Promise.all([
-                    sigmaContract.queryFilter(buyFilter, fromBlock, currentBlock),
-                    sigmaContract.queryFilter(sellFilter, fromBlock, currentBlock)
+                    fetchEventsInChunks(sigmaContract, buyFilter, fromBlock, currentBlock),
+                    fetchEventsInChunks(sigmaContract, sellFilter, fromBlock, currentBlock)
                 ]);
                 
-                await processTradeEvents(buyEvents, sellEvents);
+                console.log(`📊 Found ${buyEvents.length} Buy and ${sellEvents.length} Sell events`);
+                
+                buyTransactions = [];
+                sellTransactions = [];
+                
+                // Process Buy events
+                for (const event of buyEvents) {
+                    const args = event.args;
+                    const block = await provider.getBlock(event.blockNumber);
+                    const timestamp = block ? block.timestamp : 0;
+                    const date = timestamp ? new Date(timestamp * 1000) : new Date();
+                    
+                    buyTransactions.push({
+                        hash: event.transactionHash,
+                        sigmaAmount: parseFloat(ethers.formatUnits(args.amount, 18)),
+                        usdtAmount: parseFloat(ethers.formatUnits(args.usdtSpent, 6)),
+                        rate: parseFloat(ethers.formatUnits(args.rate, 6)),
+                        timestamp: timestamp,
+                        date: date,
+                        blockNumber: event.blockNumber
+                    });
+                }
+                
+                // Process Sell events
+                for (const event of sellEvents) {
+                    const args = event.args;
+                    const block = await provider.getBlock(event.blockNumber);
+                    const timestamp = block ? block.timestamp : 0;
+                    const date = timestamp ? new Date(timestamp * 1000) : new Date();
+                    
+                    sellTransactions.push({
+                        hash: event.transactionHash,
+                        sigmaAmount: parseFloat(ethers.formatUnits(args.amount, 18)),
+                        usdtAmount: parseFloat(ethers.formatUnits(args.usdtReceived, 6)),
+                        rate: parseFloat(ethers.formatUnits(args.rate, 6)),
+                        timestamp: timestamp,
+                        date: date,
+                        blockNumber: event.blockNumber
+                    });
+                }
+                
+                // Sort by timestamp (newest first)
+                buyTransactions.sort((a, b) => b.timestamp - a.timestamp);
+                sellTransactions.sort((a, b) => b.timestamp - a.timestamp);
+                
+                console.log(`✅ Final: ${buyTransactions.length} buys, ${sellTransactions.length} sells`);
                 
                 updateStats();
                 updateTables();
+                
+                // Clear progress
+                updateProgress(100);
                 
             } catch (error) {
                 console.error("Error loading data:", error);
                 document.getElementById('active-body').innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-exclamation-circle"></i><br>Error: ' + error.message + '</td></tr>';
                 document.getElementById('closed-body').innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-exclamation-circle"></i><br>Error: ' + error.message + '</td></tr>';
+            } finally {
+                isLoading = false;
             }
         }
-        
-        async function processTradeEvents(buyEvents, sellEvents) {
-            buyTransactions = [];
-            sellTransactions = [];
-            
-            for (const event of buyEvents) {
-                const args = event.args;
-                buyTransactions.push({
-                    hash: event.transactionHash,
-                    usdtAmount: parseFloat(ethers.formatUnits(args.usdtSpent, 6)),
-                    sigmaAmount: parseFloat(ethers.formatUnits(args.amount, 18)),
-                    rate: parseFloat(ethers.formatUnits(args.rate, 6)),
-                    timestamp: await getBlockTimestamp(event.blockNumber),
-                    date: await getBlockDate(event.blockNumber),
-                    blockNumber: event.blockNumber
-                });
-            }
-            
-            for (const event of sellEvents) {
-                const args = event.args;
-                sellTransactions.push({
-                    hash: event.transactionHash,
-                    sigmaAmount: parseFloat(ethers.formatUnits(args.amount, 18)),
-                    usdtAmount: parseFloat(ethers.formatUnits(args.usdtReceived, 6)),
-                    rate: parseFloat(ethers.formatUnits(args.rate, 6)),
-                    timestamp: await getBlockTimestamp(event.blockNumber),
-                    date: await getBlockDate(event.blockNumber),
-                    blockNumber: event.blockNumber
-                });
-            }
-            
-            buyTransactions.sort((a, b) => b.timestamp - a.timestamp);
-            sellTransactions.sort((a, b) => b.timestamp - a.timestamp);
-        }
-        
-        async function getBlockTimestamp(blockNumber) {
-            try {
-                const block = await provider.getBlock(blockNumber);
-                return block.timestamp;
-            } catch { return 0; }
-        }
-        
-        async function getBlockDate(blockNumber) {
-            try {
-                const block = await provider.getBlock(blockNumber);
-                return new Date(block.timestamp * 1000);
-            } catch { return new Date(); }
-        }
-        
+
         function getAverageBuyRateForSell(sellAmount, sellTimestamp) {
             const buysBefore = buyTransactions
                 .filter(b => b.timestamp < sellTimestamp)
@@ -834,7 +864,7 @@
             if (totalQty === 0) return currentBuyRate;
             return totalCost / totalQty;
         }
-        
+
         function updateStats() {
             let totalBought = 0, totalBoughtValue = 0;
             let totalSold = 0, totalSoldValue = 0;
@@ -865,16 +895,16 @@
             document.getElementById('net-pnl').style.color = netPL >= 0 ? 'var(--profit)' : 'var(--loss)';
             document.getElementById('pnl-percentage').textContent = (netPL >= 0 ? "+" : "") + plPercentage.toFixed(2) + "%";
         }
-        
+
         function updateTables() {
             updateActiveTable();
             updateClosedTable();
         }
-        
+
         function updateActiveTable() {
             const tbody = document.getElementById('active-body');
             if (buyTransactions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-chart-bar"></i><br>No active positions found<\/td><\/tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-chart-bar"></i><br>No active positions found</td></tr>';
                 return;
             }
             
@@ -882,27 +912,27 @@
             buyTransactions.forEach((tx, i) => {
                 const currentValue = tx.sigmaAmount * currentBuyRate;
                 const buyValue = tx.sigmaAmount * tx.rate;
-                const unrealizedPLPercent = ((currentValue - buyValue) / buyValue * 100).toFixed(2);
+                const unrealizedPLPercent = buyValue > 0 ? ((currentValue - buyValue) / buyValue * 100).toFixed(2) : 0;
                 const dateStr = tx.date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                 const timeStr = tx.date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
                 
                 html += '<tr>' +
-                    '<td>' + (i+1) + '<\/td>' +
-                    '<td><div style="font-weight:600">' + dateStr + '<\/div><div style="font-size:12px; color:#888">' + timeStr + '<\/div><\/td>' +
-                    '<td style="font-weight:700; color:var(--primary)">' + tx.sigmaAmount.toFixed(4) + ' SIG6<\/td>' +
-                    '<td><div>$' + tx.rate.toFixed(4) + '<\/div><\/td>' +
-                    '<td><div>$' + currentBuyRate.toFixed(4) + '<\/div><\/td>' +
-                    '<td><div class="' + (unrealizedPLPercent >= 0 ? 'badge-profit' : 'badge-loss') + '" style="display:inline-block">' + (unrealizedPLPercent >= 0 ? '+' : '') + unrealizedPLPercent + '%<\/div><\/td>' +
-                    '<td><span class="badge badge-active">ACTIVE<\/span><\/td>' +
-                    '<\/tr>';
+                    '<td>' + (i+1) + '</td>' +
+                    '<td><div style="font-weight:600">' + dateStr + '</div><div style="font-size:12px; color:#888">' + timeStr + '</div></td>' +
+                    '<td style="font-weight:700; color:var(--primary)">' + tx.sigmaAmount.toFixed(4) + ' SIG6</td>' +
+                    '<td><div>$' + tx.rate.toFixed(4) + '</div></td>' +
+                    '<td><div>$' + currentBuyRate.toFixed(4) + '</div></td>' +
+                    '<td><div class="' + (unrealizedPLPercent >= 0 ? 'badge-profit' : 'badge-loss') + '" style="display:inline-block">' + (unrealizedPLPercent >= 0 ? '+' : '') + unrealizedPLPercent + '%</div></td>' +
+                    '<td><span class="badge badge-active">ACTIVE</span></td>' +
+                    '</tr>';
             });
             tbody.innerHTML = html;
         }
-        
+
         function updateClosedTable() {
             const tbody = document.getElementById('closed-body');
             if (sellTransactions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-history"></i><br>No closed positions found<\/td><\/tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-history"></i><br>No closed positions found</td></tr>';
                 return;
             }
             
@@ -915,19 +945,19 @@
                 const timeStr = tx.date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
                 
                 html += '<tr>' +
-                    '<td>' + (i+1) + '<\/td>' +
-                    '<td><div style="font-weight:600">' + dateStr + '<\/div><div style="font-size:12px; color:#888">' + timeStr + '<\/div><\/td>' +
-                    '<td style="font-weight:700; color:' + (plAmount >= 0 ? 'var(--profit)' : 'var(--loss)') + '">' + tx.sigmaAmount.toFixed(4) + ' SIG6<\/td>' +
-                    '<td><div>$' + avgBuyRate.toFixed(4) + '<\/div><\/td>' +
-                    '<td><div>$' + tx.rate.toFixed(4) + '<\/div><\/td>' +
-                    '<td><div class="' + (plAmount >= 0 ? 'pnl-positive' : 'pnl-negative') + '" style="padding:4px 8px; border-radius:6px; display:inline-block"><i class="fas fa-' + (plAmount >= 0 ? 'arrow-up' : 'arrow-down') + '"><\/i> $' + Math.abs(plAmount).toFixed(2) + '<\/div><\/td>' +
-                    '<td><div class="' + (plAmount >= 0 ? 'badge-profit' : 'badge-loss') + '" style="display:inline-block">' + (plAmount >= 0 ? '+' : '') + plPercentage + '%<\/div><\/td>' +
-                    '<td><span class="badge badge-closed">CLOSED<\/span><\/td>' +
-                    '<\/tr>';
+                    '<td>' + (i+1) + '</td>' +
+                    '<td><div style="font-weight:600">' + dateStr + '</div><div style="font-size:12px; color:#888">' + timeStr + '</div></td>' +
+                    '<td style="font-weight:700; color:' + (plAmount >= 0 ? 'var(--profit)' : 'var(--loss)') + '">' + tx.sigmaAmount.toFixed(4) + ' SIG6</td>' +
+                    '<td><div>$' + avgBuyRate.toFixed(4) + '</div></td>' +
+                    '<td><div>$' + tx.rate.toFixed(4) + '</div></td>' +
+                    '<td><div class="' + (plAmount >= 0 ? 'pnl-positive' : 'pnl-negative') + '" style="padding:4px 8px; border-radius:6px; display:inline-block"><i class="fas fa-' + (plAmount >= 0 ? 'arrow-up' : 'arrow-down') + '"></i> $' + Math.abs(plAmount).toFixed(2) + '</div></td>' +
+                    '<td><div class="' + (plAmount >= 0 ? 'badge-profit' : 'badge-loss') + '" style="display:inline-block">' + (plAmount >= 0 ? '+' : '') + plPercentage + '%</div></td>' +
+                    '<td><span class="badge badge-closed">CLOSED</span></td>' +
+                    '</tr>';
             });
             tbody.innerHTML = html;
         }
-        
+
         function showTab(tabName, event) {
             currentTab = tabName;
             document.querySelectorAll('.action-btn').forEach(btn => btn.classList.remove('active'));
@@ -935,16 +965,21 @@
             document.getElementById('active-section').style.display = tabName === 'active' ? 'block' : 'none';
             document.getElementById('closed-section').style.display = tabName === 'closed' ? 'block' : 'none';
         }
-        
+
         function exportData() {
             if (!userAddress) { alert("Please connect wallet first"); return; }
+            if (buyTransactions.length === 0 && sellTransactions.length === 0) {
+                alert("No data to export");
+                return;
+            }
+            
             let csvContent = "data:text/csv;charset=utf-8,";
             if (currentTab === 'active') {
                 csvContent += "Serial No,Date,Time,Sigma Quantity,Buy Rate (USDT),Current Rate (USDT),P&L %,Status\n";
                 buyTransactions.forEach((tx, i) => {
                     const currentValue = tx.sigmaAmount * currentBuyRate;
                     const buyValue = tx.sigmaAmount * tx.rate;
-                    const unrealizedPLPercent = ((currentValue - buyValue) / buyValue * 100).toFixed(2);
+                    const unrealizedPLPercent = buyValue > 0 ? ((currentValue - buyValue) / buyValue * 100).toFixed(2) : 0;
                     csvContent += (i+1) + "," + tx.date.toLocaleDateString() + "," + tx.date.toLocaleTimeString() + "," + tx.sigmaAmount.toFixed(4) + "," + tx.rate.toFixed(4) + "," + currentBuyRate.toFixed(4) + "," + unrealizedPLPercent + "%,ACTIVE\n";
                 });
             } else {
@@ -952,7 +987,7 @@
                 sellTransactions.forEach((tx, i) => {
                     const avgBuyRate = getAverageBuyRateForSell(tx.sigmaAmount, tx.timestamp);
                     const plAmount = (tx.rate - avgBuyRate) * tx.sigmaAmount;
-                    const plPercentage = ((tx.rate - avgBuyRate) / avgBuyRate * 100).toFixed(2);
+                    const plPercentage = avgBuyRate > 0 ? ((tx.rate - avgBuyRate) / avgBuyRate * 100).toFixed(2) : 0;
                     csvContent += (i+1) + "," + tx.date.toLocaleDateString() + "," + tx.date.toLocaleTimeString() + "," + tx.sigmaAmount.toFixed(4) + "," + avgBuyRate.toFixed(4) + "," + tx.rate.toFixed(4) + "," + plAmount.toFixed(2) + "," + plPercentage + "%,CLOSED\n";
                 });
             }
@@ -963,7 +998,7 @@
             link.click();
             document.body.removeChild(link);
         }
-        
+
         async function autoConnect() {
             if (window.ethereum) {
                 try {
@@ -971,20 +1006,16 @@
                     const accounts = await provider.listAccounts();
                     if (accounts.length > 0) {
                         userAddress = accounts[0].address.toLowerCase();
-                        sigmaContract = new ethers.Contract(SIGMA_CONTRACT_ADDRESS, sigmaABI, provider);
-                        const connectBtn = document.getElementById('connectBtn');
+                        sigmaContract = new ethers.Contract(SIGMA_ADDR, SIGMA_ABI, provider);
                         document.getElementById('btn-text').textContent = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
-                        connectBtn.classList.add('connected');
+                        document.getElementById('connectBtn').classList.add('connected');
                         await loadData();
-                        window.ethereum.on('accountsChanged', handleAccountsChanged);
-                        window.ethereum.on('chainChanged', () => window.location.reload());
                     }
                 } catch (error) { console.log("Auto-connect error:", error); }
             }
         }
-        
+
         window.onload = function() {
-            createParticles();
             autoConnect();
         };
     </script>
