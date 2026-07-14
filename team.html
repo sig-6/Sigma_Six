@@ -542,6 +542,29 @@
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--gradient); border-radius: 4px; animation: rainbow 8s ease infinite; }
+        
+        .progress-container {
+            background: rgba(0, 255, 204, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .progress-text {
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 8px;
+            text-align: center;
+        }
 
         @media screen and (max-width: 1200px) {
             .stats-grid {
@@ -705,7 +728,7 @@
     <div class="container">
         <div class="nav-container">
             <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-            <button class="nav-btn" onclick="loadTeamData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            <button class="nav-btn" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
             <button class="nav-btn" onclick="exportData()"><i class="fas fa-download"></i> Export CSV</button>
         </div>
         
@@ -815,7 +838,7 @@
                             <th>Directs</th>
                             <th>Status</th>
                             <th>Actions</th>
-                          </tr>
+                        </tr>
                     </thead>
                     <tbody id="team-body">
                         <tr><td colspan="10" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Connect wallet to view your team</td></tr>
@@ -826,11 +849,9 @@
     </div>
 
     <script>
-        // ===== UPDATED CONTRACT CONFIGURATION =====
         const SIGMA_ADDR = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
         const CREATOR_WALLET = "0xDf572e4D93582a9b2EEA65BDb0C588FB5fD4EC4b".toLowerCase();
         
-        // ===== COMPLETE ABI FROM YOUR CONTRACT =====
         const SIGMA_ABI = [
             "function getCurrentBuyRate() view returns (uint256)",
             "function balanceOf(address) view returns (uint256)",
@@ -852,6 +873,8 @@
         let currentSort = { field: 'level', order: 'asc' };
         let isLoading = false;
         let allUsersData = [];
+        let isDataLoaded = false;
+        const CHUNK_SIZE = 5000;
 
         const ACTIVE_THRESHOLD_USDT = 10;
         const SELL_TAX = 0.09;
@@ -861,9 +884,40 @@
             if (window.ethereum) {
                 provider = new ethers.BrowserProvider(window.ethereum);
                 const accounts = await provider.send("eth_accounts", []);
-                if (accounts.length > 0) await connectWallet();
+                if (accounts.length > 0) {
+                    await connectWallet();
+                }
             }
         };
+
+        function updateProgress(percent, text) {
+            let progressBar = document.getElementById('progress-bar');
+            let progressText = document.getElementById('progress-text');
+            
+            if (!progressBar) {
+                const container = document.querySelector('.loading');
+                if (container) {
+                    container.innerHTML = `
+                        <i class="fas fa-spinner fa-spin"></i><br>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progress-bar"></div>
+                            <div class="progress-text" id="progress-text">Loading...</div>
+                        </div>
+                    `;
+                    progressBar = document.getElementById('progress-bar');
+                    progressText = document.getElementById('progress-text');
+                }
+            }
+            
+            if (progressBar) {
+                progressBar.style.width = Math.min(percent, 100) + '%';
+            }
+            if (progressText && text) {
+                progressText.textContent = text;
+            } else if (progressText) {
+                progressText.textContent = `Loading: ${Math.min(percent, 100).toFixed(1)}%`;
+            }
+        }
 
         async function connectWallet() {
             if (!window.ethereum) {
@@ -895,6 +949,7 @@
                 document.getElementById('connectBtn').classList.add('connected');
                 
                 await loadAllAddresses();
+                isDataLoaded = true;
                 await loadTeamData();
                 
             } catch (error) {
@@ -903,13 +958,50 @@
             }
         }
 
+        async function fetchEventsInChunks(contract, eventFilter, fromBlock, toBlock) {
+            let allEvents = [];
+            let currentFrom = fromBlock;
+            
+            while (currentFrom <= toBlock) {
+                let currentTo = Math.min(currentFrom + CHUNK_SIZE, toBlock);
+                
+                try {
+                    const events = await contract.queryFilter(eventFilter, currentFrom, currentTo);
+                    allEvents = allEvents.concat(events);
+                    
+                    const progress = ((currentFrom - fromBlock) / (toBlock - fromBlock)) * 100;
+                    updateProgress(progress, `Fetching events: ${currentFrom} to ${currentTo}`);
+                    
+                } catch (error) {
+                    console.warn(`Error fetching chunk ${currentFrom}-${currentTo}:`, error);
+                    if (currentTo - currentFrom > 1000) {
+                        currentTo = currentFrom + 1000;
+                        continue;
+                    }
+                }
+                
+                currentFrom = currentTo + 1;
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            return allEvents;
+        }
+
         async function loadAllAddresses() {
             try {
-                const transferFilter = sigmaContract.filters.Transfer();
-                const transferEvents = await sigmaContract.queryFilter(transferFilter, 0, 'latest');
+                updateProgress(0, "Starting data load...");
                 
+                const currentBlock = await provider.getBlockNumber();
+                const fromBlock = Math.max(currentBlock - 500000, 0);
+                
+                const transferFilter = sigmaContract.filters.Transfer();
                 const boughtFilter = sigmaContract.filters.Buy();
-                const boughtEvents = await sigmaContract.queryFilter(boughtFilter, 0, 'latest');
+                
+                updateProgress(10, "Fetching Transfer events...");
+                const transferEvents = await fetchEventsInChunks(sigmaContract, transferFilter, fromBlock, currentBlock);
+                
+                updateProgress(50, "Fetching Buy events...");
+                const boughtEvents = await fetchEventsInChunks(sigmaContract, boughtFilter, fromBlock, currentBlock);
                 
                 const addressSet = new Set();
                 addressSet.add(CREATOR_WALLET.toLowerCase());
@@ -927,12 +1019,16 @@
                 let addresses = Array.from(addressSet);
                 console.log(`📊 Found ${addresses.length} addresses from events`);
                 
+                updateProgress(60, `Found ${addresses.length} addresses, getting uplines...`);
+                
                 const allUplines = new Set();
                 let previousSize = 0;
                 let currentSize = addresses.length;
+                let iteration = 0;
                 
-                while (previousSize !== currentSize) {
+                while (previousSize !== currentSize && iteration < 10) {
                     previousSize = currentSize;
+                    iteration++;
                     
                     const batchSize = 50;
                     for (let i = 0; i < addresses.length; i += batchSize) {
@@ -954,9 +1050,11 @@
                 }
                 
                 console.log(`📊 Total unique addresses: ${addresses.length}`);
+                updateProgress(70, `Processing ${addresses.length} addresses...`);
                 
                 allUsersData = [];
                 const batchSize = 50;
+                let processed = 0;
                 
                 for (let i = 0; i < addresses.length; i += batchSize) {
                     const batch = addresses.slice(i, i + batchSize);
@@ -982,16 +1080,16 @@
                             }
                             
                             return { 
-                                address: addr, 
+                                address: addr.toLowerCase(), 
                                 balance, 
-                                upline, 
+                                upline: upline.toLowerCase(),
                                 directCount,
                                 lastBuyTimestamp,
                                 hasBoughtBefore
                             };
                         } catch {
                             return { 
-                                address: addr, 
+                                address: addr.toLowerCase(), 
                                 balance: 0, 
                                 upline: "0x0000000000000000000000000000000000000000", 
                                 directCount: 0,
@@ -1003,14 +1101,20 @@
                     
                     const results = await Promise.all(promises);
                     allUsersData.push(...results);
+                    processed += batch.length;
+                    
+                    const progress = 70 + ((processed / addresses.length) * 25);
+                    updateProgress(progress, `Loading user data: ${processed}/${addresses.length}`);
                     
                     if (i + batchSize < addresses.length) await new Promise(resolve => setTimeout(resolve, 100));
                 }
                 
                 console.log(`✅ Final data loaded for ${allUsersData.length} addresses`);
+                updateProgress(100, "Data loaded successfully!");
                 
             } catch (error) {
                 console.error("Error loading addresses:", error);
+                updateProgress(100, "Error loading data: " + error.message);
             }
         }
 
@@ -1018,7 +1122,8 @@
             if (currentLevel > maxLevel) return [];
             
             const members = [];
-            const directDownline = allUsersData.filter(u => u.upline === startAddress);
+            const startAddr = startAddress.toLowerCase();
+            const directDownline = allUsersData.filter(u => u.upline.toLowerCase() === startAddr);
             
             for (const member of directDownline) {
                 members.push({ 
@@ -1033,15 +1138,36 @@
         }
 
         async function loadTeamData() {
-            if (!userAddress || isLoading || allUsersData.length === 0) return;
+            if (!userAddress) {
+                document.getElementById('team-body').innerHTML = `
+                    <tr><td colspan="10" class="loading">
+                        <i class="fas fa-wallet"></i><br>
+                        Please connect your wallet
+                    </td></tr>`;
+                return;
+            }
+            
+            if (!isDataLoaded || allUsersData.length === 0) {
+                document.getElementById('team-body').innerHTML = `
+                    <tr><td colspan="10" class="loading">
+                        <i class="fas fa-spinner fa-spin"></i><br>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                            <div class="progress-text" id="progress-text">Loading blockchain data...</div>
+                        </div>
+                    </td></tr>`;
+                return;
+            }
+            
+            if (isLoading) return;
             isLoading = true;
             
             try {
                 document.getElementById('team-body').innerHTML = `
                     <tr><td colspan="10" class="loading">
                         <i class="fas fa-spinner fa-spin"></i><br>
-                        Loading your team structure...
-                      <\/td><\/tr>`;
+                        Building your team structure...
+                    </td></tr>`;
 
                 try {
                     const rateBN = await sigmaContract.getCurrentBuyRate();
@@ -1050,9 +1176,7 @@
                     
                     document.getElementById('buy-rate').textContent = buyRate.toFixed(4) + ' USDT';
                     document.getElementById('sell-rate').textContent = `Sell: ${sellRate.toFixed(4)} USDT`;
-                    console.log(`Rates loaded - Buy: ${buyRate}, Sell: ${sellRate}`);
                 } catch (e) {
-                    console.error("Rate fetch error:", e);
                     buyRate = 0.4315;
                     sellRate = buyRate * 0.91;
                 }
@@ -1080,7 +1204,7 @@
                     <tr><td colspan="10" class="empty-state">
                         <i class="fas fa-exclamation-triangle"></i><br>
                         Error: ${error.message}
-                      <\/td><\/tr>`;
+                    </td></tr>`;
             } finally {
                 isLoading = false;
             }
@@ -1141,7 +1265,7 @@
                 tbody.innerHTML = `<tr><td colspan="10" class="empty-state">
                     <i class="fas fa-users-slash"></i><br>
                     No team members found under your wallet
-                  <\/td><\/tr>`;
+                </td></tr>`;
                 resultsDiv.style.display = 'none';
                 return;
             }
@@ -1180,20 +1304,20 @@
                 const statusText = member.isActive ? 'Active' : 'Inactive';
                 
                 html += `<tr>
-                    <td>${i+1}<\/td>
+                    <td>${i+1}</td>
                     <td>${addressDisplay}<div style="font-size:11px; margin-top:3px">
-                        <i class="fas fa-copy" onclick="copyAddress('${member.address}')" style="cursor:pointer; margin-right:8px"><\/i>
-                        <i class="fas fa-external-link-alt" onclick="viewOnExplorer('${member.address}')" style="cursor:pointer"><\/i>
-                    <\/div><\/td>
-                    <td><span class="level-badge level-${member.level}">Level ${member.level}<\/span><\/td>
-                    <td>${balanceDisplay}<\/td>
-                    <td>$${member.usdtValue.toFixed(2)}<\/td>
-                    <td>${dateDisplay}<\/td>
-                    <td><span class="wallet-address" style="font-size:12px">${uplineShort}<\/span><\/td>
-                    <td style="text-align: center;">${member.directCount} ${member.directCount >= 10 ? '<i class="fas fa-crown" style="color:gold; margin-left:5px;"></i>' : ''}<\/td>
-                    <td><span class="level-badge ${statusClass}">${statusText}<\/span><\/td>
-                    <td><button class="action-btn" style="padding:6px 12px" onclick="viewMember('${member.address}')"><i class="fas fa-eye"></i><\/button><\/td>
-                <\/tr>`;
+                        <i class="fas fa-copy" onclick="copyAddress('${member.address}')" style="cursor:pointer; margin-right:8px"></i>
+                        <i class="fas fa-external-link-alt" onclick="viewOnExplorer('${member.address}')" style="cursor:pointer"></i>
+                    </div></td>
+                    <td><span class="level-badge level-${member.level}">Level ${member.level}</span></td>
+                    <td>${balanceDisplay}</td>
+                    <td>$${member.usdtValue.toFixed(2)}</td>
+                    <td>${dateDisplay}</td>
+                    <td><span class="wallet-address" style="font-size:12px">${uplineShort}</span></td>
+                    <td style="text-align: center;">${member.directCount} ${member.directCount >= 10 ? '<i class="fas fa-crown" style="color:gold; margin-left:5px;"></i>' : ''}</td>
+                    <td><span class="level-badge ${statusClass}">${statusText}</span></td>
+                    <td><button class="action-btn" style="padding:6px 12px" onclick="viewMember('${member.address}')"><i class="fas fa-eye"></i></button></td>
+                </tr>`;
             });
             
             tbody.innerHTML = html;
@@ -1260,6 +1384,15 @@
         function viewMember(addr) { 
             const m = teamMembers.find(m => m.address === addr);
             if(m) alert(`Member: ${addr}\nLevel: ${m.level}\nBalance: ${m.balance.toFixed(2)} SIG6\nValue: $${m.usdtValue.toFixed(2)}\nDirects: ${m.directCount}\nStatus: ${m.isActive ? 'Active' : 'Inactive'}`);
+        }
+
+        function refreshData() {
+            isDataLoaded = false;
+            allUsersData = [];
+            loadAllAddresses().then(() => {
+                isDataLoaded = true;
+                loadTeamData();
+            });
         }
 
         function exportData() {
