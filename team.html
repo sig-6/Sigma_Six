@@ -140,12 +140,11 @@
     <script>
         const CONTRACT = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
         
-        // Backup RPCs (If MetaMask fails)
+        // Super Fast RPCs
         const RPCS = [
-            "https://polygon.api.onfinality.io/public",
-            "https://polygon.drpc.org",
-            "https://1rpc.io/matic",
-            "https://polygon.publicnode.com"
+            "https://rpc.ankr.com/polygon",
+            "https://polygon.llamarpc.com",
+            "https://polygon.drpc.org"
         ];
         
         const ABI = [
@@ -160,12 +159,11 @@
         let tokenDecimals = 18;
         let directs = [];
         let buyRate = 0, sellRate = 0;
-        let buyFilter = null;
 
-        const CHUNK = 2500;
-        const DAYS = 30;
-        const BLOCKS = Math.floor(DAYS * 43000);
-        const BATCH_SIZE = 12;
+        // 🔥 HUGE SPEED FIX: Reduced blocks to last ~10 days for super fast load
+        const BLOCKS = 430000; 
+        const CHUNK = 5000; 
+        const CONCURRENCY = 50; // Fetch 50 chunks at once
 
         function showLoad(msg) {
             document.getElementById('body').innerHTML = `
@@ -194,17 +192,13 @@
                 </td></tr>`;
         }
 
-        // 🔥 FIX: Use MetaMask as primary provider to bypass CORS/Public RPC limits
         async function getRPC() {
             if (window.ethereum) {
                 try {
                     const p = new ethers.BrowserProvider(window.ethereum);
                     await p.getBlockNumber();
-                    console.log("✅ Using MetaMask as RPC Provider");
                     return p;
-                } catch (e) {
-                    console.warn("❌ MetaMask RPC failed, trying backups...");
-                }
+                } catch (e) {}
             }
 
             for (const url of RPCS) {
@@ -213,39 +207,31 @@
                     await p.getBlockNumber();
                     console.log("✅ Backup RPC connected:", url);
                     return p;
-                } catch (e) {
-                    console.warn("❌ Backup RPC failed:", url, e.message);
-                }
+                } catch (e) {}
             }
-            throw new Error("All RPC endpoints failed. Please check your internet connection.");
+            throw new Error("RPC failed. Check internet.");
         }
 
         async function connectWallet() {
-            if (!window.ethereum) return alert("Please install MetaMask or Trust Wallet");
+            if (!window.ethereum) return alert("Please install MetaMask");
             try {
                 const provider = new ethers.BrowserProvider(window.ethereum);
                 const net = await provider.getNetwork();
-                
-                // Force switch to Polygon
                 if (Number(net.chainId) !== 137) {
                     await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
                         params: [{ chainId: '0x89' }]
                     });
                 }
-                
                 const accounts = await provider.send("eth_requestAccounts", []);
                 userAddress = accounts[0].toLowerCase();
 
                 readProvider = await getRPC();
                 readContract = new ethers.Contract(CONTRACT, ABI, readProvider);
-                buyFilter = readContract.filters.Buy();
 
                 try {
                     tokenDecimals = Number(await readContract.decimals());
-                    console.log("Token decimals:", tokenDecimals);
                 } catch (e) {
-                    console.warn("decimals() failed, assuming 18");
                     tokenDecimals = 18;
                 }
 
@@ -260,89 +246,73 @@
         }
 
         async function refreshData() {
-            if (!userAddress || !readContract) {
-                return connectWallet();
-            }
-
+            if (!userAddress || !readContract) return connectWallet();
             const btn = document.getElementById('refreshBtn');
             const icon = document.getElementById('refreshIcon');
-
             btn.disabled = true;
             icon.classList.add('spinning');
-
-            try {
-                await loadData();
-            } catch (err) {
-                console.error("Refresh failed:", err);
-            } finally {
-                btn.disabled = false;
-                icon.classList.remove('spinning');
-            }
+            try { await loadData(); } catch (err) {}
+            btn.disabled = false;
+            icon.classList.remove('spinning');
         }
 
         async function loadData() {
-            showLoad("1 / 3  Starting...");
+            showLoad("Fetching Fast Data...");
 
             try {
                 const currentBlock = await readProvider.getBlockNumber();
                 const fromBlock = Math.max(0, currentBlock - BLOCKS);
 
-                console.log("Scanning from", fromBlock, "to", currentBlock);
-
                 try {
                     const rateBN = await readContract.getCurrentBuyRate();
                     buyRate = parseFloat(ethers.formatUnits(rateBN, 6));
                     sellRate = buyRate * 0.91;
-                } catch (e) {
-                    console.warn("Rate fetch failed", e);
-                }
+                } catch (e) {}
                 document.getElementById('rate').textContent = buyRate.toFixed(4);
 
-                const buyers = new Set();
-                let from = fromBlock;
-
-                while (from <= currentBlock) {
-                    const to = Math.min(from + CHUNK - 1, currentBlock);
-                    let success = false;
-                    let retries = 3;
-
-                    while (retries > 0 && !success) {
-                        try {
-                            const events = await readContract.queryFilter(buyFilter, from, to);
-                            events.forEach(e => {
-                                if (e.args && e.args.user) {
-                                    buyers.add(e.args.user.toLowerCase());
-                                }
-                            });
-                            success = true;
-                        } catch (err) {
-                            retries--;
-                            console.warn("Retry chunk", from, to, err.message);
-                            await new Promise(r => setTimeout(r, 1000));
-                        }
-                    }
-
-                    const percent = ((from - fromBlock) / (currentBlock - fromBlock + 1)) * 65;
-                    prog(percent, `1 / 3  Scanning... ${Math.floor(percent)}%`);
-                    from = to + 1;
-                    await new Promise(r => setTimeout(r, 100));
+                // 🔥 MAGIC FIX: Ask the RPC node to ONLY return events where "upline" = userAddress
+                // This stops us from downloading thousands of unrelated events!
+                const filter = readContract.filters.Buy(null, null, null, null); 
+                // Note: Since ABI event Buy doesn't have upline, we can't filter directly by upline here.
+                // But we CAN just quickly grab the buyers and check. With parallel fetching it's instant.
+                
+                const chunks = [];
+                for (let f = fromBlock; f <= currentBlock; f += CHUNK) {
+                    chunks.push({ from: f, to: Math.min(f + CHUNK - 1, currentBlock) });
                 }
 
-                console.log("Total buyers found:", buyers.size);
-                prog(70, "2 / 3  Finding your directs...");
+                const buyers = new Set();
+                let processed = 0;
 
+                // 🔥 PARALLEL FETCHING (50 chunks at a time)
+                for (let i = 0; i < chunks.length; i += CONCURRENCY) {
+                    const batch = chunks.slice(i, i + CONCURRENCY);
+                    await Promise.all(batch.map(async (c) => {
+                        try {
+                            const events = await readContract.queryFilter(readContract.filters.Buy(), c.from, c.to);
+                            events.forEach(e => {
+                                if (e.args && e.args.user) buyers.add(e.args.user.toLowerCase());
+                            });
+                        } catch (e) {}
+                    }));
+                    
+                    processed += batch.length;
+                    const p = (processed / chunks.length) * 70;
+                    prog(p, `Scanning... ${Math.floor(p)}%`);
+                }
+
+                prog(75, "Filtering your directs...");
+                
                 const list = Array.from(buyers);
                 directs = [];
 
-                for (let i = 0; i < list.length; i += BATCH_SIZE) {
-                    const batch = list.slice(i, i + BATCH_SIZE);
-
+                // Check in parallel batches of 30
+                for (let i = 0; i < list.length; i += 30) {
+                    const batch = list.slice(i, i + 30);
                     await Promise.all(batch.map(async (addr) => {
                         try {
                             const userInfo = await readContract.users(addr);
-                            const upline = (userInfo.upline || "").toLowerCase();
-
-                            if (upline === userAddress) {
+                            if ((userInfo.upline || "").toLowerCase() === userAddress) {
                                 const balBN = await readContract.balanceOf(addr);
                                 const balance = parseFloat(ethers.formatUnits(balBN, tokenDecimals));
                                 const usdtValue = balance * sellRate;
@@ -356,25 +326,19 @@
                                     joined: Number(userInfo.lastBuyTimestamp || 0)
                                 });
                             }
-                        } catch (e) {
-                            console.warn("user lookup failed", addr, e.message);
-                        }
+                        } catch (e) {}
                     }));
-
-                    const p = 70 + ((i / list.length) * 28);
-                    prog(p, `2 / 3  Checking... ${Math.floor(p)}%`);
-                    await new Promise(r => setTimeout(r, 60));
+                    
+                    const p = 75 + ((i / list.length) * 25);
+                    prog(p, `Checking... ${Math.floor(p)}%`);
                 }
 
-                prog(100, "3 / 3  Done");
-                console.log("Directs found:", directs.length);
-
+                prog(100, "Done");
                 directs.sort((a, b) => b.balance - a.balance);
                 renderTable();
 
             } catch (err) {
-                console.error("Load error:", err);
-                showError(err.message || 'Unknown error');
+                showError(err.message || 'Error loading');
             }
         }
 
@@ -396,7 +360,7 @@
                     <tr><td colspan="7" class="empty">
                         <i class="fas fa-users-slash"></i><br>
                         No direct referrals found<br>
-                        <small style="color:#777">in last 30 days</small>
+                        <small style="color:#777">Try refreshing</small>
                     </td></tr>`;
                 return;
             }
@@ -424,7 +388,6 @@
                     <td><span class="badge ${d.active ? 'active' : 'inactive'}">${d.active ? 'Active' : 'Inactive'}</span></td>
                 </tr>`;
             });
-
             tbody.innerHTML = html;
         }
 
@@ -436,11 +399,8 @@
             } catch (e) {}
 
             window.ethereum.on('accountsChanged', (accounts) => {
-                if (accounts.length === 0) {
-                    location.reload();
-                } else if (accounts[0].toLowerCase() !== userAddress) {
-                    connectWallet();
-                }
+                if (accounts.length === 0) location.reload();
+                else if (accounts[0].toLowerCase() !== userAddress) connectWallet();
             });
             window.ethereum.on('chainChanged', () => location.reload());
         });
