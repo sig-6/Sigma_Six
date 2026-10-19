@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>SIGMA SIX | Direct Referrals (Level 1)</title>
+    <title>SIGMA SIX | Level 1 Directs</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,46 +13,44 @@
             --secondary: #9d4edd;
             --bg: #0a0b10;
             --text: #ffffff;
-            --border: #2d2f3e;
             --gradient: linear-gradient(90deg, #00ffcc, #9d4edd, #ff2a6d, #00ffcc);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
         .rainbow-border { position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: var(--gradient); background-size: 400% 400%; animation: rainbow 8s ease infinite; z-index: 1000; }
         @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .connect-btn { position: fixed; top: 20px; right: 20px; background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #000; border: none; border-radius: 15px; padding: 12px 25px; font-weight: 800; font-size: 14px; cursor: pointer; z-index: 1001; display: flex; align-items: center; gap: 10px; }
-        .connect-btn.connected { background: rgba(0,255,204,0.1); color: var(--primary); border: 1px solid var(--primary); }
-        .header { text-align: center; margin: 40px 0 30px; }
-        .header h1 { background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: 36px; font-weight: 800; }
-        .header p { color: #aaa; margin-top: 8px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: rgba(22,24,33,0.8); border-radius: 16px; padding: 20px; border: 1px solid rgba(0,255,204,0.15); }
-        .stat-title { color: #aaa; font-size: 13px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .stat-title i { color: var(--primary); }
-        .stat-value { font-size: 28px; font-weight: 800; color: var(--primary); }
-        .stat-sub { font-size: 13px; color: #888; margin-top: 4px; }
-        .main-card { background: rgba(22,24,33,0.8); border-radius: 20px; padding: 22px; border: 1px solid rgba(0,255,204,0.15); }
-        .card-title { color: var(--primary); font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .table-responsive { overflow-x: auto; border-radius: 12px; }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        th { padding: 14px 12px; text-align: left; font-size: 13px; color: var(--primary); text-transform: uppercase; border-bottom: 2px solid rgba(0,255,204,0.2); }
-        td { padding: 13px 12px; border-bottom: 1px solid rgba(45,47,62,0.4); font-size: 13px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+        .connect-btn { position: fixed; top: 16px; right: 16px; background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #000; border: none; border-radius: 14px; padding: 11px 22px; font-weight: 800; font-size: 14px; cursor: pointer; z-index: 1001; display: flex; align-items: center; gap: 8px; }
+        .connect-btn.connected { background: rgba(0,255,204,0.12); color: var(--primary); border: 1px solid var(--primary); }
+        .header { text-align: center; margin: 50px 0 25px; }
+        .header h1 { background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: 32px; font-weight: 800; }
+        .header p { color: #aaa; margin-top: 6px; font-size: 14px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat { background: rgba(22,24,33,0.85); border-radius: 14px; padding: 16px; border: 1px solid rgba(0,255,204,0.12); }
+        .stat-label { color: #888; font-size: 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .stat-label i { color: var(--primary); }
+        .stat-value { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .stat-sub { font-size: 12px; color: #777; margin-top: 2px; }
+        .card { background: rgba(22,24,33,0.85); border-radius: 18px; padding: 18px; border: 1px solid rgba(0,255,204,0.12); }
+        .card-title { color: var(--primary); font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .table-wrap { overflow-x: auto; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        th { padding: 12px 10px; text-align: left; font-size: 12px; color: var(--primary); text-transform: uppercase; border-bottom: 2px solid rgba(0,255,204,0.2); }
+        td { padding: 12px 10px; border-bottom: 1px solid rgba(45,47,62,0.35); font-size: 13px; }
         tr:hover td { background: rgba(255,255,255,0.03); }
-        .wallet-address { font-family: monospace; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px; font-size: 12px; }
-        .level-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .addr { font-family: monospace; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; font-size: 12px; }
+        .badge { padding: 3px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; }
         .active { background: rgba(0,255,204,0.15); color: #00ffcc; }
         .inactive { background: rgba(255,170,0,0.15); color: #ffaa00; }
-        .loading, .empty { text-align: center; padding: 50px 20px; color: var(--primary); }
-        .progress-box { background: rgba(0,255,204,0.1); border-radius: 12px; padding: 16px; max-width: 400px; margin: 15px auto; border: 1px solid rgba(0,255,204,0.25); }
-        .progress-bar { height: 8px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 4px; width: 0%; transition: width 0.3s; }
-        .progress-text { color: #bbb; font-size: 13px; margin-top: 10px; text-align: center; }
-        .nav { margin-bottom: 20px; }
-        .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--primary); text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 12px; background: rgba(0,255,204,0.1); border: 1px solid rgba(0,255,204,0.3); }
+        .loading, .empty { text-align: center; padding: 45px 15px; color: var(--primary); }
+        .progress-box { background: rgba(0,255,204,0.08); border-radius: 12px; padding: 14px; max-width: 380px; margin: 12px auto; border: 1px solid rgba(0,255,204,0.2); }
+        .progress-bar { height: 7px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 4px; width: 0%; transition: width 0.3s; }
+        .progress-text { color: #aaa; font-size: 14px; margin-top: 10px; text-align: center; font-weight: 600; }
+        .back { display: inline-flex; align-items: center; gap: 7px; color: var(--primary); text-decoration: none; font-weight: 600; padding: 9px 14px; border-radius: 11px; background: rgba(0,255,204,0.1); border: 1px solid rgba(0,255,204,0.25); margin-bottom: 15px; font-size: 13px; }
         @media (max-width: 600px) {
-            .connect-btn { position: relative; top: auto; right: auto; width: 100%; justify-content: center; margin-bottom: 15px; }
-            .header h1 { font-size: 26px; }
-            .stat-value { font-size: 22px; }
+            .connect-btn { position: relative; top: auto; right: auto; width: 100%; justify-content: center; margin-bottom: 12px; }
+            .header h1 { font-size: 24px; }
+            .stat-value { font-size: 20px; }
         }
     </style>
 </head>
@@ -64,53 +62,50 @@
     </button>
 
     <div class="container">
-        <div class="nav">
-            <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-        </div>
+        <a href="index.html" class="back"><i class="fas fa-arrow-left"></i> Back</a>
 
         <div class="header">
-            <h1>DIRECT REFERRALS</h1>
-            <p>Level 1 Only • Fast Loading</p>
+            <h1>LEVEL 1 DIRECTS</h1>
+            <p>Last 30 Days</p>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-title"><i class="fas fa-users"></i> Total Directs</div>
-                <div class="stat-value" id="total-directs">0</div>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-label"><i class="fas fa-users"></i> Total Directs</div>
+                <div class="stat-value" id="total">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-title"><i class="fas fa-crown"></i> Active (≥10 USDT)</div>
-                <div class="stat-value" id="active-directs">0</div>
+            <div class="stat">
+                <div class="stat-label"><i class="fas fa-crown"></i> Active</div>
+                <div class="stat-value" id="active">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-title"><i class="fas fa-coins"></i> Team Holdings</div>
-                <div class="stat-value" id="team-sigma">0</div>
-                <div class="stat-sub" id="team-usdt">$0.00</div>
+            <div class="stat">
+                <div class="stat-label"><i class="fas fa-coins"></i> Holdings</div>
+                <div class="stat-value" id="sigma">0</div>
+                <div class="stat-sub" id="usdt">$0.00</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-title"><i class="fas fa-chart-line"></i> Buy Rate</div>
-                <div class="stat-value" id="buy-rate">0.0000</div>
+            <div class="stat">
+                <div class="stat-label"><i class="fas fa-chart-line"></i> Buy Rate</div>
+                <div class="stat-value" id="rate">0.0000</div>
             </div>
         </div>
 
-        <div class="main-card">
-            <div class="card-title"><i class="fas fa-sitemap"></i> Your Level 1 Members</div>
-            
-            <div class="table-responsive">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-sitemap"></i> Your Direct Referrals</div>
+            <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
                             <th>#</th>
                             <th>Wallet</th>
-                            <th>SIG6 Balance</th>
-                            <th>USDT Value</th>
-                            <th>Join Date</th>
+                            <th>Balance</th>
+                            <th>USDT</th>
+                            <th>Joined</th>
                             <th>Directs</th>
                             <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody id="team-body">
-                        <tr><td colspan="7" class="loading"><i class="fas fa-wallet"></i><br>Connect wallet to view directs</td></tr>
+                    <tbody id="body">
+                        <tr><td colspan="7" class="loading"><i class="fas fa-wallet"></i><br>Connect wallet</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -118,13 +113,12 @@
     </div>
 
     <script>
-        const SIGMA_ADDR = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
-        const PUBLIC_RPCS = [
+        const CONTRACT = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
+        const RPCS = [
             "https://polygon.drpc.org",
             "https://polygon.publicnode.com",
             "https://1rpc.io/matic"
         ];
-
         const ABI = [
             "function getCurrentBuyRate() view returns (uint256)",
             "function balanceOf(address) view returns (uint256)",
@@ -132,36 +126,36 @@
             "event Buy(address indexed user, uint256 amount, uint256 rate, uint256 usdtSpent)"
         ];
 
-        let provider, readProvider, userAddress, readContract;
+        let readProvider, readContract, userAddress;
         let directs = [];
         let buyRate = 0.43, sellRate = 0.39;
 
-        const CHUNK = 2500;
-        const DAYS = 45;                    // ~45 days
-        const BLOCKS = DAYS * 24 * 60 * 30; // approx blocks
+        const CHUNK = 3000;
+        const DAYS = 30;
+        const BLOCKS = Math.floor(DAYS * 43200);
 
-        function showLoading(msg) {
-            document.getElementById('team-body').innerHTML = `
+        function showLoad(msg) {
+            document.getElementById('body').innerHTML = `
                 <tr><td colspan="7" class="loading">
-                    <i class="fas fa-spinner fa-spin" style="font-size:26px"></i><br>
+                    <i class="fas fa-spinner fa-spin" style="font-size:24px"></i><br>
                     <div class="progress-box">
-                        <div class="progress-bar" id="bar" style="width:0%"></div>
+                        <div class="progress-bar" id="bar"></div>
                         <div class="progress-text" id="txt">${msg}</div>
                     </div>
                 </td></tr>`;
         }
 
-        function progress(p, text) {
-            const bar = document.getElementById('bar');
-            const txt = document.getElementById('txt');
-            if (bar) bar.style.width = Math.min(p, 100) + '%';
-            if (txt) txt.innerHTML = text;
+        function prog(p, t) {
+            const b = document.getElementById('bar');
+            const x = document.getElementById('txt');
+            if (b) b.style.width = Math.min(p, 100) + '%';
+            if (x) x.textContent = t;
         }
 
         async function getRPC() {
-            for (const url of PUBLIC_RPCS) {
+            for (const u of RPCS) {
                 try {
-                    const p = new ethers.JsonRpcProvider(url, 137);
+                    const p = new ethers.JsonRpcProvider(u, 137);
                     await p.getBlockNumber();
                     return p;
                 } catch {}
@@ -172,148 +166,140 @@
         async function connectWallet() {
             if (!window.ethereum) return alert("Install MetaMask");
             try {
-                provider = new ethers.BrowserProvider(window.ethereum);
+                const provider = new ethers.BrowserProvider(window.ethereum);
                 const net = await provider.getNetwork();
                 if (net.chainId !== 137n) {
                     await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x89' }] });
                 }
-                const accounts = await provider.send("eth_requestAccounts", []);
-                userAddress = accounts[0].toLowerCase();
-                
+                const accs = await provider.send("eth_requestAccounts", []);
+                userAddress = accs[0].toLowerCase();
+
                 readProvider = await getRPC();
-                readContract = new ethers.Contract(SIGMA_ADDR, ABI, readProvider);
+                readContract = new ethers.Contract(CONTRACT, ABI, readProvider);
 
                 document.getElementById('btn-text').textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
                 document.getElementById('connectBtn').classList.add('connected');
 
-                await loadDirects();
+                await load();
             } catch (e) {
-                alert("Connection failed");
                 console.error(e);
+                alert("Connection failed");
             }
         }
 
-        async function loadDirects() {
-            showLoading("Scanning for your direct referrals...<br>Please wait 1-3 minutes");
+        async function load() {
+            showLoad("1 / 3  Loading...");
 
             try {
                 const current = await readProvider.getBlockNumber();
                 const from = Math.max(current - BLOCKS, 0);
 
-                // Get rate
                 try {
-                    const rateBN = await readContract.getCurrentBuyRate();
-                    buyRate = parseFloat(ethers.formatUnits(rateBN, 6));
+                    const r = await readContract.getCurrentBuyRate();
+                    buyRate = parseFloat(ethers.formatUnits(r, 6));
                     sellRate = buyRate * 0.91;
                 } catch {}
-                document.getElementById('buy-rate').textContent = buyRate.toFixed(4);
+                document.getElementById('rate').textContent = buyRate.toFixed(4);
 
-                // Scan Buy events
-                let allBuyers = new Set();
-                let fromBlock = from;
+                const buyers = new Set();
+                let fb = from;
 
-                while (fromBlock <= current) {
-                    const toBlock = Math.min(fromBlock + CHUNK - 1, current);
+                while (fb <= current) {
+                    const tb = Math.min(fb + CHUNK - 1, current);
                     try {
-                        const events = await readContract.queryFilter(readContract.filters.Buy(), fromBlock, toBlock);
-                        events.forEach(e => {
-                            if (e.args?.user) allBuyers.add(e.args.user.toLowerCase());
-                        });
-                    } catch (err) {
-                        console.warn("chunk error", fromBlock, toBlock);
-                        await new Promise(r => setTimeout(r, 800));
+                        const ev = await readContract.queryFilter(readContract.filters.Buy(), fb, tb);
+                        ev.forEach(e => { if (e.args?.user) buyers.add(e.args.user.toLowerCase()); });
+                    } catch {
+                        await new Promise(r => setTimeout(r, 500));
                     }
 
-                    const pct = ((fromBlock - from) / (current - from)) * 80;
-                    progress(pct, `Scanning...<br>Block ${fromBlock.toLocaleString()} → ${toBlock.toLocaleString()}<br>Found ${allBuyers.size} buyers`);
-                    fromBlock = toBlock + 1;
-                    await new Promise(r => setTimeout(r, 180));
+                    const pct = ((fb - from) / (current - from + 1)) * 70;
+                    prog(pct, `1 / 3  Scanning... ${Math.floor(pct)}%`);
+                    fb = tb + 1;
+                    await new Promise(r => setTimeout(r, 120));
                 }
 
-                progress(85, `Checking ${allBuyers.size} addresses for your directs...`);
+                prog(75, "2 / 3  Finding directs...");
 
-                // Check who has you as upline
-                const addresses = Array.from(allBuyers);
+                const list = Array.from(buyers);
                 directs = [];
-                const batch = 20;
+                const BS = 15;
 
-                for (let i = 0; i < addresses.length; i += batch) {
-                    const slice = addresses.slice(i, i + batch);
-                    await Promise.all(slice.map(async (addr) => {
+                for (let i = 0; i < list.length; i += BS) {
+                    const batch = list.slice(i, i + BS);
+                    await Promise.all(batch.map(async (addr) => {
                         try {
                             const u = await readContract.users(addr);
                             if (u.upline && u.upline.toLowerCase() === userAddress) {
-                                const balBN = await readContract.balanceOf(addr);
-                                const balance = parseFloat(ethers.formatEther(balBN));
+                                const bal = parseFloat(ethers.formatEther(await readContract.balanceOf(addr)));
                                 directs.push({
                                     address: addr,
-                                    balance,
-                                    usdtValue: balance * sellRate,
-                                    isActive: (balance * sellRate) >= 10,
-                                    directCount: Number(u.directCount || 0),
-                                    lastBuy: Number(u.lastBuyTimestamp || 0)
+                                    balance: bal,
+                                    usdt: bal * sellRate,
+                                    active: (bal * sellRate) >= 10,
+                                    directs: Number(u.directCount || 0),
+                                    joined: Number(u.lastBuyTimestamp || 0)
                                 });
                             }
                         } catch {}
                     }));
-                    progress(85 + (i / addresses.length) * 14, `Checking directs... ${i}/${addresses.length}`);
-                    await new Promise(r => setTimeout(r, 100));
+                    const p = 75 + (i / list.length) * 23;
+                    prog(p, `2 / 3  Checking... ${Math.floor(p)}%`);
+                    await new Promise(r => setTimeout(r, 70));
                 }
 
-                // Sort by balance high to low
+                prog(100, "3 / 3  Done");
                 directs.sort((a, b) => b.balance - a.balance);
-
-                updateUI();
+                render();
             } catch (e) {
                 console.error(e);
-                document.getElementById('team-body').innerHTML = `<tr><td colspan="7" class="empty"><i class="fas fa-exclamation-triangle"></i><br>Error loading data</td></tr>`;
+                document.getElementById('body').innerHTML = `<tr><td colspan="7" class="empty"><i class="fas fa-exclamation-triangle"></i><br>Error loading data</td></tr>`;
             }
         }
 
-        function updateUI() {
+        function render() {
             const total = directs.length;
-            const active = directs.filter(d => d.isActive).length;
-            const totalSigma = directs.reduce((s, d) => s + d.balance, 0);
-            const totalUsdt = directs.reduce((s, d) => s + d.usdtValue, 0);
+            const act = directs.filter(d => d.active).length;
+            const sig = directs.reduce((s, d) => s + d.balance, 0);
+            const usd = directs.reduce((s, d) => s + d.usdt, 0);
 
-            document.getElementById('total-directs').textContent = total;
-            document.getElementById('active-directs').textContent = active;
-            document.getElementById('team-sigma').textContent = totalSigma.toFixed(2);
-            document.getElementById('team-usdt').textContent = '$' + totalUsdt.toFixed(2);
+            document.getElementById('total').textContent = total;
+            document.getElementById('active').textContent = act;
+            document.getElementById('sigma').textContent = sig.toFixed(2);
+            document.getElementById('usdt').textContent = '$' + usd.toFixed(2);
 
-            const tbody = document.getElementById('team-body');
-            if (total === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="empty"><i class="fas fa-users-slash"></i><br>No direct referrals found<br><small style="color:#888">in last ~45 days</small></td></tr>`;
+            const body = document.getElementById('body');
+            if (!total) {
+                body.innerHTML = `<tr><td colspan="7" class="empty"><i class="fas fa-users-slash"></i><br>No direct referrals found<br><small style="color:#777">in last 30 days</small></td></tr>`;
                 return;
             }
 
-            let html = '';
+            let h = '';
             directs.forEach((d, i) => {
-                const date = d.lastBuy > 0 ? new Date(d.lastBuy * 1000).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : '—';
-                html += `<tr>
-                    <td>${i+1}</td>
+                const date = d.joined > 0 ? new Date(d.joined * 1000).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+                h += `<tr>
+                    <td>${i + 1}</td>
                     <td>
-                        <span class="wallet-address">${d.address.slice(0,8)}...${d.address.slice(-6)}</span>
-                        <div style="margin-top:4px;font-size:11px">
-                            <i class="fas fa-copy" style="cursor:pointer;margin-right:8px" onclick="navigator.clipboard.writeText('${d.address}')"></i>
+                        <span class="addr">${d.address.slice(0,7)}...${d.address.slice(-5)}</span>
+                        <div style="margin-top:3px;font-size:11px">
+                            <i class="fas fa-copy" style="cursor:pointer;margin-right:7px" onclick="navigator.clipboard.writeText('${d.address}')"></i>
                             <i class="fas fa-external-link-alt" style="cursor:pointer" onclick="window.open('https://polygonscan.com/address/${d.address}')"></i>
                         </div>
                     </td>
                     <td style="color:var(--primary);font-weight:700">${d.balance.toFixed(2)}</td>
-                    <td>$${d.usdtValue.toFixed(2)}</td>
+                    <td>$${d.usdt.toFixed(2)}</td>
                     <td>${date}</td>
-                    <td>${d.directCount}</td>
-                    <td><span class="level-badge ${d.isActive ? 'active' : 'inactive'}">${d.isActive ? 'Active' : 'Inactive'}</span></td>
+                    <td>${d.directs}</td>
+                    <td><span class="badge ${d.active ? 'active' : 'inactive'}">${d.active ? 'Active' : 'Inactive'}</span></td>
                 </tr>`;
             });
-            tbody.innerHTML = html;
+            body.innerHTML = h;
         }
 
-        // Auto connect if already connected
         window.onload = async () => {
             if (window.ethereum) {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts.length) connectWallet();
+                const a = await window.ethereum.request({ method: 'eth_accounts' });
+                if (a.length) connectWallet();
             }
         };
     </script>
