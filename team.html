@@ -139,12 +139,15 @@
 
     <script>
         const CONTRACT = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
+        
+        // Backup RPCs (If MetaMask fails)
         const RPCS = [
+            "https://polygon.api.onfinality.io/public",
             "https://polygon.drpc.org",
-            "https://polygon.publicnode.com",
             "https://1rpc.io/matic",
-            "https://polygon-rpc.com"
+            "https://polygon.publicnode.com"
         ];
+        
         const ABI = [
             "function getCurrentBuyRate() view returns (uint256)",
             "function balanceOf(address) view returns (uint256)",
@@ -191,31 +194,46 @@
                 </td></tr>`;
         }
 
+        // 🔥 FIX: Use MetaMask as primary provider to bypass CORS/Public RPC limits
         async function getRPC() {
+            if (window.ethereum) {
+                try {
+                    const p = new ethers.BrowserProvider(window.ethereum);
+                    await p.getBlockNumber();
+                    console.log("✅ Using MetaMask as RPC Provider");
+                    return p;
+                } catch (e) {
+                    console.warn("❌ MetaMask RPC failed, trying backups...");
+                }
+            }
+
             for (const url of RPCS) {
                 try {
                     const p = new ethers.JsonRpcProvider(url, 137, { staticNetwork: true });
                     await p.getBlockNumber();
-                    console.log("RPC connected:", url);
+                    console.log("✅ Backup RPC connected:", url);
                     return p;
                 } catch (e) {
-                    console.warn("RPC failed:", url);
+                    console.warn("❌ Backup RPC failed:", url, e.message);
                 }
             }
-            throw new Error("All RPC endpoints failed. Check your internet or try again later.");
+            throw new Error("All RPC endpoints failed. Please check your internet connection.");
         }
 
         async function connectWallet() {
-            if (!window.ethereum) return alert("Please install MetaMask");
+            if (!window.ethereum) return alert("Please install MetaMask or Trust Wallet");
             try {
                 const provider = new ethers.BrowserProvider(window.ethereum);
                 const net = await provider.getNetwork();
+                
+                // Force switch to Polygon
                 if (Number(net.chainId) !== 137) {
                     await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
                         params: [{ chainId: '0x89' }]
                     });
                 }
+                
                 const accounts = await provider.send("eth_requestAccounts", []);
                 userAddress = accounts[0].toLowerCase();
 
@@ -300,7 +318,7 @@
                         } catch (err) {
                             retries--;
                             console.warn("Retry chunk", from, to, err.message);
-                            await new Promise(r => setTimeout(r, 800));
+                            await new Promise(r => setTimeout(r, 1000));
                         }
                     }
 
