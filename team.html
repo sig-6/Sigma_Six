@@ -547,14 +547,15 @@
             background: rgba(0, 255, 204, 0.1);
             border-radius: 10px;
             padding: 15px;
-            margin: 10px 0;
+            margin: 15px auto;
             border: 1px solid rgba(0, 255, 204, 0.2);
+            max-width: 400px;
         }
         
         .progress-bar {
-            height: 6px;
+            height: 8px;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 3px;
+            border-radius: 4px;
             transition: width 0.3s ease;
             width: 0%;
         }
@@ -562,7 +563,7 @@
         .progress-text {
             color: #aaa;
             font-size: 14px;
-            margin-top: 8px;
+            margin-top: 10px;
             text-align: center;
         }
 
@@ -841,7 +842,12 @@
                         </tr>
                     </thead>
                     <tbody id="team-body">
-                        <tr><td colspan="10" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Connect wallet to view your team</td></tr>
+                        <tr>
+                            <td colspan="10" class="loading">
+                                <i class="fas fa-wallet"></i><br>
+                                Connect wallet to view your team
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -874,11 +880,14 @@
         let isLoading = false;
         let allUsersData = [];
         let isDataLoaded = false;
-        const CHUNK_SIZE = 5000;
 
+        // Improved settings
+        const CHUNK_SIZE = 2000;          // Safer for most RPCs
+        const BLOCKS_TO_SCAN = 150000;    // ~3.5 days on Polygon (safer)
         const ACTIVE_THRESHOLD_USDT = 10;
         const SELL_TAX = 0.09;
         const MAX_LEVEL = 15;
+        const BATCH_SIZE = 40;            // For balance/users calls
 
         window.onload = async () => {
             if (window.ethereum) {
@@ -890,32 +899,28 @@
             }
         };
 
-        function updateProgress(percent, text) {
-            let progressBar = document.getElementById('progress-bar');
-            let progressText = document.getElementById('progress-text');
-            
-            if (!progressBar) {
-                const container = document.querySelector('.loading');
-                if (container) {
-                    container.innerHTML = `
+        function showLoading(message = "Loading...") {
+            document.getElementById('team-body').innerHTML = `
+                <tr>
+                    <td colspan="10" class="loading">
                         <i class="fas fa-spinner fa-spin"></i><br>
                         <div class="progress-container">
-                            <div class="progress-bar" id="progress-bar"></div>
-                            <div class="progress-text" id="progress-text">Loading...</div>
+                            <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                            <div class="progress-text" id="progress-text">${message}</div>
                         </div>
-                    `;
-                    progressBar = document.getElementById('progress-bar');
-                    progressText = document.getElementById('progress-text');
-                }
-            }
+                    </td>
+                </tr>`;
+        }
+
+        function updateProgress(percent, text) {
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
             
             if (progressBar) {
                 progressBar.style.width = Math.min(percent, 100) + '%';
             }
-            if (progressText && text) {
-                progressText.textContent = text;
-            } else if (progressText) {
-                progressText.textContent = `Loading: ${Math.min(percent, 100).toFixed(1)}%`;
+            if (progressText) {
+                progressText.textContent = text || `Loading: ${Math.min(percent, 100).toFixed(1)}%`;
             }
         }
 
@@ -937,7 +942,9 @@
                             method: 'wallet_switchEthereumChain',
                             params: [{ chainId: '0x89' }],
                         });
-                    } catch (switchError) {}
+                    } catch (switchError) {
+                        console.warn("Network switch failed", switchError);
+                    }
                 }
                 
                 const accounts = await provider.send("eth_requestAccounts", []);
@@ -948,13 +955,14 @@
                 document.getElementById('btn-text').textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
                 document.getElementById('connectBtn').classList.add('connected');
                 
+                showLoading("Connecting & loading blockchain data...");
                 await loadAllAddresses();
                 isDataLoaded = true;
                 await loadTeamData();
                 
             } catch (error) {
                 console.error(error);
-                alert("Connection failed");
+                alert("Connection failed: " + (error.message || error));
             }
         }
 
@@ -963,25 +971,34 @@
             let currentFrom = fromBlock;
             
             while (currentFrom <= toBlock) {
-                let currentTo = Math.min(currentFrom + CHUNK_SIZE, toBlock);
+                let currentTo = Math.min(currentFrom + CHUNK_SIZE - 1, toBlock);
+                let retries = 3;
                 
-                try {
-                    const events = await contract.queryFilter(eventFilter, currentFrom, currentTo);
-                    allEvents = allEvents.concat(events);
-                    
-                    const progress = ((currentFrom - fromBlock) / (toBlock - fromBlock)) * 100;
-                    updateProgress(progress, `Fetching events: ${currentFrom} to ${currentTo}`);
-                    
-                } catch (error) {
-                    console.warn(`Error fetching chunk ${currentFrom}-${currentTo}:`, error);
-                    if (currentTo - currentFrom > 1000) {
-                        currentTo = currentFrom + 1000;
-                        continue;
+                while (retries > 0) {
+                    try {
+                        const events = await contract.queryFilter(eventFilter, currentFrom, currentTo);
+                        allEvents = allEvents.concat(events);
+                        
+                        const progress = ((currentFrom - fromBlock) / (toBlock - fromBlock + 1)) * 100;
+                        updateProgress(Math.min(progress, 95), `Fetching events: Block ${currentFrom} → ${currentTo}`);
+                        break;
+                    } catch (error) {
+                        console.warn(`Chunk error ${currentFrom}-${currentTo}:`, error.message);
+                        retries--;
+                        if (retries === 0) {
+                            // Try smaller chunk
+                            if (currentTo - currentFrom > 500) {
+                                currentTo = currentFrom + 500;
+                                retries = 2;
+                                continue;
+                            }
+                        }
+                        await new Promise(r => setTimeout(r, 800));
                     }
                 }
                 
                 currentFrom = currentTo + 1;
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(r => setTimeout(r, 150)); // gentle delay
             }
             
             return allEvents;
@@ -992,19 +1009,21 @@
                 updateProgress(0, "Starting data load...");
                 
                 const currentBlock = await provider.getBlockNumber();
-                const fromBlock = Math.max(currentBlock - 500000, 0);
+                const fromBlock = Math.max(currentBlock - BLOCKS_TO_SCAN, 0);
+                
+                console.log(`Scanning blocks ${fromBlock} → ${currentBlock}`);
                 
                 const transferFilter = sigmaContract.filters.Transfer();
                 const boughtFilter = sigmaContract.filters.Buy();
                 
-                updateProgress(10, "Fetching Transfer events...");
+                updateProgress(5, "Fetching Transfer events...");
                 const transferEvents = await fetchEventsInChunks(sigmaContract, transferFilter, fromBlock, currentBlock);
                 
-                updateProgress(50, "Fetching Buy events...");
+                updateProgress(40, "Fetching Buy events...");
                 const boughtEvents = await fetchEventsInChunks(sigmaContract, boughtFilter, fromBlock, currentBlock);
                 
                 const addressSet = new Set();
-                addressSet.add(CREATOR_WALLET.toLowerCase());
+                addressSet.add(CREATOR_WALLET);
                 addressSet.add(userAddress);
                 
                 transferEvents.forEach(e => {
@@ -1014,50 +1033,57 @@
                     if (to !== "0x0000000000000000000000000000000000000000") addressSet.add(to);
                 });
                 
-                boughtEvents.forEach(e => addressSet.add(e.args.user.toLowerCase()));
+                boughtEvents.forEach(e => {
+                    if (e.args && e.args.user) {
+                        addressSet.add(e.args.user.toLowerCase());
+                    }
+                });
                 
                 let addresses = Array.from(addressSet);
-                console.log(`📊 Found ${addresses.length} addresses from events`);
+                console.log(`Found ${addresses.length} unique addresses from events`);
                 
-                updateProgress(60, `Found ${addresses.length} addresses, getting uplines...`);
+                updateProgress(50, `Found ${addresses.length} addresses. Collecting uplines...`);
                 
+                // Collect uplines (limited iterations)
                 const allUplines = new Set();
                 let previousSize = 0;
                 let currentSize = addresses.length;
                 let iteration = 0;
                 
-                while (previousSize !== currentSize && iteration < 10) {
+                while (previousSize !== currentSize && iteration < 8) {
                     previousSize = currentSize;
                     iteration++;
                     
-                    const batchSize = 50;
-                    for (let i = 0; i < addresses.length; i += batchSize) {
-                        const batch = addresses.slice(i, i + batchSize);
+                    for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
+                        const batch = addresses.slice(i, i + BATCH_SIZE);
                         const promises = batch.map(async (addr) => {
                             try {
-                                const userStruct = await sigmaContract.users(addr).catch(() => null);
-                                if (userStruct && userStruct.upline && userStruct.upline !== "0x0000000000000000000000000000000000000000") {
+                                const userStruct = await sigmaContract.users(addr);
+                                if (userStruct && userStruct.upline && 
+                                    userStruct.upline !== "0x0000000000000000000000000000000000000000") {
                                     allUplines.add(userStruct.upline.toLowerCase());
                                 }
                             } catch (e) {}
                         });
                         await Promise.all(promises);
+                        await new Promise(r => setTimeout(r, 80));
                     }
                     
                     allUplines.forEach(upline => addressSet.add(upline));
                     addresses = Array.from(addressSet);
                     currentSize = addresses.length;
+                    
+                    updateProgress(50 + (iteration * 3), `Upline pass ${iteration}: ${addresses.length} addresses`);
                 }
                 
-                console.log(`📊 Total unique addresses: ${addresses.length}`);
-                updateProgress(70, `Processing ${addresses.length} addresses...`);
+                console.log(`Total unique addresses after upline scan: ${addresses.length}`);
+                updateProgress(70, `Loading balances & user data for ${addresses.length} addresses...`);
                 
                 allUsersData = [];
-                const batchSize = 50;
                 let processed = 0;
                 
-                for (let i = 0; i < addresses.length; i += batchSize) {
-                    const batch = addresses.slice(i, i + batchSize);
+                for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
+                    const batch = addresses.slice(i, i + BATCH_SIZE);
                     const promises = batch.map(async (addr) => {
                         try {
                             const [balanceBN, userStruct] = await Promise.all([
@@ -1073,16 +1099,16 @@
                             let hasBoughtBefore = false;
                             
                             if (userStruct) {
-                                upline = userStruct.upline?.toLowerCase() || "0x0000000000000000000000000000000000000000";
-                                directCount = Number(userStruct.directCount);
-                                lastBuyTimestamp = Number(userStruct.lastBuyTimestamp);
-                                hasBoughtBefore = userStruct.hasBoughtBefore;
+                                upline = (userStruct.upline || "0x0000000000000000000000000000000000000000").toLowerCase();
+                                directCount = Number(userStruct.directCount || 0);
+                                lastBuyTimestamp = Number(userStruct.lastBuyTimestamp || 0);
+                                hasBoughtBefore = Boolean(userStruct.hasBoughtBefore);
                             }
                             
                             return { 
                                 address: addr.toLowerCase(), 
                                 balance, 
-                                upline: upline.toLowerCase(),
+                                upline,
                                 directCount,
                                 lastBuyTimestamp,
                                 hasBoughtBefore
@@ -1103,18 +1129,21 @@
                     allUsersData.push(...results);
                     processed += batch.length;
                     
-                    const progress = 70 + ((processed / addresses.length) * 25);
+                    const progress = 70 + ((processed / addresses.length) * 28);
                     updateProgress(progress, `Loading user data: ${processed}/${addresses.length}`);
                     
-                    if (i + batchSize < addresses.length) await new Promise(resolve => setTimeout(resolve, 100));
+                    if (i + BATCH_SIZE < addresses.length) {
+                        await new Promise(r => setTimeout(r, 120));
+                    }
                 }
                 
-                console.log(`✅ Final data loaded for ${allUsersData.length} addresses`);
+                console.log(`Final data loaded for ${allUsersData.length} addresses`);
                 updateProgress(100, "Data loaded successfully!");
                 
             } catch (error) {
                 console.error("Error loading addresses:", error);
-                updateProgress(100, "Error loading data: " + error.message);
+                updateProgress(100, "Error: " + (error.message || "Failed to load data"));
+                throw error;
             }
         }
 
@@ -1123,13 +1152,12 @@
             
             const members = [];
             const startAddr = startAddress.toLowerCase();
-            const directDownline = allUsersData.filter(u => u.upline.toLowerCase() === startAddr);
+            const directDownline = allUsersData.filter(u => u.upline === startAddr);
             
             for (const member of directDownline) {
                 members.push({ 
                     ...member, 
-                    level: currentLevel,
-                    directCount: member.directCount
+                    level: currentLevel
                 });
                 const subMembers = getDownline(member.address, currentLevel + 1, maxLevel);
                 members.push(...subMembers);
@@ -1148,14 +1176,7 @@
             }
             
             if (!isDataLoaded || allUsersData.length === 0) {
-                document.getElementById('team-body').innerHTML = `
-                    <tr><td colspan="10" class="loading">
-                        <i class="fas fa-spinner fa-spin"></i><br>
-                        <div class="progress-container">
-                            <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
-                            <div class="progress-text" id="progress-text">Loading blockchain data...</div>
-                        </div>
-                    </td></tr>`;
+                showLoading("Loading blockchain data...");
                 return;
             }
             
@@ -1163,12 +1184,9 @@
             isLoading = true;
             
             try {
-                document.getElementById('team-body').innerHTML = `
-                    <tr><td colspan="10" class="loading">
-                        <i class="fas fa-spinner fa-spin"></i><br>
-                        Building your team structure...
-                    </td></tr>`;
+                showLoading("Building your team structure...");
 
+                // Get rates
                 try {
                     const rateBN = await sigmaContract.getCurrentBuyRate();
                     buyRate = parseFloat(ethers.formatUnits(rateBN, 6));
@@ -1177,13 +1195,16 @@
                     document.getElementById('buy-rate').textContent = buyRate.toFixed(4) + ' USDT';
                     document.getElementById('sell-rate').textContent = `Sell: ${sellRate.toFixed(4)} USDT`;
                 } catch (e) {
+                    console.warn("Rate fetch failed, using fallback");
                     buyRate = 0.4315;
                     sellRate = buyRate * 0.91;
+                    document.getElementById('buy-rate').textContent = buyRate.toFixed(4) + ' USDT';
+                    document.getElementById('sell-rate').textContent = `Sell: ${sellRate.toFixed(4)} USDT`;
                 }
 
                 teamMembers = getDownline(userAddress, 1, MAX_LEVEL);
                 
-                console.log(`✅ Found ${teamMembers.length} team members under your wallet (up to level ${MAX_LEVEL})`);
+                console.log(`Found ${teamMembers.length} team members under your wallet`);
                 
                 teamMembers = teamMembers.map(m => ({
                     ...m,
@@ -1203,7 +1224,7 @@
                 document.getElementById('team-body').innerHTML = `
                     <tr><td colspan="10" class="empty-state">
                         <i class="fas fa-exclamation-triangle"></i><br>
-                        Error: ${error.message}
+                        Error: ${error.message || "Failed to build team"}
                     </td></tr>`;
             } finally {
                 isLoading = false;
@@ -1236,8 +1257,8 @@
                 document.getElementById('level1-active').textContent = level1Active;
                 document.getElementById('level1-inactive').textContent = level1Inactive;
                 
-                const activePercent = level1Members.length > 0 ? ((level1Active / level1Members.length) * 100).toFixed(1) : 0;
-                const inactivePercent = level1Members.length > 0 ? ((level1Inactive / level1Members.length) * 100).toFixed(1) : 0;
+                const activePercent = ((level1Active / level1Members.length) * 100).toFixed(1);
+                const inactivePercent = ((level1Inactive / level1Members.length) * 100).toFixed(1);
                 
                 document.getElementById('level1-active-percent').textContent = `${activePercent}% of directs`;
                 document.getElementById('level1-inactive-percent').textContent = `${inactivePercent}% of directs`;
@@ -1306,8 +1327,8 @@
                 html += `<tr>
                     <td>${i+1}</td>
                     <td>${addressDisplay}<div style="font-size:11px; margin-top:3px">
-                        <i class="fas fa-copy" onclick="copyAddress('${member.address}')" style="cursor:pointer; margin-right:8px"></i>
-                        <i class="fas fa-external-link-alt" onclick="viewOnExplorer('${member.address}')" style="cursor:pointer"></i>
+                        <i class="fas fa-copy" onclick="copyAddress('${member.address}')" style="cursor:pointer; margin-right:8px" title="Copy"></i>
+                        <i class="fas fa-external-link-alt" onclick="viewOnExplorer('${member.address}')" style="cursor:pointer" title="Explorer"></i>
                     </div></td>
                     <td><span class="level-badge level-${member.level}">Level ${member.level}</span></td>
                     <td>${balanceDisplay}</td>
@@ -1325,7 +1346,7 @@
 
         function applyFilters() {
             const level = document.getElementById('level-filter').value;
-            const search = document.getElementById('search-address').value.toLowerCase();
+            const search = document.getElementById('search-address').value.toLowerCase().trim();
             const status = document.getElementById('status-filter').value;
             
             filteredMembers = teamMembers.filter(m => {
@@ -1364,17 +1385,25 @@
             data.sort((a, b) => {
                 let comparison = 0;
                 switch(currentSort.field) {
-                    case 'balance': comparison = b.balance - a.balance; break;
-                    case 'date': comparison = b.lastBuyTimestamp - a.lastBuyTimestamp; break;
-                    default: comparison = a.level - b.level;
+                    case 'balance': 
+                        comparison = b.balance - a.balance; 
+                        break;
+                    case 'date': 
+                        comparison = b.lastBuyTimestamp - a.lastBuyTimestamp; 
+                        break;
+                    default: 
+                        comparison = a.level - b.level;
                 }
                 return currentSort.order === 'asc' ? comparison : -comparison;
             });
         }
 
         function copyAddress(addr) { 
-            navigator.clipboard.writeText(addr); 
-            alert("Address copied!");
+            navigator.clipboard.writeText(addr).then(() => {
+                alert("Address copied!");
+            }).catch(() => {
+                alert("Copy failed");
+            });
         }
 
         function viewOnExplorer(addr) { 
@@ -1383,24 +1412,39 @@
         
         function viewMember(addr) { 
             const m = teamMembers.find(m => m.address === addr);
-            if(m) alert(`Member: ${addr}\nLevel: ${m.level}\nBalance: ${m.balance.toFixed(2)} SIG6\nValue: $${m.usdtValue.toFixed(2)}\nDirects: ${m.directCount}\nStatus: ${m.isActive ? 'Active' : 'Inactive'}`);
+            if(m) {
+                alert(`Member: ${addr}\nLevel: ${m.level}\nBalance: ${m.balance.toFixed(2)} SIG6\nValue: $${m.usdtValue.toFixed(2)}\nDirects: ${m.directCount}\nStatus: ${m.isActive ? 'Active' : 'Inactive'}`);
+            }
         }
 
         function refreshData() {
             isDataLoaded = false;
             allUsersData = [];
+            teamMembers = [];
+            filteredMembers = [];
+            showLoading("Refreshing data...");
             loadAllAddresses().then(() => {
                 isDataLoaded = true;
                 loadTeamData();
+            }).catch(err => {
+                console.error(err);
+                document.getElementById('team-body').innerHTML = `
+                    <tr><td colspan="10" class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i><br>
+                        Refresh failed. Try again later.
+                    </td></tr>`;
             });
         }
 
         function exportData() {
-            if (!teamMembers.length) return;
+            if (!teamMembers.length) {
+                alert("No data to export");
+                return;
+            }
             let csv = "Level,Address,Balance (SIG6),USDT Value,Status,Join Date,Upline,Directs\n";
             teamMembers.forEach(m => {
                 const joinDate = m.lastBuyTimestamp > 0 ? new Date(m.lastBuyTimestamp * 1000).toLocaleString() : '';
-                csv += `${m.level},${m.address},${m.balance.toFixed(2)},${m.usdtValue.toFixed(2)},${m.isActive ? 'Active' : 'Inactive'},${joinDate},${m.upline},${m.directCount}\n`;
+                csv += `${m.level},${m.address},${m.balance.toFixed(2)},${m.usdtValue.toFixed(2)},${m.isActive ? 'Active' : 'Inactive'},"${joinDate}",${m.upline},${m.directCount}\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
@@ -1408,6 +1452,7 @@
             a.href = url;
             a.download = `team_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
