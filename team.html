@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>SIGMA SIX | Complete Downline</title>
+    <title>SIGMA SIX | Direct Referrals (Level 1)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,228 +12,105 @@
             --primary: #00ffcc;
             --secondary: #9d4edd;
             --bg: #0a0b10;
-            --card: #161821;
             --text: #ffffff;
             --border: #2d2f3e;
             --gradient: linear-gradient(90deg, #00ffcc, #9d4edd, #ff2a6d, #00ffcc);
-            --level1: #00ffcc; --level2: #00d4ff; --level3: #9d4edd; --level4: #ff6b9d;
-            --level5: #ffaa00; --level6: #ff8c00; --level7: #ff5e3a; --level8: #ff2a6d;
-            --level9: #d44eff; --level10: #aa55ff; --level11: #ff66cc; --level12: #66ff66;
-            --level13: #ff9966; --level14: #66ccff; --level15: #ff66aa;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; position: relative; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
         .rainbow-border { position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: var(--gradient); background-size: 400% 400%; animation: rainbow 8s ease infinite; z-index: 1000; }
-        @keyframes rainbow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        .bg-glow { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 1200px; height: 1200px; background: radial-gradient(circle, rgba(157,78,221,0.15) 0%, rgba(0,255,204,0.1) 25%, transparent 70%); z-index: -2; }
-        .container { max-width: 1600px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
-        .connect-btn { position: fixed; top: 20px; right: 20px; background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #000; border: none; border-radius: 15px; padding: 12px 25px; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 20px rgba(0,255,204,0.3); z-index: 1001; }
+        @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .connect-btn { position: fixed; top: 20px; right: 20px; background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #000; border: none; border-radius: 15px; padding: 12px 25px; font-weight: 800; font-size: 14px; cursor: pointer; z-index: 1001; display: flex; align-items: center; gap: 10px; }
         .connect-btn.connected { background: rgba(0,255,204,0.1); color: var(--primary); border: 1px solid var(--primary); }
-        .header { text-align: center; margin-bottom: 30px; padding-top: 30px; }
-        .header h1 { background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: 42px; font-weight: 800; margin-bottom: 10px; }
-        .header p { color: #aaa; font-size: 15px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: rgba(22,24,33,0.7); backdrop-filter: blur(10px); border-radius: 18px; padding: 20px; border: 1px solid rgba(0,255,204,0.1); position: relative; overflow: hidden; }
-        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--gradient); background-size: 400% 400%; animation: rainbow 8s ease infinite; }
-        .stat-title { display: flex; align-items: center; gap: 8px; color: #aaa; font-size: 13px; margin-bottom: 12px; }
+        .header { text-align: center; margin: 40px 0 30px; }
+        .header h1 { background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: 36px; font-weight: 800; }
+        .header p { color: #aaa; margin-top: 8px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: rgba(22,24,33,0.8); border-radius: 16px; padding: 20px; border: 1px solid rgba(0,255,204,0.15); }
+        .stat-title { color: #aaa; font-size: 13px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         .stat-title i { color: var(--primary); }
-        .stat-value { font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 4px; word-break: break-word; }
-        .stat-sub { font-size: 13px; color: #888; }
-        .level1-stats { background: linear-gradient(135deg, rgba(0,255,204,0.15), rgba(157,78,221,0.15)); border: 1px solid var(--primary); display: flex; justify-content: space-around; align-items: center; padding: 18px; border-radius: 18px; margin-bottom: 25px; flex-wrap: wrap; gap: 12px; }
-        .level1-stat-item { text-align: center; flex: 1; min-width: 110px; }
-        .level1-stat-label { color: #aaa; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-        .level1-stat-number { font-size: 30px; font-weight: 800; color: var(--primary); }
-        .level1-stat-sub { font-size: 13px; color: #ffaa00; margin-top: 4px; }
-        .crown-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,215,0,0.15); border: 1px solid gold; color: gold; padding: 3px 8px; border-radius: 16px; font-size: 11px; margin-left: 8px; }
-        .filters-container { background: rgba(22,24,33,0.7); backdrop-filter: blur(10px); border-radius: 18px; padding: 20px; border: 1px solid rgba(0,255,204,0.1); margin-bottom: 25px; }
-        .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        .filter-group { display: flex; flex-direction: column; gap: 6px; }
-        .filter-label { color: #aaa; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-        .filter-input, .filter-select { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; color: var(--text); font-size: 14px; width: 100%; }
-        .filter-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2300ffcc' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
-        .filter-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
-        .filter-btn { padding: 11px 22px; border-radius: 10px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; flex: 1 1 auto; justify-content: center; }
-        .btn-primary { background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #000; }
-        .btn-secondary { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid var(--border); }
-        .main-card { background: rgba(22,24,33,0.7); backdrop-filter: blur(10px); border-radius: 22px; padding: 22px; border: 1px solid rgba(0,255,204,0.15); position: relative; }
-        .main-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--gradient); background-size: 400% 400%; animation: rainbow 8s ease infinite; }
-        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-        .card-title { color: var(--primary); font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
-        .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-        .action-btn { padding: 9px 16px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .action-btn:hover { background: rgba(0,255,204,0.1); border-color: var(--primary); color: var(--primary); }
-        .table-responsive { overflow-x: auto; border-radius: 14px; border: 1px solid rgba(45,47,62,0.5); max-height: 580px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
-        thead { background: linear-gradient(90deg, rgba(0,255,204,0.1), rgba(157,78,221,0.1)); position: sticky; top: 0; z-index: 10; }
-        th { padding: 15px 12px; text-align: left; font-weight: 700; font-size: 13px; color: var(--primary); text-transform: uppercase; border-bottom: 2px solid rgba(0,255,204,0.2); white-space: nowrap; }
-        td { padding: 14px 12px; border-bottom: 1px solid rgba(45,47,62,0.3); font-size: 13px; }
+        .stat-value { font-size: 28px; font-weight: 800; color: var(--primary); }
+        .stat-sub { font-size: 13px; color: #888; margin-top: 4px; }
+        .main-card { background: rgba(22,24,33,0.8); border-radius: 20px; padding: 22px; border: 1px solid rgba(0,255,204,0.15); }
+        .card-title { color: var(--primary); font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .table-responsive { overflow-x: auto; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th { padding: 14px 12px; text-align: left; font-size: 13px; color: var(--primary); text-transform: uppercase; border-bottom: 2px solid rgba(0,255,204,0.2); }
+        td { padding: 13px 12px; border-bottom: 1px solid rgba(45,47,62,0.4); font-size: 13px; }
         tr:hover td { background: rgba(255,255,255,0.03); }
-        .level-badge { padding: 5px 10px; border-radius: 16px; font-size: 11px; font-weight: 700; display: inline-block; min-width: 65px; text-align: center; }
-        .level-1 { background: rgba(0,255,204,0.1); color: var(--level1); border: 1px solid rgba(0,255,204,0.3); }
-        .level-2 { background: rgba(0,212,255,0.1); color: var(--level2); border: 1px solid rgba(0,212,255,0.3); }
-        .level-3 { background: rgba(157,78,221,0.1); color: var(--level3); border: 1px solid rgba(157,78,221,0.3); }
-        .level-4 { background: rgba(255,107,157,0.1); color: var(--level4); border: 1px solid rgba(255,107,157,0.3); }
-        .level-5 { background: rgba(255,170,0,0.1); color: var(--level5); border: 1px solid rgba(255,170,0,0.3); }
-        .level-6 { background: rgba(255,140,0,0.1); color: var(--level6); border: 1px solid rgba(255,140,0,0.3); }
-        .level-7 { background: rgba(255,94,58,0.1); color: var(--level7); border: 1px solid rgba(255,94,58,0.3); }
-        .level-8 { background: rgba(255,42,109,0.1); color: var(--level8); border: 1px solid rgba(255,42,109,0.3); }
-        .level-9 { background: rgba(212,78,255,0.1); color: var(--level9); border: 1px solid rgba(212,78,255,0.3); }
-        .level-10 { background: rgba(170,85,255,0.1); color: var(--level10); border: 1px solid rgba(170,85,255,0.3); }
-        .level-11 { background: rgba(255,102,204,0.1); color: var(--level11); border: 1px solid rgba(255,102,204,0.3); }
-        .level-12 { background: rgba(102,255,102,0.1); color: var(--level12); border: 1px solid rgba(102,255,102,0.3); }
-        .level-13 { background: rgba(255,153,102,0.1); color: var(--level13); border: 1px solid rgba(255,153,102,0.3); }
-        .level-14 { background: rgba(102,204,255,0.1); color: var(--level14); border: 1px solid rgba(102,204,255,0.3); }
-        .level-15 { background: rgba(255,102,170,0.1); color: var(--level15); border: 1px solid rgba(255,102,170,0.3); }
-        .wallet-address { font-family: 'Courier New', monospace; font-size: 12px; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); display: inline-block; word-break: break-all; }
-        .results-count { background: rgba(0,255,204,0.1); color: var(--primary); padding: 9px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 16px; display: inline-block; border: 1px solid rgba(0,255,204,0.3); }
-        .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--primary); text-decoration: none; font-weight: 600; margin-bottom: 16px; padding: 9px 16px; border-radius: 12px; background: rgba(0,255,204,0.1); border: 1px solid rgba(0,255,204,0.3); }
-        .nav-container { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .nav-btn { padding: 10px 20px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: #888; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .nav-btn:hover { background: rgba(0,255,204,0.1); border-color: var(--primary); color: var(--primary); }
-        .loading, .empty-state { text-align: center; padding: 50px 20px; color: var(--primary); }
-        .empty-state i { font-size: 42px; margin-bottom: 16px; color: var(--secondary); opacity: 0.5; }
-        .crown-icon { color: gold; font-size: 13px; margin-left: 4px; filter: drop-shadow(0 0 4px rgba(255,215,0,0.5)); }
-        ::-webkit-scrollbar { width: 7px; height: 7px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--gradient); border-radius: 4px; }
-        .progress-container { background: rgba(0, 255, 204, 0.1); border-radius: 12px; padding: 16px; margin: 16px auto; border: 1px solid rgba(0, 255, 204, 0.25); max-width: 420px; }
-        .progress-bar { height: 8px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 4px; transition: width 0.35s ease; width: 0%; }
-        .progress-text { color: #bbb; font-size: 13px; margin-top: 10px; text-align: center; line-height: 1.4; }
-        @media screen and (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media screen and (max-width: 700px) {
-            .container { padding: 12px; }
-            .header h1 { font-size: 28px; }
-            .stats-grid { grid-template-columns: 1fr; gap: 12px; }
-            .level1-stats { flex-direction: column; }
-            .level1-stat-item { width: 100%; border-bottom: 1px solid rgba(0,255,204,0.15); padding-bottom: 12px; }
-            .level1-stat-item:last-child { border-bottom: none; }
-            .filters-grid { grid-template-columns: 1fr; }
-            .filter-buttons { flex-direction: column; }
-            .connect-btn { position: relative; top: auto; right: auto; margin: 0 auto 16px; width: 100%; justify-content: center; }
-            .nav-container { flex-direction: column; }
-            .nav-btn, .back-btn { width: 100%; justify-content: center; }
+        .wallet-address { font-family: monospace; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px; font-size: 12px; }
+        .level-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .active { background: rgba(0,255,204,0.15); color: #00ffcc; }
+        .inactive { background: rgba(255,170,0,0.15); color: #ffaa00; }
+        .loading, .empty { text-align: center; padding: 50px 20px; color: var(--primary); }
+        .progress-box { background: rgba(0,255,204,0.1); border-radius: 12px; padding: 16px; max-width: 400px; margin: 15px auto; border: 1px solid rgba(0,255,204,0.25); }
+        .progress-bar { height: 8px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 4px; width: 0%; transition: width 0.3s; }
+        .progress-text { color: #bbb; font-size: 13px; margin-top: 10px; text-align: center; }
+        .nav { margin-bottom: 20px; }
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--primary); text-decoration: none; font-weight: 600; padding: 10px 16px; border-radius: 12px; background: rgba(0,255,204,0.1); border: 1px solid rgba(0,255,204,0.3); }
+        @media (max-width: 600px) {
+            .connect-btn { position: relative; top: auto; right: auto; width: 100%; justify-content: center; margin-bottom: 15px; }
+            .header h1 { font-size: 26px; }
             .stat-value { font-size: 22px; }
-            .card-title { font-size: 18px; }
         }
     </style>
 </head>
 <body>
     <div class="rainbow-border"></div>
-    <div class="bg-glow"></div>
-    
+
     <button class="connect-btn" id="connectBtn" onclick="connectWallet()">
         <i class="fas fa-wallet"></i> <span id="btn-text">Connect Wallet</span>
     </button>
-    
+
     <div class="container">
-        <div class="nav-container">
+        <div class="nav">
             <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-            <button class="nav-btn" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
-            <button class="nav-btn" onclick="exportData()"><i class="fas fa-download"></i> Export CSV</button>
         </div>
-        
+
         <div class="header">
-            <h1>COMPLETE DOWNLINE</h1>
-            <p>Your Team Network • Live Balances • Up to 15 Levels</p>
+            <h1>DIRECT REFERRALS</h1>
+            <p>Level 1 Only • Fast Loading</p>
         </div>
-        
+
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-title"><i class="fas fa-users"></i> Total Team Members</div>
-                <div class="stat-value" id="total-members">0</div>
-                <div class="stat-sub" id="stats-breakdown">Active: 0 | Inactive: 0</div>
+                <div class="stat-title"><i class="fas fa-users"></i> Total Directs</div>
+                <div class="stat-value" id="total-directs">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-title"><i class="fas fa-sitemap"></i> Direct Referrals</div>
-                <div class="stat-value" id="direct-referrals">0</div>
-                <div class="stat-sub" id="direct-qualified">Qualified: 0</div>
+                <div class="stat-title"><i class="fas fa-crown"></i> Active (≥10 USDT)</div>
+                <div class="stat-value" id="active-directs">0</div>
             </div>
             <div class="stat-card">
                 <div class="stat-title"><i class="fas fa-coins"></i> Team Holdings</div>
                 <div class="stat-value" id="team-sigma">0</div>
-                <div class="stat-sub" id="team-sigma-usdt">$0.00 USDT</div>
+                <div class="stat-sub" id="team-usdt">$0.00</div>
             </div>
             <div class="stat-card">
-                <div class="stat-title"><i class="fas fa-chart-line"></i> Current Rates</div>
+                <div class="stat-title"><i class="fas fa-chart-line"></i> Buy Rate</div>
                 <div class="stat-value" id="buy-rate">0.0000</div>
-                <div class="stat-sub" id="sell-rate">Sell: 0.0000 USDT</div>
             </div>
         </div>
-        
-        <div class="level1-stats" id="level1-stats" style="display: none;">
-            <div class="level1-stat-item">
-                <div class="level1-stat-label">TOTAL LEVEL 1</div>
-                <div class="level1-stat-number" id="level1-total">0</div>
-            </div>
-            <div class="level1-stat-item">
-                <div class="level1-stat-label">ACTIVE (≥10 USDT) <span class="crown-badge"><i class="fas fa-crown"></i> QUALIFIED</span></div>
-                <div class="level1-stat-number" id="level1-active">0</div>
-                <div class="level1-stat-sub" id="level1-active-percent">0% of directs</div>
-            </div>
-            <div class="level1-stat-item">
-                <div class="level1-stat-label">INACTIVE (<10 USDT)</div>
-                <div class="level1-stat-number" id="level1-inactive">0</div>
-                <div class="level1-stat-sub" id="level1-inactive-percent">0% of directs</div>
-            </div>
-        </div>
-        
-        <div class="filters-container">
-            <div class="filters-grid">
-                <div class="filter-group">
-                    <div class="filter-label"><i class="fas fa-layer-group"></i> Level</div>
-                    <select id="level-filter" class="filter-select"><option value="all">All Levels</option></select>
-                </div>
-                <div class="filter-group">
-                    <div class="filter-label"><i class="fas fa-search"></i> Search Address</div>
-                    <input type="text" id="search-address" class="filter-input" placeholder="0x... or partial">
-                </div>
-                <div class="filter-group">
-                    <div class="filter-label"><i class="fas fa-filter"></i> Status</div>
-                    <select id="status-filter" class="filter-select">
-                        <option value="all">All Members</option>
-                        <option value="active">Active Only (≥10 USDT)</option>
-                        <option value="inactive">Inactive Only (<10 USDT)</option>
-                    </select>
-                </div>
-            </div>
-            <div class="filter-buttons">
-                <button class="filter-btn btn-primary" onclick="applyFilters()"><i class="fas fa-filter"></i> Apply Filters</button>
-                <button class="filter-btn btn-secondary" onclick="resetFilters()"><i class="fas fa-redo-alt"></i> Reset Filters</button>
-            </div>
-        </div>
-        
+
         <div class="main-card">
-            <div class="card-header">
-                <div class="card-title"><i class="fas fa-sitemap"></i> YOUR TEAM NETWORK</div>
-                <div class="card-actions">
-                    <button class="action-btn" onclick="sortTable('balance')"><i class="fas fa-sort-amount-down"></i> Balance</button>
-                    <button class="action-btn" onclick="sortTable('date')"><i class="fas fa-sort-numeric-down"></i> Join Date</button>
-                    <button class="action-btn" onclick="sortTable('level')"><i class="fas fa-sort-numeric-up"></i> Level</button>
-                </div>
-            </div>
-            
-            <div class="results-count" id="results-count" style="display: none;">
-                <i class="fas fa-users"></i> <span id="results-text">0 members</span>
-            </div>
+            <div class="card-title"><i class="fas fa-sitemap"></i> Your Level 1 Members</div>
             
             <div class="table-responsive">
-                <table id="team-table">
+                <table>
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Wallet Address</th>
-                            <th>Level</th>
+                            <th>Wallet</th>
                             <th>SIG6 Balance</th>
                             <th>USDT Value</th>
                             <th>Join Date</th>
-                            <th>Upline</th>
                             <th>Directs</th>
                             <th>Status</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="team-body">
-                        <tr><td colspan="10" class="loading"><i class="fas fa-wallet"></i><br>Connect wallet to view your team</td></tr>
+                        <tr><td colspan="7" class="loading"><i class="fas fa-wallet"></i><br>Connect wallet to view directs</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -242,458 +119,203 @@
 
     <script>
         const SIGMA_ADDR = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
-        const CREATOR_WALLET = "0xDf572e4D93582a9b2EEA65BDb0C588FB5fD4EC4b".toLowerCase();
-        
-        // Better public RPCs (try in order)
         const PUBLIC_RPCS = [
             "https://polygon.drpc.org",
             "https://polygon.publicnode.com",
-            "https://1rpc.io/matic",
-            "https://polygon-rpc.com"
+            "https://1rpc.io/matic"
         ];
 
-        const SIGMA_ABI = [
+        const ABI = [
             "function getCurrentBuyRate() view returns (uint256)",
             "function balanceOf(address) view returns (uint256)",
-            "function users(address) view returns (address upline, uint256 directCount, uint256 lastBuyTimestamp, uint256 totalReferralEarned, uint256 lastActionTime, uint256 lastActionBlock, bool hasBoughtBefore)",
+            "function users(address) view returns (address upline, uint256 directCount, uint256 lastBuyTimestamp, uint256, uint256, uint256, bool)",
             "event Buy(address indexed user, uint256 amount, uint256 rate, uint256 usdtSpent)"
         ];
 
-        let provider, readProvider, signer, userAddress, sigmaContract, readContract;
-        let teamMembers = [];
-        let filteredMembers = [];
-        let buyRate = 0, sellRate = 0;
-        let currentSort = { field: 'level', order: 'asc' };
-        let isLoading = false;
-        let allUsersData = [];
-        let isDataLoaded = false;
+        let provider, readProvider, userAddress, readContract;
+        let directs = [];
+        let buyRate = 0.43, sellRate = 0.39;
 
-        const CHUNK_SIZE = 1500;
-        const BLOCKS_TO_SCAN = 120000;   // ~2.5-3 days
-        const ACTIVE_THRESHOLD_USDT = 10;
-        const SELL_TAX = 0.09;
-        const MAX_LEVEL = 15;
-        const BATCH_SIZE = 30;
-
-        window.onload = async () => {
-            if (window.ethereum) {
-                provider = new ethers.BrowserProvider(window.ethereum);
-                const accounts = await provider.send("eth_accounts", []);
-                if (accounts.length > 0) await connectWallet();
-            }
-        };
+        const CHUNK = 2500;
+        const DAYS = 45;                    // ~45 days
+        const BLOCKS = DAYS * 24 * 60 * 30; // approx blocks
 
         function showLoading(msg) {
             document.getElementById('team-body').innerHTML = `
-                <tr><td colspan="10" class="loading">
-                    <i class="fas fa-spinner fa-spin" style="font-size:28px;margin-bottom:12px;"></i><br>
-                    <div class="progress-container">
-                        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
-                        <div class="progress-text" id="progress-text">${msg}</div>
+                <tr><td colspan="7" class="loading">
+                    <i class="fas fa-spinner fa-spin" style="font-size:26px"></i><br>
+                    <div class="progress-box">
+                        <div class="progress-bar" id="bar" style="width:0%"></div>
+                        <div class="progress-text" id="txt">${msg}</div>
                     </div>
                 </td></tr>`;
         }
 
-        function updateProgress(percent, text) {
-            const bar = document.getElementById('progress-bar');
-            const txt = document.getElementById('progress-text');
-            if (bar) bar.style.width = Math.min(percent, 100) + '%';
-            if (txt) txt.textContent = text || `${Math.min(percent,100).toFixed(0)}%`;
+        function progress(p, text) {
+            const bar = document.getElementById('bar');
+            const txt = document.getElementById('txt');
+            if (bar) bar.style.width = Math.min(p, 100) + '%';
+            if (txt) txt.innerHTML = text;
         }
 
-        async function getWorkingProvider() {
-            for (const rpc of PUBLIC_RPCS) {
+        async function getRPC() {
+            for (const url of PUBLIC_RPCS) {
                 try {
-                    const p = new ethers.JsonRpcProvider(rpc, 137);
+                    const p = new ethers.JsonRpcProvider(url, 137);
                     await p.getBlockNumber();
-                    console.log("Using RPC:", rpc);
                     return p;
-                } catch (e) {
-                    console.warn("RPC failed:", rpc);
-                }
+                } catch {}
             }
-            // fallback to MetaMask provider
-            return provider;
+            return new ethers.BrowserProvider(window.ethereum);
         }
 
         async function connectWallet() {
-            if (!window.ethereum) {
-                alert("Please install MetaMask!");
-                return;
-            }
+            if (!window.ethereum) return alert("Install MetaMask");
             try {
                 provider = new ethers.BrowserProvider(window.ethereum);
-                const network = await provider.getNetwork();
-                if (network.chainId !== 137n) {
-                    try {
-                        await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x89' }] });
-                    } catch (e) {}
+                const net = await provider.getNetwork();
+                if (net.chainId !== 137n) {
+                    await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x89' }] });
                 }
                 const accounts = await provider.send("eth_requestAccounts", []);
                 userAddress = accounts[0].toLowerCase();
-                signer = await provider.getSigner();
                 
-                // Use better public RPC for heavy reads
-                readProvider = await getWorkingProvider();
-                sigmaContract = new ethers.Contract(SIGMA_ADDR, SIGMA_ABI, provider);
-                readContract = new ethers.Contract(SIGMA_ADDR, SIGMA_ABI, readProvider);
+                readProvider = await getRPC();
+                readContract = new ethers.Contract(SIGMA_ADDR, ABI, readProvider);
 
                 document.getElementById('btn-text').textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
                 document.getElementById('connectBtn').classList.add('connected');
 
-                showLoading("Connecting... Please wait 30-90 seconds");
-                await loadAllAddresses();
-                isDataLoaded = true;
-                await loadTeamData();
-            } catch (error) {
-                console.error(error);
-                alert("Connection failed: " + (error.message || error));
+                await loadDirects();
+            } catch (e) {
+                alert("Connection failed");
+                console.error(e);
             }
         }
 
-        async function fetchBuyEvents(fromBlock, toBlock) {
-            let allEvents = [];
-            let currentFrom = fromBlock;
-            const total = toBlock - fromBlock + 1;
-
-            while (currentFrom <= toBlock) {
-                const currentTo = Math.min(currentFrom + CHUNK_SIZE - 1, toBlock);
-                let success = false;
-                let retries = 4;
-
-                while (retries > 0 && !success) {
-                    try {
-                        const filter = readContract.filters.Buy();
-                        const events = await readContract.queryFilter(filter, currentFrom, currentTo);
-                        allEvents = allEvents.concat(events);
-                        success = true;
-                    } catch (err) {
-                        retries--;
-                        console.warn(`Retry ${4-retries} for blocks ${currentFrom}-${currentTo}`);
-                        await new Promise(r => setTimeout(r, 600 + Math.random()*400));
-                        if (retries === 0 && (currentTo - currentFrom) > 400) {
-                            // force smaller chunk
-                            const mid = Math.floor((currentFrom + currentTo) / 2);
-                            const first = await fetchBuyEvents(currentFrom, mid);
-                            const second = await fetchBuyEvents(mid + 1, currentTo);
-                            return first.concat(second);
-                        }
-                    }
-                }
-
-                const done = currentFrom - fromBlock;
-                const pct = Math.min(90, (done / total) * 90);
-                updateProgress(pct, `Scanning Buy events...\nBlock ${currentFrom.toLocaleString()} → ${currentTo.toLocaleString()}`);
-                
-                currentFrom = currentTo + 1;
-                await new Promise(r => setTimeout(r, 180));
-            }
-            return allEvents;
-        }
-
-        async function loadAllAddresses() {
-            try {
-                updateProgress(2, "Getting current block...");
-                const currentBlock = await readProvider.getBlockNumber();
-                const fromBlock = Math.max(currentBlock - BLOCKS_TO_SCAN, 0);
-
-                console.log(`Scanning Buy events from ${fromBlock} to ${currentBlock}`);
-
-                updateProgress(5, "Fetching Buy events (this is the main step)...");
-                const buyEvents = await fetchBuyEvents(fromBlock, currentBlock);
-
-                const addressSet = new Set();
-                addressSet.add(CREATOR_WALLET);
-                addressSet.add(userAddress);
-
-                buyEvents.forEach(e => {
-                    if (e.args && e.args.user) {
-                        addressSet.add(e.args.user.toLowerCase());
-                    }
-                });
-
-                let addresses = Array.from(addressSet);
-                console.log(`Found ${addresses.length} addresses from Buy events`);
-
-                updateProgress(55, `Found ${addresses.length} users. Collecting uplines...`);
-
-                // Collect uplines (limited depth)
-                for (let iter = 0; iter < 6; iter++) {
-                    const newOnes = new Set();
-                    for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
-                        const batch = addresses.slice(i, i + BATCH_SIZE);
-                        await Promise.all(batch.map(async (addr) => {
-                            try {
-                                const u = await readContract.users(addr);
-                                if (u && u.upline && u.upline !== "0x0000000000000000000000000000000000000000") {
-                                    const up = u.upline.toLowerCase();
-                                    if (!addressSet.has(up)) newOnes.add(up);
-                                }
-                            } catch {}
-                        }));
-                        await new Promise(r => setTimeout(r, 90));
-                    }
-                    if (newOnes.size === 0) break;
-                    newOnes.forEach(a => addressSet.add(a));
-                    addresses = Array.from(addressSet);
-                    updateProgress(55 + iter * 4, `Upline pass ${iter+1}: ${addresses.length} addresses`);
-                }
-
-                updateProgress(75, `Loading balances for ${addresses.length} users...`);
-
-                allUsersData = [];
-                let processed = 0;
-
-                for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
-                    const batch = addresses.slice(i, i + BATCH_SIZE);
-                    const results = await Promise.all(batch.map(async (addr) => {
-                        try {
-                            const [balBN, userStruct] = await Promise.all([
-                                readContract.balanceOf(addr),
-                                readContract.users(addr).catch(() => null)
-                            ]);
-                            const balance = parseFloat(ethers.formatEther(balBN));
-                            let upline = "0x0000000000000000000000000000000000000000";
-                            let directCount = 0;
-                            let lastBuyTimestamp = 0;
-                            if (userStruct) {
-                                upline = (userStruct.upline || upline).toLowerCase();
-                                directCount = Number(userStruct.directCount || 0);
-                                lastBuyTimestamp = Number(userStruct.lastBuyTimestamp || 0);
-                            }
-                            return { address: addr, balance, upline, directCount, lastBuyTimestamp };
-                        } catch {
-                            return { address: addr, balance: 0, upline: "0x0000000000000000000000000000000000000000", directCount: 0, lastBuyTimestamp: 0 };
-                        }
-                    }));
-                    allUsersData.push(...results);
-                    processed += batch.length;
-                    updateProgress(75 + (processed / addresses.length) * 22, `Loading data: ${processed}/${addresses.length}`);
-                    await new Promise(r => setTimeout(r, 100));
-                }
-
-                updateProgress(100, "Data ready! Building your team...");
-                console.log("Total users loaded:", allUsersData.length);
-
-            } catch (error) {
-                console.error(error);
-                updateProgress(100, "Error: " + (error.message || "Failed"));
-                throw error;
-            }
-        }
-
-        function getDownline(startAddress, level = 1) {
-            if (level > MAX_LEVEL) return [];
-            const start = startAddress.toLowerCase();
-            const directs = allUsersData.filter(u => u.upline === start);
-            let result = [];
-            for (const m of directs) {
-                result.push({ ...m, level });
-                result = result.concat(getDownline(m.address, level + 1));
-            }
-            return result;
-        }
-
-        async function loadTeamData() {
-            if (!userAddress || !isDataLoaded) return;
-            if (isLoading) return;
-            isLoading = true;
+        async function loadDirects() {
+            showLoading("Scanning for your direct referrals...<br>Please wait 1-3 minutes");
 
             try {
-                showLoading("Building team structure...");
+                const current = await readProvider.getBlockNumber();
+                const from = Math.max(current - BLOCKS, 0);
 
+                // Get rate
                 try {
                     const rateBN = await readContract.getCurrentBuyRate();
                     buyRate = parseFloat(ethers.formatUnits(rateBN, 6));
-                    sellRate = buyRate * (1 - SELL_TAX);
-                } catch {
-                    buyRate = 0.43;
                     sellRate = buyRate * 0.91;
+                } catch {}
+                document.getElementById('buy-rate').textContent = buyRate.toFixed(4);
+
+                // Scan Buy events
+                let allBuyers = new Set();
+                let fromBlock = from;
+
+                while (fromBlock <= current) {
+                    const toBlock = Math.min(fromBlock + CHUNK - 1, current);
+                    try {
+                        const events = await readContract.queryFilter(readContract.filters.Buy(), fromBlock, toBlock);
+                        events.forEach(e => {
+                            if (e.args?.user) allBuyers.add(e.args.user.toLowerCase());
+                        });
+                    } catch (err) {
+                        console.warn("chunk error", fromBlock, toBlock);
+                        await new Promise(r => setTimeout(r, 800));
+                    }
+
+                    const pct = ((fromBlock - from) / (current - from)) * 80;
+                    progress(pct, `Scanning...<br>Block ${fromBlock.toLocaleString()} → ${toBlock.toLocaleString()}<br>Found ${allBuyers.size} buyers`);
+                    fromBlock = toBlock + 1;
+                    await new Promise(r => setTimeout(r, 180));
                 }
-                document.getElementById('buy-rate').textContent = buyRate.toFixed(4) + ' USDT';
-                document.getElementById('sell-rate').textContent = `Sell: ${sellRate.toFixed(4)} USDT`;
 
-                teamMembers = getDownline(userAddress).map(m => ({
-                    ...m,
-                    usdtValue: m.balance * sellRate,
-                    isActive: (m.balance * sellRate) >= ACTIVE_THRESHOLD_USDT
-                }));
+                progress(85, `Checking ${allBuyers.size} addresses for your directs...`);
 
-                filteredMembers = [...teamMembers];
-                updateStats();
-                updateLevelFilter();
-                updateTeamTable();
+                // Check who has you as upline
+                const addresses = Array.from(allBuyers);
+                directs = [];
+                const batch = 20;
+
+                for (let i = 0; i < addresses.length; i += batch) {
+                    const slice = addresses.slice(i, i + batch);
+                    await Promise.all(slice.map(async (addr) => {
+                        try {
+                            const u = await readContract.users(addr);
+                            if (u.upline && u.upline.toLowerCase() === userAddress) {
+                                const balBN = await readContract.balanceOf(addr);
+                                const balance = parseFloat(ethers.formatEther(balBN));
+                                directs.push({
+                                    address: addr,
+                                    balance,
+                                    usdtValue: balance * sellRate,
+                                    isActive: (balance * sellRate) >= 10,
+                                    directCount: Number(u.directCount || 0),
+                                    lastBuy: Number(u.lastBuyTimestamp || 0)
+                                });
+                            }
+                        } catch {}
+                    }));
+                    progress(85 + (i / addresses.length) * 14, `Checking directs... ${i}/${addresses.length}`);
+                    await new Promise(r => setTimeout(r, 100));
+                }
+
+                // Sort by balance high to low
+                directs.sort((a, b) => b.balance - a.balance);
+
+                updateUI();
             } catch (e) {
                 console.error(e);
-                document.getElementById('team-body').innerHTML = `<tr><td colspan="10" class="empty-state"><i class="fas fa-exclamation-triangle"></i><br>Error building team</td></tr>`;
-            } finally {
-                isLoading = false;
+                document.getElementById('team-body').innerHTML = `<tr><td colspan="7" class="empty"><i class="fas fa-exclamation-triangle"></i><br>Error loading data</td></tr>`;
             }
         }
 
-        function updateStats() {
-            const total = teamMembers.length;
-            const direct = teamMembers.filter(m => m.level === 1).length;
-            const qualified = teamMembers.filter(m => m.level === 1 && m.isActive).length;
-            const totalSigma = teamMembers.reduce((s, m) => s + m.balance, 0);
-            const totalUsdt = teamMembers.reduce((s, m) => s + m.usdtValue, 0);
-            const active = teamMembers.filter(m => m.isActive).length;
+        function updateUI() {
+            const total = directs.length;
+            const active = directs.filter(d => d.isActive).length;
+            const totalSigma = directs.reduce((s, d) => s + d.balance, 0);
+            const totalUsdt = directs.reduce((s, d) => s + d.usdtValue, 0);
 
-            document.getElementById('total-members').textContent = total;
-            document.getElementById('stats-breakdown').textContent = `Active: ${active} | Inactive: ${total - active}`;
-            document.getElementById('direct-referrals').textContent = direct;
-            document.getElementById('direct-qualified').textContent = `Qualified: ${qualified}`;
-            document.getElementById('team-sigma').textContent = totalSigma.toFixed(2) + ' SIG6';
-            document.getElementById('team-sigma-usdt').textContent = '$' + totalUsdt.toFixed(2) + ' USDT';
+            document.getElementById('total-directs').textContent = total;
+            document.getElementById('active-directs').textContent = active;
+            document.getElementById('team-sigma').textContent = totalSigma.toFixed(2);
+            document.getElementById('team-usdt').textContent = '$' + totalUsdt.toFixed(2);
 
-            const l1 = teamMembers.filter(m => m.level === 1);
-            if (l1.length) {
-                document.getElementById('level1-stats').style.display = 'flex';
-                const act = l1.filter(m => m.isActive).length;
-                document.getElementById('level1-total').textContent = l1.length;
-                document.getElementById('level1-active').textContent = act;
-                document.getElementById('level1-inactive').textContent = l1.length - act;
-                document.getElementById('level1-active-percent').textContent = ((act / l1.length) * 100).toFixed(1) + '% of directs';
-                document.getElementById('level1-inactive-percent').textContent = (((l1.length - act) / l1.length) * 100).toFixed(1) + '% of directs';
-            } else {
-                document.getElementById('level1-stats').style.display = 'none';
-            }
-        }
-
-        function updateLevelFilter() {
-            const levels = [...new Set(teamMembers.map(m => m.level))].sort((a,b) => a-b);
-            const sel = document.getElementById('level-filter');
-            sel.innerHTML = '<option value="all">All Levels</option>';
-            levels.forEach(l => {
-                const c = teamMembers.filter(m => m.level === l).length;
-                sel.innerHTML += `<option value="${l}">Level ${l} (${c})</option>`;
-            });
-        }
-
-        function updateTeamTable() {
             const tbody = document.getElementById('team-body');
-            const resultsDiv = document.getElementById('results-count');
-
-            if (!filteredMembers.length) {
-                tbody.innerHTML = `<tr><td colspan="10" class="empty-state"><i class="fas fa-users-slash"></i><br>No team members found</td></tr>`;
-                resultsDiv.style.display = 'none';
+            if (total === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty"><i class="fas fa-users-slash"></i><br>No direct referrals found<br><small style="color:#888">in last ~45 days</small></td></tr>`;
                 return;
             }
 
-            const activeCount = filteredMembers.filter(m => m.isActive).length;
-            resultsDiv.style.display = 'block';
-            document.getElementById('results-text').textContent = `${filteredMembers.length} members (${activeCount} active)`;
-
             let html = '';
-            filteredMembers.forEach((m, i) => {
-                const uplineShort = m.upline === "0x0000000000000000000000000000000000000000" ? '—' : m.upline.slice(0,6)+'...'+m.upline.slice(-4);
-                let date = '—';
-                if (m.lastBuyTimestamp > 0) {
-                    date = new Date(m.lastBuyTimestamp * 1000).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-                }
-                const crown = m.directCount >= 10 ? `<span class="crown-icon"><i class="fas fa-crown"></i></span>` : '';
-                const bal = m.balance === 0 ? `<span style="color:#888">0.00</span>` : `<span style="color:var(--primary);font-weight:700">${m.balance.toFixed(2)}</span>`;
-                const statusClass = m.isActive ? 'level-1' : 'level-5';
-                const statusText = m.isActive ? 'Active' : 'Inactive';
-
+            directs.forEach((d, i) => {
+                const date = d.lastBuy > 0 ? new Date(d.lastBuy * 1000).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : '—';
                 html += `<tr>
                     <td>${i+1}</td>
                     <td>
-                        <span class="wallet-address">${m.address.slice(0,8)}...${m.address.slice(-6)} ${crown}</span>
-                        <div style="font-size:11px;margin-top:3px">
-                            <i class="fas fa-copy" onclick="copyAddress('${m.address}')" style="cursor:pointer;margin-right:8px"></i>
-                            <i class="fas fa-external-link-alt" onclick="viewOnExplorer('${m.address}')" style="cursor:pointer"></i>
+                        <span class="wallet-address">${d.address.slice(0,8)}...${d.address.slice(-6)}</span>
+                        <div style="margin-top:4px;font-size:11px">
+                            <i class="fas fa-copy" style="cursor:pointer;margin-right:8px" onclick="navigator.clipboard.writeText('${d.address}')"></i>
+                            <i class="fas fa-external-link-alt" style="cursor:pointer" onclick="window.open('https://polygonscan.com/address/${d.address}')"></i>
                         </div>
                     </td>
-                    <td><span class="level-badge level-${m.level}">Level ${m.level}</span></td>
-                    <td>${bal}</td>
-                    <td>$${m.usdtValue.toFixed(2)}</td>
+                    <td style="color:var(--primary);font-weight:700">${d.balance.toFixed(2)}</td>
+                    <td>$${d.usdtValue.toFixed(2)}</td>
                     <td>${date}</td>
-                    <td><span class="wallet-address" style="font-size:11px">${uplineShort}</span></td>
-                    <td style="text-align:center">${m.directCount}${m.directCount>=10?' <i class="fas fa-crown" style="color:gold"></i>':''}</td>
-                    <td><span class="level-badge ${statusClass}">${statusText}</span></td>
-                    <td><button class="action-btn" style="padding:5px 10px" onclick="viewMember('${m.address}')"><i class="fas fa-eye"></i></button></td>
+                    <td>${d.directCount}</td>
+                    <td><span class="level-badge ${d.isActive ? 'active' : 'inactive'}">${d.isActive ? 'Active' : 'Inactive'}</span></td>
                 </tr>`;
             });
             tbody.innerHTML = html;
         }
 
-        function applyFilters() {
-            const level = document.getElementById('level-filter').value;
-            const search = document.getElementById('search-address').value.toLowerCase().trim();
-            const status = document.getElementById('status-filter').value;
-            filteredMembers = teamMembers.filter(m => {
-                if (level !== 'all' && m.level !== parseInt(level)) return false;
-                if (search && !m.address.includes(search)) return false;
-                if (status === 'active' && !m.isActive) return false;
-                if (status === 'inactive' && m.isActive) return false;
-                return true;
-            });
-            sortData(filteredMembers);
-            updateTeamTable();
-        }
-
-        function resetFilters() {
-            document.getElementById('level-filter').value = 'all';
-            document.getElementById('search-address').value = '';
-            document.getElementById('status-filter').value = 'all';
-            filteredMembers = [...teamMembers];
-            sortData(filteredMembers);
-            updateTeamTable();
-        }
-
-        function sortTable(field) {
-            if (currentSort.field === field) currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
-            else { currentSort.field = field; currentSort.order = 'asc'; }
-            sortData(filteredMembers);
-            updateTeamTable();
-        }
-
-        function sortData(data) {
-            data.sort((a, b) => {
-                let c = 0;
-                if (currentSort.field === 'balance') c = b.balance - a.balance;
-                else if (currentSort.field === 'date') c = b.lastBuyTimestamp - a.lastBuyTimestamp;
-                else c = a.level - b.level;
-                return currentSort.order === 'asc' ? c : -c;
-            });
-        }
-
-        function copyAddress(addr) {
-            navigator.clipboard.writeText(addr).then(() => alert("Copied!")).catch(() => alert("Copy failed"));
-        }
-        function viewOnExplorer(addr) { window.open(`https://polygonscan.com/address/${addr}`, '_blank'); }
-        function viewMember(addr) {
-            const m = teamMembers.find(x => x.address === addr);
-            if (m) alert(`Address: ${addr}\nLevel: ${m.level}\nBalance: ${m.balance.toFixed(2)} SIG6\nValue: $${m.usdtValue.toFixed(2)}\nDirects: ${m.directCount}\nStatus: ${m.isActive ? 'Active' : 'Inactive'}`);
-        }
-
-        function refreshData() {
-            isDataLoaded = false;
-            allUsersData = [];
-            teamMembers = [];
-            filteredMembers = [];
-            showLoading("Refreshing data... Please wait");
-            loadAllAddresses().then(() => {
-                isDataLoaded = true;
-                loadTeamData();
-            }).catch(() => {
-                document.getElementById('team-body').innerHTML = `<tr><td colspan="10" class="empty-state"><i class="fas fa-exclamation-triangle"></i><br>Refresh failed. Try again.</td></tr>`;
-            });
-        }
-
-        function exportData() {
-            if (!teamMembers.length) return alert("No data");
-            let csv = "Level,Address,Balance,USDT Value,Status,Join Date,Upline,Directs\n";
-            teamMembers.forEach(m => {
-                const d = m.lastBuyTimestamp > 0 ? new Date(m.lastBuyTimestamp*1000).toLocaleString() : '';
-                csv += `${m.level},${m.address},${m.balance.toFixed(2)},${m.usdtValue.toFixed(2)},${m.isActive?'Active':'Inactive'},"${d}",${m.upline},${m.directCount}\n`;
-            });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-            a.download = `team_${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
-        }
+        // Auto connect if already connected
+        window.onload = async () => {
+            if (window.ethereum) {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length) connectWallet();
+            }
+        };
     </script>
 </body>
 </html>
