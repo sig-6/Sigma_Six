@@ -46,7 +46,27 @@
         .progress-box { background: rgba(0,255,204,0.08); border-radius: 12px; padding: 14px; max-width: 380px; margin: 12px auto; border: 1px solid rgba(0,255,204,0.2); }
         .progress-bar { height: 7px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 4px; width: 0%; transition: width 0.3s; }
         .progress-text { color: #aaa; font-size: 14px; margin-top: 10px; text-align: center; font-weight: 600; }
-        .back { display: inline-flex; align-items: center; gap: 7px; color: var(--primary); text-decoration: none; font-weight: 600; padding: 9px 14px; border-radius: 11px; background: rgba(0,255,204,0.1); border: 1px solid rgba(0,255,204,0.25); margin-bottom: 15px; font-size: 13px; }
+        .back { display: inline-flex; align-items: center; gap: 7px; color: var(--primary); text-decoration: none; font-weight: 600; padding: 9px 14px; border-radius: 11px; background: rgba(0,255,204,0.1); border: 1px solid rgba(0,255,204,0.25); font-size: 13px; }
+        .refresh-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--primary);
+            background: rgba(0,255,204,0.1);
+            border: 1px solid rgba(0,255,204,0.25);
+            padding: 9px 16px;
+            border-radius: 11px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .refresh-btn:hover { background: rgba(0,255,204,0.2); }
+        .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .refresh-btn i.spinning { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px; }
         @media (max-width: 600px) {
             .connect-btn { position: relative; top: auto; right: auto; width: 100%; justify-content: center; margin-bottom: 12px; }
             .header h1 { font-size: 24px; }
@@ -62,7 +82,12 @@
     </button>
 
     <div class="container">
-        <a href="index.html" class="back"><i class="fas fa-arrow-left"></i> Back</a>
+        <div class="top-bar">
+            <a href="index.html" class="back"><i class="fas fa-arrow-left"></i> Back</a>
+            <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
+                <i class="fas fa-sync-alt" id="refreshIcon"></i> Refresh
+            </button>
+        </div>
 
         <div class="header">
             <h1>LEVEL 1 DIRECTS</h1>
@@ -123,17 +148,21 @@
         const ABI = [
             "function getCurrentBuyRate() view returns (uint256)",
             "function balanceOf(address) view returns (uint256)",
+            "function decimals() view returns (uint8)",
             "function users(address) view returns (address upline, uint256 directCount, uint256 lastBuyTimestamp, uint256, uint256, uint256, bool)",
             "event Buy(address indexed user, uint256 amount, uint256 rate, uint256 usdtSpent)"
         ];
 
         let readProvider, readContract, userAddress;
+        let tokenDecimals = 18;
         let directs = [];
-        let buyRate = 0.43, sellRate = 0.39;
+        let buyRate = 0, sellRate = 0;
+        let buyFilter = null;
 
         const CHUNK = 2500;
         const DAYS = 30;
         const BLOCKS = Math.floor(DAYS * 43000);
+        const BATCH_SIZE = 12;
 
         function showLoad(msg) {
             document.getElementById('body').innerHTML = `
@@ -153,10 +182,19 @@
             if (x) x.textContent = t;
         }
 
+        function showError(msg) {
+            document.getElementById('body').innerHTML = `
+                <tr><td colspan="7" class="empty">
+                    <i class="fas fa-exclamation-triangle"></i><br>
+                    ${msg}<br>
+                    <small style="color:#888">Try refreshing the page.</small>
+                </td></tr>`;
+        }
+
         async function getRPC() {
             for (const url of RPCS) {
                 try {
-                    const p = new ethers.JsonRpcProvider(url, 137);
+                    const p = new ethers.JsonRpcProvider(url, 137, { staticNetwork: true });
                     await p.getBlockNumber();
                     console.log("RPC connected:", url);
                     return p;
@@ -164,7 +202,7 @@
                     console.warn("RPC failed:", url);
                 }
             }
-            return new ethers.BrowserProvider(window.ethereum);
+            throw new Error("All RPC endpoints failed. Check your internet or try again later.");
         }
 
         async function connectWallet() {
@@ -183,6 +221,15 @@
 
                 readProvider = await getRPC();
                 readContract = new ethers.Contract(CONTRACT, ABI, readProvider);
+                buyFilter = readContract.filters.Buy();
+
+                try {
+                    tokenDecimals = Number(await readContract.decimals());
+                    console.log("Token decimals:", tokenDecimals);
+                } catch (e) {
+                    console.warn("decimals() failed, assuming 18");
+                    tokenDecimals = 18;
+                }
 
                 document.getElementById('btn-text').textContent = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
                 document.getElementById('connectBtn').classList.add('connected');
@@ -191,6 +238,27 @@
             } catch (err) {
                 console.error(err);
                 alert("Connection failed: " + (err.message || err));
+            }
+        }
+
+        async function refreshData() {
+            if (!userAddress || !readContract) {
+                return connectWallet();
+            }
+
+            const btn = document.getElementById('refreshBtn');
+            const icon = document.getElementById('refreshIcon');
+
+            btn.disabled = true;
+            icon.classList.add('spinning');
+
+            try {
+                await loadData();
+            } catch (err) {
+                console.error("Refresh failed:", err);
+            } finally {
+                btn.disabled = false;
+                icon.classList.remove('spinning');
             }
         }
 
@@ -203,17 +271,15 @@
 
                 console.log("Scanning from", fromBlock, "to", currentBlock);
 
-                // Get rate
                 try {
                     const rateBN = await readContract.getCurrentBuyRate();
                     buyRate = parseFloat(ethers.formatUnits(rateBN, 6));
                     sellRate = buyRate * 0.91;
                 } catch (e) {
-                    console.warn("Rate fetch failed");
+                    console.warn("Rate fetch failed", e);
                 }
                 document.getElementById('rate').textContent = buyRate.toFixed(4);
 
-                // Step 1: Collect all buyers
                 const buyers = new Set();
                 let from = fromBlock;
 
@@ -224,8 +290,7 @@
 
                     while (retries > 0 && !success) {
                         try {
-                            const filter = readContract.filters.Buy();
-                            const events = await readContract.queryFilter(filter, from, to);
+                            const events = await readContract.queryFilter(buyFilter, from, to);
                             events.forEach(e => {
                                 if (e.args && e.args.user) {
                                     buyers.add(e.args.user.toLowerCase());
@@ -234,7 +299,7 @@
                             success = true;
                         } catch (err) {
                             retries--;
-                            console.warn("Retry chunk", from, to);
+                            console.warn("Retry chunk", from, to, err.message);
                             await new Promise(r => setTimeout(r, 800));
                         }
                     }
@@ -248,13 +313,11 @@
                 console.log("Total buyers found:", buyers.size);
                 prog(70, "2 / 3  Finding your directs...");
 
-                // Step 2: Check who has current user as upline
                 const list = Array.from(buyers);
                 directs = [];
-                const batchSize = 12;
 
-                for (let i = 0; i < list.length; i += batchSize) {
-                    const batch = list.slice(i, i + batchSize);
+                for (let i = 0; i < list.length; i += BATCH_SIZE) {
+                    const batch = list.slice(i, i + BATCH_SIZE);
 
                     await Promise.all(batch.map(async (addr) => {
                         try {
@@ -263,7 +326,7 @@
 
                             if (upline === userAddress) {
                                 const balBN = await readContract.balanceOf(addr);
-                                const balance = parseFloat(ethers.formatEther(balBN));
+                                const balance = parseFloat(ethers.formatUnits(balBN, tokenDecimals));
                                 const usdtValue = balance * sellRate;
 
                                 directs.push({
@@ -276,7 +339,7 @@
                                 });
                             }
                         } catch (e) {
-                            // ignore single address error
+                            console.warn("user lookup failed", addr, e.message);
                         }
                     }));
 
@@ -293,12 +356,7 @@
 
             } catch (err) {
                 console.error("Load error:", err);
-                document.getElementById('body').innerHTML = `
-                    <tr><td colspan="7" class="empty">
-                        <i class="fas fa-exclamation-triangle"></i><br>
-                        Error loading data<br>
-                        <small style="color:#888">${err.message || 'Unknown error'}</small>
-                    </td></tr>`;
+                showError(err.message || 'Unknown error');
             }
         }
 
@@ -352,17 +410,22 @@
             tbody.innerHTML = html;
         }
 
-        // Auto connect
-        window.onload = async () => {
-            if (window.ethereum) {
-                try {
-                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                    if (accounts.length > 0) {
-                        connectWallet();
-                    }
-                } catch (e) {}
-            }
-        };
+        window.addEventListener('load', async () => {
+            if (!window.ethereum) return;
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length > 0) connectWallet();
+            } catch (e) {}
+
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    location.reload();
+                } else if (accounts[0].toLowerCase() !== userAddress) {
+                    connectWallet();
+                }
+            });
+            window.ethereum.on('chainChanged', () => location.reload());
+        });
     </script>
 </body>
 </html>
