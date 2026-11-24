@@ -1,409 +1,469 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>SIGMA SIX | Level 1 Directs</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #00ffcc;
-            --secondary: #9d4edd;
-            --bg: #0a0b10;
-            --text: #ffffff;
-            --gradient: linear-gradient(90deg, #00ffcc, #9d4edd, #ff2a6d, #00ffcc);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
-        .rainbow-border { position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: var(--gradient); background-size: 400% 400%; animation: rainbow 8s ease infinite; z-index: 1000; }
-        @keyframes rainbow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
-        .connect-btn { position: fixed; top: 16px; right: 16px; background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #000; border: none; border-radius: 14px; padding: 11px 22px; font-weight: 800; font-size: 14px; cursor: pointer; z-index: 1001; display: flex; align-items: center; gap: 8px; }
-        .connect-btn.connected { background: rgba(0,255,204,0.12); color: var(--primary); border: 1px solid var(--primary); }
-        .header { text-align: center; margin: 50px 0 25px; }
-        .header h1 { background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: 32px; font-weight: 800; }
-        .header p { color: #aaa; margin-top: 6px; font-size: 14px; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .stat { background: rgba(22,24,33,0.85); border-radius: 14px; padding: 16px; border: 1px solid rgba(0,255,204,0.12); }
-        .stat-label { color: #888; font-size: 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-        .stat-label i { color: var(--primary); }
-        .stat-value { font-size: 24px; font-weight: 800; color: var(--primary); }
-        .stat-sub { font-size: 12px; color: #777; margin-top: 2px; }
-        .card { background: rgba(22,24,33,0.85); border-radius: 18px; padding: 18px; border: 1px solid rgba(0,255,204,0.12); }
-        .card-title { color: var(--primary); font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        .table-wrap { overflow-x: auto; border-radius: 12px; }
-        table { width: 100%; border-collapse: collapse; min-width: 650px; }
-        th { padding: 12px 10px; text-align: left; font-size: 12px; color: var(--primary); text-transform: uppercase; border-bottom: 2px solid rgba(0,255,204,0.2); }
-        td { padding: 12px 10px; border-bottom: 1px solid rgba(45,47,62,0.35); font-size: 13px; }
-        tr:hover td { background: rgba(255,255,255,0.03); }
-        .addr { font-family: monospace; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px; font-size: 12px; }
-        .badge { padding: 3px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; }
-        .active { background: rgba(0,255,204,0.15); color: #00ffcc; }
-        .inactive { background: rgba(255,170,0,0.15); color: #ffaa00; }
-        .loading, .empty { text-align: center; padding: 45px 15px; color: var(--primary); }
-        .progress-box { background: rgba(0,255,204,0.08); border-radius: 12px; padding: 14px; max-width: 380px; margin: 12px auto; border: 1px solid rgba(0,255,204,0.2); }
-        .progress-bar { height: 7px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 4px; width: 0%; transition: width 0.3s; }
-        .progress-text { color: #aaa; font-size: 14px; margin-top: 10px; text-align: center; font-weight: 600; }
-        .back { display: inline-flex; align-items: center; gap: 7px; color: var(--primary); text-decoration: none; font-weight: 600; padding: 9px 14px; border-radius: 11px; background: rgba(0,255,204,0.1); border: 1px solid rgba(0,255,204,0.25); font-size: 13px; }
-        .refresh-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            color: var(--primary);
-            background: rgba(0,255,204,0.1);
-            border: 1px solid rgba(0,255,204,0.25);
-            padding: 9px 16px;
-            border-radius: 11px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
-        }
-        .refresh-btn:hover { background: rgba(0,255,204,0.2); }
-        .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .refresh-btn i.spinning { animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px; }
-        @media (max-width: 600px) {
-            .connect-btn { position: relative; top: auto; right: auto; width: 100%; justify-content: center; margin-bottom: 12px; }
-            .header h1 { font-size: 24px; }
-            .stat-value { font-size: 20px; }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Level 1 Directs</title>
+
+  <!-- Ethers v6 -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #635bff;
+      --bg: #f5f6fa;
+      --card: #fff;
+      --text: #202338;
+      --muted: #73798c;
+      --border: #e8eaf1;
+      --green: #12805c;
+      --red: #b54747;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    a { color: var(--primary); text-decoration: none; }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 15px;
+      background: var(--primary);
+      color: #fff;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:disabled { opacity: .6; cursor: wait; }
+
+    .header { margin-bottom: 20px; }
+    .header h1 { margin: 0; font-size: 26px; }
+    .header p { margin: 5px 0 0; color: var(--muted); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat, .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 3px 14px #20233808;
+    }
+
+    .stat { padding: 16px; }
+    .stat-label { color: var(--muted); font-size: 13px; }
+    .stat-value { margin-top: 7px; font-size: 22px; font-weight: 700; }
+    .stat-sub { color: var(--muted); font-size: 13px; }
+
+    .card { overflow: hidden; }
+    .card-title { padding: 16px; font-weight: 700; border-bottom: 1px solid var(--border); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-size: 12px; }
+    .addr { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .badge { padding: 4px 9px; border-radius: 20px; font-size: 12px; }
+    .badge.active { color: var(--green); background: #e7f6ef; }
+    .badge.inactive { color: var(--red); background: #fff0f0; }
+
+    .message { padding: 28px 16px; text-align: center; color: var(--muted); }
+    .progress-box { max-width: 360px; margin: 14px auto 0; }
+    .progress-track { height: 8px; background: var(--border); border-radius: 10px; overflow: hidden; }
+    .progress-bar { width: 0; height: 100%; background: var(--primary); transition: width .2s; }
+    .progress-text { margin-top: 7px; font-size: 13px; }
+
+    @media (max-width: 700px) {
+      body { padding: 14px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .header h1 { font-size: 22px; }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="rainbow-border"></div>
-
-    <button class="connect-btn" id="connectBtn" onclick="connectWallet()">
-        <i class="fas fa-wallet"></i> <span id="btn-text">Connect Wallet</span>
-    </button>
-
-    <div class="container">
-        <div class="top-bar">
-            <a href="index.html" class="back"><i class="fas fa-arrow-left"></i> Back</a>
-            <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
-                <i class="fas fa-sync-alt" id="refreshIcon"></i> Refresh
-            </button>
-        </div>
-
-        <div class="header">
-            <h1>LEVEL 1 DIRECTS</h1>
-            <p>Last 30 Days</p>
-        </div>
-
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-label"><i class="fas fa-users"></i> Total Directs</div>
-                <div class="stat-value" id="total">0</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label"><i class="fas fa-crown"></i> Active</div>
-                <div class="stat-value" id="active">0</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label"><i class="fas fa-coins"></i> Holdings</div>
-                <div class="stat-value" id="sigma">0</div>
-                <div class="stat-sub" id="usdt">$0.00</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label"><i class="fas fa-chart-line"></i> Buy Rate</div>
-                <div class="stat-value" id="rate">0.0000</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title"><i class="fas fa-sitemap"></i> Your Direct Referrals</div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Wallet</th>
-                            <th>Balance</th>
-                            <th>USDT</th>
-                            <th>Joined</th>
-                            <th>Directs</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="body">
-                        <tr><td colspan="7" class="loading"><i class="fas fa-wallet"></i><br>Connect wallet</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+  <div class="container">
+    <div class="top-bar">
+      <a href="index.html">← Back</a>
+      <div>
+        <button id="connectBtn" type="button" onclick="connectWallet()">Connect Wallet</button>
+        <button id="refreshBtn" type="button" onclick="refreshData()" disabled>Refresh</button>
+      </div>
     </div>
 
-    <script>
-        const CONTRACT = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
-        
-        // Super Fast RPCs
-        const RPCS = [
-            "https://rpc.ankr.com/polygon",
-            "https://polygon.llamarpc.com",
-            "https://polygon.drpc.org"
-        ];
-        
-        const ABI = [
-            "function getCurrentBuyRate() view returns (uint256)",
-            "function balanceOf(address) view returns (uint256)",
-            "function decimals() view returns (uint8)",
-            "function users(address) view returns (address upline, uint256 directCount, uint256 lastBuyTimestamp, uint256, uint256, uint256, bool)",
-            "event Buy(address indexed user, uint256 amount, uint256 rate, uint256 usdtSpent)"
-        ];
+    <header class="header">
+      <h1>LEVEL 1 DIRECTS</h1>
+      <p>Buy events from approximately the last 30 days</p>
+    </header>
 
-        let readProvider, readContract, userAddress;
-        let tokenDecimals = 18;
-        let directs = [];
-        let buyRate = 0, sellRate = 0;
+    <section class="stats">
+      <div class="stat">
+        <div class="stat-label">Total Directs</div>
+        <div class="stat-value" id="total">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Active</div>
+        <div class="stat-value" id="active">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Holdings</div>
+        <div class="stat-value" id="sigma">0</div>
+        <div class="stat-sub" id="usdt">$0.00 estimated</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Buy Rate</div>
+        <div class="stat-value" id="rate">0.0000</div>
+      </div>
+    </section>
 
-        // 🔥 HUGE SPEED FIX: Reduced blocks to last ~10 days for super fast load
-        const BLOCKS = 430000; 
-        const CHUNK = 5000; 
-        const CONCURRENCY = 50; // Fetch 50 chunks at once
+    <section class="card">
+      <div class="card-title">Your Direct Referrals</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Wallet</th>
+              <th>Balance</th>
+              <th>Estimated USDT</th>
+              <th>Last Buy</th>
+              <th>Directs</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="body">
+            <tr><td colspan="7" class="message">Connect your wallet to load data.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 
-        function showLoad(msg) {
-            document.getElementById('body').innerHTML = `
-                <tr><td colspan="7" class="loading">
-                    <i class="fas fa-spinner fa-spin" style="font-size:24px"></i><br>
-                    <div class="progress-box">
-                        <div class="progress-bar" id="bar"></div>
-                        <div class="progress-text" id="txt">${msg}</div>
-                    </div>
-                </td></tr>`;
+  <script>
+    // Verify this address and ABI against your deployed Polygon contract.
+    const CONTRACT = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
+
+    const RPCS = [
+      "https://polygon.llamarpc.com",
+      "https://polygon.drpc.org",
+      "https://rpc.ankr.com/polygon"
+    ];
+
+    const ABI = [
+      "function getCurrentBuyRate() view returns (uint256)",
+      "function balanceOf(address) view returns (uint256)",
+      "function decimals() view returns (uint8)",
+      "function users(address) view returns (address upline, uint256 directCount, uint256 lastBuyTimestamp, uint256, uint256, uint256, bool)",
+      "event Buy(address indexed user, uint256 amount, uint256 rate, uint256 usdtSpent)"
+    ];
+
+    // Polygon produces roughly 1.3 million blocks in 30 days; this is approximate.
+    const BLOCKS_TO_SCAN = 1300000;
+    const BLOCK_CHUNK = 2000;
+    const CONCURRENCY = 3;
+
+    let provider;
+    let contract;
+    let userAddress = "";
+    let tokenDecimals = 18;
+    let buyRate = 0;
+
+    const $ = id => document.getElementById(id);
+
+    function showMessage(text) {
+      $("body").innerHTML =
+        `<tr><td colspan="7" class="message">${escapeHTML(text)}</td></tr>`;
+    }
+
+    function showProgress(text, percent = 0) {
+      $("body").innerHTML = `
+        <tr><td colspan="7" class="message">
+          <div>${escapeHTML(text)}</div>
+          <div class="progress-box">
+            <div class="progress-track">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-text" id="progressText">${percent}%</div>
+          </div>
+        </td></tr>`;
+      updateProgress(percent, text);
+    }
+
+    function updateProgress(percent, text) {
+      const bar = $("progressBar");
+      const label = $("progressText");
+      if (bar) bar.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+      if (label) label.textContent = text;
+    }
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#39;"
+      })[char]);
+    }
+
+    async function makeReadProvider() {
+      for (const url of RPCS) {
+        try {
+          const p = new ethers.JsonRpcProvider(url, 137, { staticNetwork: true });
+          await p.getBlockNumber();
+          console.log("RPC connected:", url);
+          return p;
+        } catch (error) {
+          console.warn("RPC unavailable:", url, error);
+        }
+      }
+      throw new Error("Polygon RPC se connection nahi ho paya. Internet/RPC check karein.");
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert("MetaMask ya compatible wallet install/open karein.");
+        return;
+      }
+
+      $("connectBtn").disabled = true;
+
+      try {
+        const walletProvider = new ethers.BrowserProvider(window.ethereum);
+        let network = await walletProvider.getNetwork();
+
+        if (Number(network.chainId) !== 137) {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0x89" }]
+          });
+          network = await walletProvider.getNetwork();
         }
 
-        function prog(p, t) {
-            const b = document.getElementById('bar');
-            const x = document.getElementById('txt');
-            if (b) b.style.width = Math.min(100, Math.max(0, p)) + '%';
-            if (x) x.textContent = t;
+        if (Number(network.chainId) !== 137) {
+          throw new Error("Wallet ko Polygon network par switch karein.");
         }
 
-        function showError(msg) {
-            document.getElementById('body').innerHTML = `
-                <tr><td colspan="7" class="empty">
-                    <i class="fas fa-exclamation-triangle"></i><br>
-                    ${msg}<br>
-                    <small style="color:#888">Try refreshing the page.</small>
-                </td></tr>`;
+        const accounts = await walletProvider.send("eth_requestAccounts", []);
+        if (!accounts.length) throw new Error("Wallet account nahi mila.");
+
+        userAddress = accounts[0].toLowerCase();
+        $("connectBtn").textContent =
+          userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
+
+        provider = await makeReadProvider();
+        contract = new ethers.Contract(CONTRACT, ABI, provider);
+
+        try {
+          tokenDecimals = Number(await contract.decimals());
+        } catch (error) {
+          console.warn("decimals() call failed; using 18:", error);
+          tokenDecimals = 18;
         }
 
-        async function getRPC() {
-            if (window.ethereum) {
-                try {
-                    const p = new ethers.BrowserProvider(window.ethereum);
-                    await p.getBlockNumber();
-                    return p;
-                } catch (e) {}
-            }
+        $("refreshBtn").disabled = false;
+        await loadData();
+      } catch (error) {
+        console.error("Wallet connection failed:", error);
+        alert("Connection failed: " + (error.shortMessage || error.message || error));
+      } finally {
+        $("connectBtn").disabled = false;
+      }
+    }
 
-            for (const url of RPCS) {
-                try {
-                    const p = new ethers.JsonRpcProvider(url, 137, { staticNetwork: true });
-                    await p.getBlockNumber();
-                    console.log("✅ Backup RPC connected:", url);
-                    return p;
-                } catch (e) {}
-            }
-            throw new Error("RPC failed. Check internet.");
+    async function refreshData() {
+      if (!contract || !userAddress) return connectWallet();
+
+      $("refreshBtn").disabled = true;
+      try {
+        await loadData();
+      } finally {
+        $("refreshBtn").disabled = false;
+      }
+    }
+
+    async function loadData() {
+      showProgress("Polygon se data load ho raha hai...");
+
+      try {
+        const currentBlock = await provider.getBlockNumber();
+        const fromBlock = Math.max(0, currentBlock - BLOCKS_TO_SCAN);
+
+        try {
+          const rateBN = await contract.getCurrentBuyRate();
+          buyRate = Number(ethers.formatUnits(rateBN, 6));
+          $("rate").textContent = buyRate.toFixed(4);
+        } catch (error) {
+          console.error("Buy rate read failed:", error);
+          $("rate").textContent = "Unavailable";
         }
 
-        async function connectWallet() {
-            if (!window.ethereum) return alert("Please install MetaMask");
+        const ranges = [];
+        for (let start = fromBlock; start <= currentBlock; start += BLOCK_CHUNK) {
+          ranges.push({
+            from: start,
+            to: Math.min(start + BLOCK_CHUNK - 1, currentBlock)
+          });
+        }
+
+        const buyers = new Set();
+        let failedRanges = 0;
+
+        for (let i = 0; i < ranges.length; i += CONCURRENCY) {
+          const batch = ranges.slice(i, i + CONCURRENCY);
+
+          await Promise.all(batch.map(async range => {
             try {
-                const provider = new ethers.BrowserProvider(window.ethereum);
-                const net = await provider.getNetwork();
-                if (Number(net.chainId) !== 137) {
-                    await window.ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: '0x89' }]
-                    });
-                }
-                const accounts = await provider.send("eth_requestAccounts", []);
-                userAddress = accounts[0].toLowerCase();
-
-                readProvider = await getRPC();
-                readContract = new ethers.Contract(CONTRACT, ABI, readProvider);
-
-                try {
-                    tokenDecimals = Number(await readContract.decimals());
-                } catch (e) {
-                    tokenDecimals = 18;
-                }
-
-                document.getElementById('btn-text').textContent = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
-                document.getElementById('connectBtn').classList.add('connected');
-
-                await loadData();
-            } catch (err) {
-                console.error(err);
-                alert("Connection failed: " + (err.message || err));
+              const events = await contract.queryFilter(
+                contract.filters.Buy(),
+                range.from,
+                range.to
+              );
+              for (const event of events) {
+                const address = event.args?.user;
+                if (address) buyers.add(address.toLowerCase());
+              }
+            } catch (error) {
+              failedRanges++;
+              console.error("Buy event scan failed:", range, error);
             }
+          }));
+
+          const percent = Math.floor(((i + batch.length) / ranges.length) * 70);
+          updateProgress(percent, `Events scan: ${percent}%`);
         }
 
-        async function refreshData() {
-            if (!userAddress || !readContract) return connectWallet();
-            const btn = document.getElementById('refreshBtn');
-            const icon = document.getElementById('refreshIcon');
-            btn.disabled = true;
-            icon.classList.add('spinning');
-            try { await loadData(); } catch (err) {}
-            btn.disabled = false;
-            icon.classList.remove('spinning');
-        }
+        const buyerList = [...buyers];
+        const directs = [];
+        let checked = 0;
 
-        async function loadData() {
-            showLoad("Fetching Fast Data...");
+        for (let i = 0; i < buyerList.length; i += 10) {
+          const batch = buyerList.slice(i, i + 10);
 
+          await Promise.all(batch.map(async address => {
             try {
-                const currentBlock = await readProvider.getBlockNumber();
-                const fromBlock = Math.max(0, currentBlock - BLOCKS);
+              const info = await contract.users(address);
+              if ((info.upline || "").toLowerCase() !== userAddress) return;
 
-                try {
-                    const rateBN = await readContract.getCurrentBuyRate();
-                    buyRate = parseFloat(ethers.formatUnits(rateBN, 6));
-                    sellRate = buyRate * 0.91;
-                } catch (e) {}
-                document.getElementById('rate').textContent = buyRate.toFixed(4);
+              const balanceBN = await contract.balanceOf(address);
+              const balance = Number(ethers.formatUnits(balanceBN, tokenDecimals));
+              const estimatedUSDT = balance * buyRate * 0.91;
 
-                // 🔥 MAGIC FIX: Ask the RPC node to ONLY return events where "upline" = userAddress
-                // This stops us from downloading thousands of unrelated events!
-                const filter = readContract.filters.Buy(null, null, null, null); 
-                // Note: Since ABI event Buy doesn't have upline, we can't filter directly by upline here.
-                // But we CAN just quickly grab the buyers and check. With parallel fetching it's instant.
-                
-                const chunks = [];
-                for (let f = fromBlock; f <= currentBlock; f += CHUNK) {
-                    chunks.push({ from: f, to: Math.min(f + CHUNK - 1, currentBlock) });
-                }
-
-                const buyers = new Set();
-                let processed = 0;
-
-                // 🔥 PARALLEL FETCHING (50 chunks at a time)
-                for (let i = 0; i < chunks.length; i += CONCURRENCY) {
-                    const batch = chunks.slice(i, i + CONCURRENCY);
-                    await Promise.all(batch.map(async (c) => {
-                        try {
-                            const events = await readContract.queryFilter(readContract.filters.Buy(), c.from, c.to);
-                            events.forEach(e => {
-                                if (e.args && e.args.user) buyers.add(e.args.user.toLowerCase());
-                            });
-                        } catch (e) {}
-                    }));
-                    
-                    processed += batch.length;
-                    const p = (processed / chunks.length) * 70;
-                    prog(p, `Scanning... ${Math.floor(p)}%`);
-                }
-
-                prog(75, "Filtering your directs...");
-                
-                const list = Array.from(buyers);
-                directs = [];
-
-                // Check in parallel batches of 30
-                for (let i = 0; i < list.length; i += 30) {
-                    const batch = list.slice(i, i + 30);
-                    await Promise.all(batch.map(async (addr) => {
-                        try {
-                            const userInfo = await readContract.users(addr);
-                            if ((userInfo.upline || "").toLowerCase() === userAddress) {
-                                const balBN = await readContract.balanceOf(addr);
-                                const balance = parseFloat(ethers.formatUnits(balBN, tokenDecimals));
-                                const usdtValue = balance * sellRate;
-
-                                directs.push({
-                                    address: addr,
-                                    balance: balance,
-                                    usdt: usdtValue,
-                                    active: usdtValue >= 10,
-                                    directs: Number(userInfo.directCount || 0),
-                                    joined: Number(userInfo.lastBuyTimestamp || 0)
-                                });
-                            }
-                        } catch (e) {}
-                    }));
-                    
-                    const p = 75 + ((i / list.length) * 25);
-                    prog(p, `Checking... ${Math.floor(p)}%`);
-                }
-
-                prog(100, "Done");
-                directs.sort((a, b) => b.balance - a.balance);
-                renderTable();
-
-            } catch (err) {
-                showError(err.message || 'Error loading');
+              directs.push({
+                address,
+                balance,
+                estimatedUSDT,
+                directCount: Number(info.directCount),
+                lastBuy: Number(info.lastBuyTimestamp)
+              });
+            } catch (error) {
+              console.error("Could not read referral:", address, error);
+            } finally {
+              checked++;
             }
+          }));
+
+          const percent = 70 + Math.floor((checked / Math.max(1, buyerList.length)) * 30);
+          updateProgress(percent, `Referrals check: ${percent}%`);
         }
 
-        function renderTable() {
-            const total = directs.length;
-            const activeCount = directs.filter(d => d.active).length;
-            const totalSigma = directs.reduce((s, d) => s + d.balance, 0);
-            const totalUsdt = directs.reduce((s, d) => s + d.usdt, 0);
+        directs.sort((a, b) => b.balance - a.balance);
+        renderTable(directs);
 
-            document.getElementById('total').textContent = total;
-            document.getElementById('active').textContent = activeCount;
-            document.getElementById('sigma').textContent = totalSigma.toFixed(2);
-            document.getElementById('usdt').textContent = '$' + totalUsdt.toFixed(2);
-
-            const tbody = document.getElementById('body');
-
-            if (total === 0) {
-                tbody.innerHTML = `
-                    <tr><td colspan="7" class="empty">
-                        <i class="fas fa-users-slash"></i><br>
-                        No direct referrals found<br>
-                        <small style="color:#777">Try refreshing</small>
-                    </td></tr>`;
-                return;
-            }
-
-            let html = '';
-            directs.forEach((d, i) => {
-                const date = d.joined > 0
-                    ? new Date(d.joined * 1000).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-                    : '—';
-
-                html += `
-                <tr>
-                    <td>${i + 1}</td>
-                    <td>
-                        <span class="addr">${d.address.slice(0, 7)}...${d.address.slice(-5)}</span>
-                        <div style="margin-top:3px;font-size:11px">
-                            <i class="fas fa-copy" style="cursor:pointer;margin-right:8px" onclick="navigator.clipboard.writeText('${d.address}')"></i>
-                            <i class="fas fa-external-link-alt" style="cursor:pointer" onclick="window.open('https://polygonscan.com/address/${d.address}','_blank')"></i>
-                        </div>
-                    </td>
-                    <td style="color:var(--primary);font-weight:700">${d.balance.toFixed(2)}</td>
-                    <td>$${d.usdt.toFixed(2)}</td>
-                    <td>${date}</td>
-                    <td>${d.directs}</td>
-                    <td><span class="badge ${d.active ? 'active' : 'inactive'}">${d.active ? 'Active' : 'Inactive'}</span></td>
-                </tr>`;
-            });
-            tbody.innerHTML = html;
+        if (failedRanges) {
+          console.warn(`${failedRanges} event ranges failed. Results may be incomplete.`);
         }
+      } catch (error) {
+        console.error("Load failed:", error);
+        showMessage("Data load nahi hua: " + (error.shortMessage || error.message || error));
+      }
+    }
 
-        window.addEventListener('load', async () => {
-            if (!window.ethereum) return;
-            try {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts.length > 0) connectWallet();
-            } catch (e) {}
+    function renderTable(directs) {
+      const totalBalance = directs.reduce((sum, item) => sum + item.balance, 0);
+      const totalUSDT = directs.reduce((sum, item) => sum + item.estimatedUSDT, 0);
+      const active = directs.filter(item => item.estimatedUSDT >= 10).length;
 
-            window.ethereum.on('accountsChanged', (accounts) => {
-                if (accounts.length === 0) location.reload();
-                else if (accounts[0].toLowerCase() !== userAddress) connectWallet();
-            });
-            window.ethereum.on('chainChanged', () => location.reload());
-        });
-    </script>
+      $("total").textContent = directs.length;
+      $("active").textContent = active;
+      $("sigma").textContent = totalBalance.toFixed(2);
+      $("usdt").textContent = "$" + totalUSDT.toFixed(2) + " estimated";
+
+      if (!directs.length) {
+        showMessage("Is scan range mein direct referrals nahi mile.");
+        return;
+      }
+
+      $("body").innerHTML = directs.map((item, index) => {
+        const date = item.lastBuy > 0
+          ? new Date(item.lastBuy * 1000).toLocaleDateString("en-IN", {
+              day: "2-digit", month: "short", year: "numeric"
+            })
+          : "—";
+
+        const isActive = item.estimatedUSDT >= 10;
+        const shortAddress = item.address.slice(0, 7) + "..." + item.address.slice(-5);
+
+        return `
+          <tr>
+            <td>${index + 1}</td>
+            <td>
+              <span class="addr">${shortAddress}</span><br>
+              <button type="button" onclick="copyAddress('${item.address}')">Copy</button>
+              <a target="_blank" rel="noopener"
+                 href="https://polygonscan.com/address/${item.address}">Explorer</a>
+            </td>
+            <td>${item.balance.toFixed(2)}</td>
+            <td>$${item.estimatedUSDT.toFixed(2)}</td>
+            <td>${date}</td>
+            <td>${item.directCount}</td>
+            <td><span class="badge ${isActive ? "active" : "inactive"}">
+              ${isActive ? "Active" : "Inactive"}
+            </span></td>
+          </tr>`;
+      }).join("");
+    }
+
+    async function copyAddress(address) {
+      try {
+        await navigator.clipboard.writeText(address);
+      } catch (error) {
+        console.error("Copy failed:", error);
+        alert("Address copy nahi hua. Address ko manually copy karein: " + address);
+      }
+    }
+
+    if (window.ethereum) {
+      window.ethereum.on("accountsChanged", () => location.reload());
+      window.ethereum.on("chainChanged", () => location.reload());
+
+      window.addEventListener("load", async () => {
+        try {
+          const accounts = await window.ethereum.request({ method: "eth_accounts" });
+          if (accounts.length) connectWallet();
+        } catch (error) {
+          console.error("Could not check connected account:", error);
+        }
+      });
+    }
+  </script>
 </body>
 </html>
