@@ -114,7 +114,7 @@
 
     <header class="header">
       <h1>LEVEL 1 DIRECTS</h1>
-      <p>Buy events scanned from the contract deployment block</p>
+      <p>Recent Buy events — test scan of the last 50,000 blocks</p>
     </header>
 
     <section class="stats">
@@ -161,12 +161,10 @@
   </div>
 
   <script>
-    // Confirm this address is the correct Polygon contract.
     const CONTRACT = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
-
-    // Deployment block provided by you.
     const DEPLOYMENT_BLOCK = 96552904;
 
+    // Public Polygon RPCs. No API key needed.
     const RPCS = [
       "https://polygon.llamarpc.com",
       "https://polygon.drpc.org",
@@ -181,9 +179,10 @@
       "event Buy(address indexed user, uint256 amount, uint256 rate, uint256 usdtSpent)"
     ];
 
-    // Smaller chunks are less likely to exceed public RPC log limits.
+    // Test scan: 50,000 latest blocks. Increase later if the test works.
+    const TEST_BLOCKS = 50000;
     const BLOCK_CHUNK = 2000;
-    const CONCURRENCY = 3;
+    const CONCURRENCY = 2;
 
     let provider;
     let contract;
@@ -208,19 +207,17 @@
         `<tr><td colspan="7" class="message">${escapeHTML(message)}</td></tr>`;
     }
 
-    function showProgress(message, percent = 0) {
+    function showProgress(percent, message) {
       $("body").innerHTML = `
-        <tr>
-          <td colspan="7" class="message">
-            <div>${escapeHTML(message)}</div>
-            <div class="progress-box">
-              <div class="progress-track">
-                <div class="progress-bar" id="progressBar"></div>
-              </div>
-              <div class="progress-text" id="progressText"></div>
+        <tr><td colspan="7" class="message">
+          <div>${escapeHTML(message)}</div>
+          <div class="progress-box">
+            <div class="progress-track">
+              <div class="progress-bar" id="progressBar"></div>
             </div>
-          </td>
-        </tr>`;
+            <div class="progress-text" id="progressText"></div>
+          </div>
+        </td></tr>`;
       updateProgress(percent, message);
     }
 
@@ -240,19 +237,18 @@
             { staticNetwork: true }
           );
           await candidate.getBlockNumber();
-          console.log("Connected to Polygon RPC:", url);
+          console.log("Polygon RPC connected:", url);
           return candidate;
         } catch (error) {
           console.warn("RPC connection failed:", url, error);
         }
       }
-
-      throw new Error("Polygon RPC se connection nahi ho paya. Internet/RPC check karein.");
+      throw new Error("Polygon RPC se connection nahi ho paya.");
     }
 
     async function connectWallet() {
       if (!window.ethereum) {
-        alert("MetaMask ya compatible Polygon wallet install/open karein.");
+        alert("MetaMask ya compatible wallet install/open karein.");
         return;
       }
 
@@ -316,14 +312,18 @@
     }
 
     async function loadData() {
-      showProgress("Polygon se block number le rahe hain...");
+      console.log("loadData started");
+      showProgress(0, "Polygon se block number le rahe hain...");
 
       try {
         const currentBlock = await provider.getBlockNumber();
+        const fromBlock = Math.max(
+          DEPLOYMENT_BLOCK,
+          currentBlock - TEST_BLOCKS
+        );
 
-        if (DEPLOYMENT_BLOCK > currentBlock) {
-          throw new Error("Deployment block current Polygon block se aage hai.");
-        }
+        console.log("Connected wallet:", userAddress);
+        console.log("Scanning blocks:", fromBlock, "to", currentBlock);
 
         try {
           const rateBN = await contract.getCurrentBuyRate();
@@ -335,10 +335,10 @@
         }
 
         const ranges = [];
-        for (let from = DEPLOYMENT_BLOCK; from <= currentBlock; from += BLOCK_CHUNK) {
+        for (let start = fromBlock; start <= currentBlock; start += BLOCK_CHUNK) {
           ranges.push({
-            from,
-            to: Math.min(from + BLOCK_CHUNK - 1, currentBlock)
+            from: start,
+            to: Math.min(start + BLOCK_CHUNK - 1, currentBlock)
           });
         }
 
@@ -361,28 +361,33 @@
                 if (buyer) buyers.add(buyer.toLowerCase());
               }
             } catch (error) {
-              failedRanges.push({ range, error: error.message });
+              failedRanges.push({ range, message: error.message });
               console.error("Buy event scan failed:", range, error);
             }
           }));
 
-          const percent = Math.floor(((i + batch.length) / ranges.length) * 70);
-          updateProgress(
-            percent,
-            `Buy events scan: ${i + batch.length} / ${ranges.length} block ranges`
-          );
+          const done = Math.min(i + batch.length, ranges.length);
+          const percent = Math.floor((done / ranges.length) * 70);
+          updateProgress(percent, `Buy events scan: ${done} / ${ranges.length} ranges`);
         }
 
-        // A partial event scan could incorrectly display "No directs".
+        const addresses = [...buyers];
+        console.log("Buy-event wallets found:", addresses.length);
+        console.log("Sample wallets:", addresses.slice(0, 5));
+
         if (failedRanges.length > 0) {
           console.error("Failed block ranges:", failedRanges);
           showMessage(
-            `${failedRanges.length} block ranges scan nahi hue. Public RPC ne historical logs reject kiye; doosra RPC/indexer use karna hoga.`
+            `${failedRanges.length} block ranges scan nahi hue. Console mein "Buy event scan failed" error dekhein.`
           );
           return;
         }
 
-        const addresses = [...buyers];
+        if (addresses.length === 0) {
+          showMessage("Is recent block range mein Buy events nahi mile.");
+          return;
+        }
+
         const directs = [];
         let checked = 0;
 
@@ -392,15 +397,18 @@
           await Promise.all(batch.map(async address => {
             try {
               const info = await contract.users(address);
+              const upline = (info.upline || "").toLowerCase();
 
-              if ((info.upline || "").toLowerCase() !== userAddress) return;
+              console.log("Checking wallet:", address, "upline:", upline);
+
+              if (upline !== userAddress) return;
 
               const balanceBN = await contract.balanceOf(address);
               const balance = Number(
                 ethers.formatUnits(balanceBN, tokenDecimals)
               );
 
-              // Estimated value only; assumes sell rate is 91% of buy rate.
+              // Estimate only: assumes sell value is 91% of the buy rate.
               const estimatedUSDT = balance * buyRate * 0.91;
 
               directs.push({
@@ -418,12 +426,12 @@
           }));
 
           const percent = 70 + Math.floor(
-            (checked / Math.max(1, addresses.length)) * 30
+            (checked / addresses.length) * 30
           );
-
-          updateProgress(percent, `Wallets check: ${checked} / ${addresses.length}`);
+          updateProgress(percent, `Wallets checked: ${checked} / ${addresses.length}`);
         }
 
+        console.log("Direct referrals found:", directs.length);
         directs.sort((a, b) => b.balance - a.balance);
         renderTable(directs);
       } catch (error) {
@@ -443,7 +451,7 @@
       $("usdt").textContent = "$" + totalUSDT.toFixed(2) + " estimated";
 
       if (!directs.length) {
-        showMessage("Scanned Buy events mein aapke direct referrals nahi mile.");
+        showMessage("Buy events mile, lekin connected wallet ke direct referrals match nahi hue.");
         return;
       }
 
@@ -466,11 +474,8 @@
             <td>
               <span class="addr">${shortAddress}</span><br>
               <button type="button" onclick="copyAddress('${item.address}')">Copy</button>
-              <a
-                href="https://polygonscan.com/address/${item.address}"
-                target="_blank"
-                rel="noopener"
-              >Explorer</a>
+              <a href="https://polygonscan.com/address/${item.address}"
+                 target="_blank" rel="noopener">Explorer</a>
             </td>
             <td>${item.balance.toFixed(2)}</td>
             <td>$${item.estimatedUSDT.toFixed(2)}</td>
@@ -490,7 +495,7 @@
         await navigator.clipboard.writeText(address);
       } catch (error) {
         console.error("Copy failed:", error);
-        alert("Copy nahi hua. Address manually copy karein: " + address);
+        alert("Address manually copy karein: " + address);
       }
     }
 
@@ -505,7 +510,7 @@
           });
           if (accounts.length > 0) connectWallet();
         } catch (error) {
-          console.error("Connected wallet check failed:", error);
+          console.error("Wallet check failed:", error);
         }
       });
     }
