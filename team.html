@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Level 1 Direct Referrals</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+
   <style>
     :root {
       --primary: #5b5ce2;
@@ -43,7 +45,7 @@
       border-radius: 8px;
       padding: 10px 14px;
       background: var(--primary);
-      color: white;
+      color: #fff;
       font: inherit;
       cursor: pointer;
     }
@@ -97,8 +99,6 @@
       .header h1 { font-size: 22px; }
     }
   </style>
-
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
 </head>
 
 <body>
@@ -106,14 +106,14 @@
     <div class="top-bar">
       <a href="index.html">← Back</a>
       <div>
-        <button id="connectBtn" type="button" onclick="connectWallet()">Connect Wallet</button>
-        <button id="refreshBtn" type="button" onclick="refreshData()" disabled>Refresh</button>
+        <button id="connectBtn" type="button">Connect Wallet</button>
+        <button id="refreshBtn" type="button" disabled>Refresh</button>
       </div>
     </div>
 
     <header class="header">
       <h1>LEVEL 1 DIRECTS</h1>
-      <p>Recent Buy events — test scan</p>
+      <p>Recent Buy events — 5,000-block test scan</p>
     </header>
 
     <section class="stats">
@@ -127,7 +127,7 @@
       </div>
       <div class="stat">
         <div class="stat-label">Holdings</div>
-        <div class="stat-value" id="sigma">0</div>
+        <div class="stat-value" id="holdings">0</div>
         <div class="stat-sub" id="usdt">$0.00 estimated</div>
       </div>
       <div class="stat">
@@ -151,7 +151,7 @@
               <th>Status</th>
             </tr>
           </thead>
-          <tbody id="body">
+          <tbody id="rows">
             <tr><td colspan="7" class="message">Connect your wallet to load data.</td></tr>
           </tbody>
         </table>
@@ -169,6 +169,9 @@
       "https://rpc.ankr.com/polygon"
     ];
 
+    const BLOCKS_TO_SCAN = 5000;
+    const BLOCK_CHUNK = 100;
+
     const ABI = [
       "function getCurrentBuyRate() view returns (uint256)",
       "function balanceOf(address) view returns (uint256)",
@@ -177,24 +180,23 @@
       "event Buy(address indexed user, uint256 amount, uint256 rate, uint256 usdtSpent)"
     ];
 
-    // dRPC free plan: maximum 100 blocks in each eth_getLogs range.
-    const BLOCK_CHUNK = 100;
+    const iface = new ethers.Interface(ABI);
+    const buyTopic = iface.getEvent("Buy").topicHash;
+    const $ = id => document.getElementById(id);
 
-    // Initial test range. Increase to 50000 after confirming it works.
-    const TEST_BLOCKS = 5000;
-
-    const WAIT_BETWEEN_REQUESTS_MS = 150;
-
-    let provider;
+    let readProvider;
     let contract;
     let walletAddress = "";
     let tokenDecimals = 18;
     let buyRate = 0;
 
-    const $ = id => document.getElementById(id);
-
-    function wait(ms) {
+    function pause(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function setMessage(text) {
+      $("rows").innerHTML =
+        `<tr><td colspan="7" class="message">${escapeHTML(text)}</td></tr>`;
     }
 
     function escapeHTML(value) {
@@ -207,53 +209,103 @@
       })[char]);
     }
 
-    function showMessage(message) {
-      $("body").innerHTML =
-        `<tr><td colspan="7" class="message">${escapeHTML(message)}</td></tr>`;
-    }
-
-    function showProgress(percent, message) {
-      $("body").innerHTML = `
-        <tr>
-          <td colspan="7" class="message">
-            <div>${escapeHTML(message)}</div>
-            <div class="progress-box">
-              <div class="progress-track">
-                <div class="progress-bar" id="progressBar"></div>
-              </div>
-              <div class="progress-text" id="progressText"></div>
+    function setProgress(percent, text) {
+      $("rows").innerHTML = `
+        <tr><td colspan="7" class="message">
+          <div>${escapeHTML(text)}</div>
+          <div class="progress-box">
+            <div class="progress-track">
+              <div class="progress-bar" id="progressBar"></div>
             </div>
-          </td>
-        </tr>`;
-      updateProgress(percent, message);
-    }
+            <div class="progress-text" id="progressText"></div>
+          </div>
+        </td></tr>`;
 
-    function updateProgress(percent, message) {
       const bar = $("progressBar");
-      const text = $("progressText");
-
-      if (bar) bar.style.width = `${Math.max(0, Math.min(100, percent))}%`;
-      if (text) text.textContent = message;
+      const label = $("progressText");
+      if (bar) bar.style.width = `${percent}%`;
+      if (label) label.textContent = text;
     }
 
-    async function makeReadProvider() {
+    async function postRPC(url, method, params) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: Date.now(),
+          method,
+          params
+        })
+      });
+
+      const body = await response.json().catch(() => ({}));
+
+      if (!response.ok || body.error) {
+        throw new Error(body.error?.message || `HTTP ${response.status}`);
+      }
+
+      return body.result;
+    }
+
+    async function rpcWithFallback(method, params) {
+      const errors = [];
+
       for (const url of RPC_URLS) {
         try {
-          const candidate = new ethers.JsonRpcProvider(
-            url,
-            137,
-            { staticNetwork: true }
-          );
-
-          await candidate.getBlockNumber();
-          console.log("Polygon RPC connected:", url);
-          return candidate;
+          return await postRPC(url, method, params);
         } catch (error) {
-          console.warn("RPC connection failed:", url, error);
+          console.warn(`${method} failed on ${url}:`, error.message);
+          errors.push(`${url}: ${error.message}`);
         }
       }
 
-      throw new Error("Polygon RPC se connection nahi ho paya.");
+      throw new Error(`${method} failed on all RPCs. ${errors.join(" | ")}`);
+    }
+
+    async function getBlockNumber() {
+      const hex = await rpcWithFallback("eth_blockNumber", []);
+      return Number(BigInt(hex));
+    }
+
+    async function scanBuyEvents(fromBlock, toBlock) {
+      const found = new Set();
+      const totalRanges = Math.ceil((toBlock - fromBlock + 1) / BLOCK_CHUNK);
+
+      for (let start = fromBlock, index = 0; start <= toBlock; start += BLOCK_CHUNK) {
+        const end = Math.min(start + BLOCK_CHUNK - 1, toBlock);
+
+        const logs = await rpcWithFallback("eth_getLogs", [{
+          address: CONTRACT_ADDRESS,
+          fromBlock: "0x" + start.toString(16),
+          toBlock: "0x" + end.toString(16),
+          topics: [buyTopic]
+        }]);
+
+        for (const log of logs) {
+          try {
+            const parsed = iface.parseLog({
+              topics: log.topics,
+              data: log.data
+            });
+
+            const buyer = parsed?.args?.user;
+            if (buyer) found.add(buyer.toLowerCase());
+          } catch (error) {
+            console.warn("Could not parse Buy log:", error);
+          }
+        }
+
+        index++;
+        setProgress(
+          Math.floor(index / totalRanges * 65),
+          `Buy events scan: ${index} / ${totalRanges} ranges`
+        );
+
+        await pause(120);
+      }
+
+      return [...found];
     }
 
     async function connectWallet() {
@@ -273,7 +325,6 @@
             method: "wallet_switchEthereumChain",
             params: [{ chainId: "0x89" }]
           });
-
           network = await walletProvider.getNetwork();
         }
 
@@ -282,56 +333,56 @@
         }
 
         const accounts = await walletProvider.send("eth_requestAccounts", []);
-
-        if (!accounts.length) {
-          throw new Error("Wallet account nahi mila.");
-        }
+        if (!accounts.length) throw new Error("Wallet account nahi mila.");
 
         walletAddress = accounts[0].toLowerCase();
-
         $("connectBtn").textContent =
           walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4);
 
-        provider = await makeReadProvider();
-        contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+        const networkId = await getBlockNumber();
+        console.log("Polygon block:", networkId);
+
+        // Read calls use the first working RPC.
+        for (const url of RPC_URLS) {
+          try {
+            const candidate = new ethers.JsonRpcProvider(
+              url,
+              137,
+              { staticNetwork: true }
+            );
+            await candidate.getBlockNumber();
+            readProvider = candidate;
+            break;
+          } catch (error) {
+            console.warn("Read RPC failed:", url, error);
+          }
+        }
+
+        if (!readProvider) throw new Error("Koi Polygon RPC connect nahi hua.");
+
+        contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, readProvider);
 
         try {
           tokenDecimals = Number(await contract.decimals());
         } catch (error) {
-          console.warn("decimals() read nahi hua; 18 use kar rahe hain:", error);
+          console.warn("decimals() read nahi hua; 18 use kar rahe hain.");
           tokenDecimals = 18;
         }
 
         $("refreshBtn").disabled = false;
         await loadData();
       } catch (error) {
-        console.error("Wallet connection error:", error);
-        alert("Connection failed: " + (error.shortMessage || error.message || error));
+        console.error("Connect/load failed:", error);
+        setMessage(error.message || String(error));
+        alert("Error: " + (error.shortMessage || error.message || error));
       } finally {
         $("connectBtn").disabled = false;
       }
     }
 
-    async function refreshData() {
-      if (!contract || !walletAddress) {
-        await connectWallet();
-        return;
-      }
-
-      $("refreshBtn").disabled = true;
-
-      try {
-        await loadData();
-      } finally {
-        $("refreshBtn").disabled = false;
-      }
-    }
-
     async function loadData() {
-      showProgress(0, "Polygon se block number le rahe hain...");
-
       try {
-        const currentBlock = await provider.getBlockNumber();
+        const currentBlock = await getBlockNumber();
 
         if (currentBlock < DEPLOYMENT_BLOCK) {
           throw new Error(
@@ -341,177 +392,97 @@
 
         const fromBlock = Math.max(
           DEPLOYMENT_BLOCK,
-          currentBlock - TEST_BLOCKS
+          currentBlock - BLOCKS_TO_SCAN
         );
 
-        console.log("Connected wallet:", walletAddress);
-        console.log("Scanning blocks:", fromBlock, "to", currentBlock);
+        console.log(`Scanning ${fromBlock} to ${currentBlock}`);
+        setProgress(0, "Buy events scan shuru ho raha hai...");
 
         try {
-          const rateBN = await contract.getCurrentBuyRate();
-
-          // Assumes getCurrentBuyRate uses 6 decimals, as in the original code.
-          buyRate = Number(ethers.formatUnits(rateBN, 6));
+          const rateValue = await contract.getCurrentBuyRate();
+          buyRate = Number(ethers.formatUnits(rateValue, 6));
           $("rate").textContent = buyRate.toFixed(4);
         } catch (error) {
           console.error("Buy rate read failed:", error);
           $("rate").textContent = "Unavailable";
         }
 
-        const ranges = [];
+        const buyers = await scanBuyEvents(fromBlock, currentBlock);
+        console.log("Unique buyers:", buyers.length);
 
-        for (let start = fromBlock; start <= currentBlock; start += BLOCK_CHUNK) {
-          ranges.push({
-            from: start,
-            to: Math.min(start + BLOCK_CHUNK - 1, currentBlock)
-          });
-        }
-
-        const buyers = new Set();
-        const buyFilter = contract.filters.Buy();
-
-        for (let i = 0; i < ranges.length; i++) {
-          const range = ranges[i];
-
-          try {
-            const events = await contract.queryFilter(
-              buyFilter,
-              range.from,
-              range.to
-            );
-
-            for (const event of events) {
-              const buyer = event.args && event.args.user;
-
-              if (buyer && ethers.isAddress(buyer)) {
-                buyers.add(buyer.toLowerCase());
-              }
-            }
-          } catch (error) {
-            console.error(
-              `Buy event scan failed for blocks ${range.from}-${range.to}:`,
-              error
-            );
-
-            showMessage(
-              `Block ${range.from}-${range.to} scan fail hua. Browser Console mein error dekhein.`
-            );
-            return;
-          }
-
-          const done = i + 1;
-          const percent = Math.floor((done / ranges.length) * 70);
-
-          updateProgress(
-            percent,
-            `Buy events scan: ${done} / ${ranges.length} ranges`
-          );
-
-          await wait(WAIT_BETWEEN_REQUESTS_MS);
-        }
-
-        const addresses = [...buyers];
-
-        console.log("Buy-event wallets found:", addresses.length);
-        console.log("Sample wallets:", addresses.slice(0, 5));
-
-        if (addresses.length === 0) {
-          showMessage("Is recent block range mein Buy events nahi mile.");
+        if (!buyers.length) {
+          setMessage("Is block range mein Buy events nahi mile.");
           return;
         }
 
         const directs = [];
-        let checked = 0;
 
-        for (let i = 0; i < addresses.length; i++) {
-          const address = addresses[i];
+        for (let i = 0; i < buyers.length; i++) {
+          const address = buyers[i];
 
           try {
             const info = await contract.users(address);
             const upline = String(info.upline).toLowerCase();
 
-            if (upline !== walletAddress) {
-              continue;
+            if (upline === walletAddress) {
+              const balanceBN = await contract.balanceOf(address);
+              const balance = Number(
+                ethers.formatUnits(balanceBN, tokenDecimals)
+              );
+              const estimatedUSDT = balance * buyRate * 0.91;
+
+              directs.push({
+                address,
+                balance,
+                estimatedUSDT,
+                directCount: Number(info.directCount),
+                lastBuy: Number(info.lastBuyTimestamp)
+              });
             }
-
-            const balanceBN = await contract.balanceOf(address);
-            const balance = Number(
-              ethers.formatUnits(balanceBN, tokenDecimals)
-            );
-
-            // Estimated USDT = balance * buyRate * 0.91
-            const estimatedUSDT = balance * buyRate * 0.91;
-
-            directs.push({
-              address,
-              balance,
-              estimatedUSDT,
-              directCount: Number(info.directCount),
-              lastBuy: Number(info.lastBuyTimestamp)
-            });
           } catch (error) {
-            console.error("Referral read failed for", address, error);
-          } finally {
-            checked++;
-
-            if (checked % 10 === 0 || checked === addresses.length) {
-              const percent = 70 + Math.floor(
-                (checked / addresses.length) * 30
-              );
-
-              updateProgress(
-                percent,
-                `Wallets checked: ${checked} / ${addresses.length}`
-              );
-            }
+            console.error("Could not read user:", address, error);
           }
 
-          await wait(50);
-        }
+          if ((i + 1) % 10 === 0 || i + 1 === buyers.length) {
+            setProgress(
+              65 + Math.floor((i + 1) / buyers.length * 35),
+              `Wallets checked: ${i + 1} / ${buyers.length}`
+            );
+          }
 
-        console.log("Direct referrals found:", directs.length);
+          await pause(50);
+        }
 
         directs.sort((a, b) => b.balance - a.balance);
         renderTable(directs);
       } catch (error) {
-        console.error("Data loading failed:", error);
-        showMessage(
-          "Data load error: " + (error.shortMessage || error.message || error)
-        );
+        console.error("Load failed:", error);
+        setMessage("Load failed: " + (error.message || String(error)));
       }
     }
 
     function renderTable(directs) {
       const totalBalance = directs.reduce((sum, item) => sum + item.balance, 0);
       const totalUSDT = directs.reduce((sum, item) => sum + item.estimatedUSDT, 0);
-      const activeCount = directs.filter(
-        item => item.estimatedUSDT >= 10
-      ).length;
+      const activeCount = directs.filter(item => item.estimatedUSDT >= 10).length;
 
       $("total").textContent = directs.length;
       $("active").textContent = activeCount;
-      $("sigma").textContent = totalBalance.toFixed(2);
+      $("holdings").textContent = totalBalance.toFixed(2);
       $("usdt").textContent = "$" + totalUSDT.toFixed(2) + " estimated";
 
-      if (directs.length === 0) {
-        showMessage(
-          "Buy events mile, lekin connected wallet ke direct referrals match nahi hue."
-        );
+      if (!directs.length) {
+        setMessage("Buy events mile, lekin is wallet ke direct referrals match nahi hue.");
         return;
       }
 
-      $("body").innerHTML = directs.map((item, index) => {
-        const date = item.lastBuy > 0
-          ? new Date(item.lastBuy * 1000).toLocaleDateString("en-IN", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric"
-            })
+      $("rows").innerHTML = directs.map((item, index) => {
+        const date = item.lastBuy
+          ? new Date(item.lastBuy * 1000).toLocaleDateString("en-IN")
           : "—";
 
         const active = item.estimatedUSDT >= 10;
-        const shortAddress =
-          item.address.slice(0, 7) + "..." + item.address.slice(-5);
+        const shortAddress = item.address.slice(0, 7) + "..." + item.address.slice(-5);
 
         return `
           <tr>
@@ -526,11 +497,9 @@
             <td>$${item.estimatedUSDT.toFixed(2)}</td>
             <td>${escapeHTML(date)}</td>
             <td>${item.directCount}</td>
-            <td>
-              <span class="badge ${active ? "active" : "inactive"}">
-                ${active ? "Active" : "Inactive"}
-              </span>
-            </td>
+            <td><span class="badge ${active ? "active" : "inactive"}">
+              ${active ? "Active" : "Inactive"}
+            </span></td>
           </tr>`;
       }).join("");
     }
@@ -539,28 +508,30 @@
       try {
         await navigator.clipboard.writeText(address);
       } catch (error) {
-        console.error("Copy failed:", error);
         alert("Address manually copy karein: " + address);
       }
     }
 
+    async function refreshData() {
+      if (!contract || !walletAddress) {
+        await connectWallet();
+        return;
+      }
+
+      $("refreshBtn").disabled = true;
+      try {
+        await loadData();
+      } finally {
+        $("refreshBtn").disabled = false;
+      }
+    }
+
+    $("connectBtn").addEventListener("click", connectWallet);
+    $("refreshBtn").addEventListener("click", refreshData);
+
     if (window.ethereum) {
       window.ethereum.on("accountsChanged", () => location.reload());
       window.ethereum.on("chainChanged", () => location.reload());
-
-      window.addEventListener("load", async () => {
-        try {
-          const accounts = await window.ethereum.request({
-            method: "eth_accounts"
-          });
-
-          if (accounts.length > 0) {
-            connectWallet();
-          }
-        } catch (error) {
-          console.error("Wallet check failed:", error);
-        }
-      });
     }
   </script>
 </body>
