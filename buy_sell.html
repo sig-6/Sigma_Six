@@ -15,7 +15,8 @@ h1{font-size:25px;margin:0}
 .sub,.muted{color:#9ca9c8;font-size:13px;margin-top:7px}
 button{border:0;border-radius:8px;padding:11px 16px;font-weight:bold;cursor:pointer;background:#2563eb;color:white}
 button:disabled{opacity:.5;cursor:not-allowed}
-.secondary{background:#34415e}.green{background:#059669}
+.secondary{background:#34415e}
+.green{background:#059669}
 .panel,.card{background:#151e34;border:1px solid #293653;border-radius:12px;padding:17px;margin-bottom:15px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0}
 .card small{color:#9ca9c8}
@@ -28,7 +29,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
 table{width:100%;border-collapse:collapse;min-width:740px}
 th,td{padding:12px 9px;border-bottom:1px solid #293653;text-align:left;font-size:13px;white-space:nowrap}
 th{color:#9ca9c8;background:#111a2d}
-.buy{color:#34d399;font-weight:bold}.sell{color:#fb7185;font-weight:bold}
+.buy{color:#34d399;font-weight:bold}
+.sell{color:#fb7185;font-weight:bold}
 a{color:#60a5fa;text-decoration:none}
 .footer{color:#8290ae;font-size:12px;margin:18px 0}
 </style>
@@ -104,23 +106,23 @@ a{color:#60a5fa;text-decoration:none}
 </div>
 
 <script>
-/* ============== CONFIG ============== */
+/* =====================================
+   CONFIGURATION
+===================================== */
 
 const CONTRACT = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
 const START_BLOCK = 85000998;
 const CHAIN_ID = 137;
 
-// PublicNode हटाया नहीं है, लेकिन पहले DRPC try होगा.
-const RPC_URLS = [
- "https://polygon.drpc.org",
- "https://polygon-bor-rpc.publicnode.com"
-];
+/* PublicNode intentionally removed.
+   This page will ONLY use dRPC. */
 
-const INITIAL_CHUNK = 10000;
+const RPC_URL = "https://polygon.drpc.org";
+
+const INITIAL_CHUNK = 2000;
 const MIN_CHUNK = 100;
-const PARALLEL_REQUESTS = 4;
-const TIMESTAMP_WORKERS = 8;
-const MAX_RETRIES = 4;
+const PARALLEL_REQUESTS = 2;
+const TIMESTAMP_WORKERS = 6;
 
 const ABI = [
  "event Buy(address indexed user,uint256 amount,uint256 rate,uint256 usdtSpent)",
@@ -133,12 +135,15 @@ const ABI = [
  "function usdt() view returns(address)"
 ];
 
-const ERC20_ABI = ["function decimals() view returns(uint8)"];
+const ERC20_ABI = [
+ "function decimals() view returns(uint8)"
+];
 
 const iface = new ethers.Interface(ABI);
 const BUY_TOPIC = ethers.id("Buy(address,uint256,uint256,uint256)");
 const SELL_TOPIC = ethers.id("Sell(address,uint256,uint256,uint256)");
 
+let provider = null;
 let walletAddress = null;
 let transactions = [];
 let sigmaDecimals = 18;
@@ -146,15 +151,22 @@ let usdtDecimals = 6;
 let scanning = false;
 let cacheLastBlock = START_BLOCK - 1;
 
-const providers = new Map();
+/* =====================================
+   PROVIDER
+===================================== */
 
-function getProvider(url){
- if(!providers.has(url)){
-  providers.set(url,new ethers.JsonRpcProvider(url,CHAIN_ID,{
-   staticNetwork:true
-  }));
+function getProvider(){
+ if(!provider){
+  provider = new ethers.JsonRpcProvider(
+   RPC_URL,
+   CHAIN_ID,
+   {
+    staticNetwork:true,
+    batchMaxCount:1
+   }
+  );
  }
- return providers.get(url);
+ return provider;
 }
 
 function setStatus(id,message){
@@ -162,30 +174,12 @@ function setStatus(id,message){
 }
 
 function cacheKey(){
- return "SIGMA_HISTORY_V3_" + walletAddress.toLowerCase();
+ return "SIGMA_BUYSELL_V4_" + walletAddress.toLowerCase();
 }
 
-/* ============== RPC ============== */
-
-async function rpcCall(callback){
- let lastError;
-
- for(const url of RPC_URLS){
-  try{
-   const provider = getProvider(url);
-   const result = await callback(provider);
-   setStatus("rpcStatus","Active RPC: "+url);
-   return result;
-  }catch(error){
-   lastError=error;
-   console.warn("RPC failed:",url,error);
-   setStatus("rpcStatus","RPC retry: "+url+" | "+error.message);
-  }
- }
- throw lastError || new Error("All RPC providers failed");
-}
-
-/* ============== WALLET ============== */
+/* =====================================
+   WALLET CONNECTION
+===================================== */
 
 async function checkWallet(){
  if(!window.ethereum){
@@ -194,9 +188,12 @@ async function checkWallet(){
  }
 
  try{
-  const accounts=await window.ethereum.request({method:"eth_accounts"});
+  const accounts = await window.ethereum.request({
+   method:"eth_accounts"
+  });
+
   if(accounts && accounts.length){
-   walletAddress=ethers.getAddress(accounts[0]);
+   walletAddress = ethers.getAddress(accounts[0]);
    await setupWallet();
   }else{
    setStatus("walletStatus","Wallet detected. Click Connect Wallet.");
@@ -208,17 +205,24 @@ async function checkWallet(){
 
 async function connectWallet(){
  if(!window.ethereum){
-  alert("Please install MetaMask or an EVM wallet.");
+  alert("Please install MetaMask or another EVM wallet.");
   return;
  }
 
  try{
-  const accounts=await window.ethereum.request({method:"eth_requestAccounts"});
-  if(!accounts || !accounts.length) throw new Error("Wallet account not selected");
+  const accounts = await window.ethereum.request({
+   method:"eth_requestAccounts"
+  });
 
-  walletAddress=ethers.getAddress(accounts[0]);
+  if(!accounts || !accounts.length){
+   throw new Error("Wallet account not selected.");
+  }
+
+  walletAddress = ethers.getAddress(accounts[0]);
+
   await switchPolygon();
   await setupWallet();
+
  }catch(error){
   console.error(error);
   alert("Wallet connection failed: "+error.message);
@@ -226,8 +230,11 @@ async function connectWallet(){
 }
 
 async function switchPolygon(){
- const chain=await window.ethereum.request({method:"eth_chainId"});
- if(Number(chain)===CHAIN_ID) return;
+ const chainId = await window.ethereum.request({
+  method:"eth_chainId"
+ });
+
+ if(Number(chainId) === CHAIN_ID) return;
 
  try{
   await window.ethereum.request({
@@ -235,15 +242,19 @@ async function switchPolygon(){
    params:[{chainId:"0x89"}]
   });
  }catch(error){
-  if(error.code!==4902) throw error;
+  if(error.code !== 4902) throw error;
 
   await window.ethereum.request({
    method:"wallet_addEthereumChain",
    params:[{
     chainId:"0x89",
     chainName:"Polygon Mainnet",
-    nativeCurrency:{name:"POL",symbol:"POL",decimals:18},
-    rpcUrls:["https://polygon.drpc.org"],
+    nativeCurrency:{
+     name:"POL",
+     symbol:"POL",
+     decimals:18
+    },
+    rpcUrls:[RPC_URL],
     blockExplorerUrls:["https://polygonscan.com/"]
    }]
   });
@@ -252,6 +263,7 @@ async function switchPolygon(){
 
 async function setupWallet(){
  loadCache();
+
  setStatus("walletStatus","Connected: "+walletAddress);
 
  document.getElementById("connectBtn").innerText="Wallet Connected";
@@ -268,101 +280,107 @@ if(window.ethereum){
   if(!accounts || !accounts.length){
    walletAddress=null;
    transactions=[];
-   setStatus("walletStatus","Wallet disconnected");
+   setStatus("walletStatus","Wallet disconnected.");
    document.getElementById("scanBtn").disabled=true;
    return;
   }
+
   walletAddress=ethers.getAddress(accounts[0]);
   await setupWallet();
  });
 
- window.ethereum.on("chainChanged",()=>location.reload());
+ window.ethereum.on("chainChanged",()=>{
+  location.reload();
+ });
 }
 
-/* ============== CONTRACT DATA ============== */
+/* =====================================
+   CONTRACT DATA
+===================================== */
 
 async function readContractData(){
  try{
-  const data=await rpcCall(async provider=>{
-   const c=new ethers.Contract(CONTRACT,ABI,provider);
+  const p=getProvider();
+  const c=new ethers.Contract(CONTRACT,ABI,p);
 
-   const [balance,rate,sdRaw,udRaw,usdtAddress]=await Promise.all([
-    c.balanceOf(walletAddress),
-    c.getCurrentBuyRate(),
-    c.SIGMA_DECIMALS(),
-    c.USDT_DECIMALS(),
-    c.usdt()
-   ]);
+  const [
+   balance,
+   rate,
+   sdRaw,
+   udRaw,
+   usdtAddress
+  ]=await Promise.all([
+   c.balanceOf(walletAddress),
+   c.getCurrentBuyRate(),
+   c.SIGMA_DECIMALS(),
+   c.USDT_DECIMALS(),
+   c.usdt()
+  ]);
 
-   let sd=Number(sdRaw);
-   let ud=Number(udRaw);
+  let sd=Number(sdRaw);
+  let ud=Number(udRaw);
 
-   if(!Number.isInteger(sd)||sd<0||sd>80){
-    sd=Number(await c.decimals());
-   }
+  if(!Number.isInteger(sd)||sd<0||sd>80){
+   sd=Number(await c.decimals());
+  }
 
-   if(!Number.isInteger(ud)||ud<0||ud>80){
-    const token=new ethers.Contract(usdtAddress,ERC20_ABI,provider);
-    ud=Number(await token.decimals());
-   }
+  if(!Number.isInteger(ud)||ud<0||ud>80){
+   const token=new ethers.Contract(usdtAddress,ERC20_ABI,p);
+   ud=Number(await token.decimals());
+  }
 
-   if(!Number.isInteger(sd)||sd<0||sd>80||
-      !Number.isInteger(ud)||ud<0||ud>80){
-    throw new Error("Invalid decimals: Sigma "+sd+", USDT "+ud);
-   }
+  if(!Number.isInteger(sd)||sd<0||sd>80||
+     !Number.isInteger(ud)||ud<0||ud>80){
+   throw new Error("Invalid decimals: Sigma "+sd+", USDT "+ud);
+  }
 
-   return {
-    balance:ethers.formatUnits(balance,sd),
-    rate:ethers.formatUnits(rate,ud),
-    sd,ud
-   };
-  });
-
-  sigmaDecimals=data.sd;
-  usdtDecimals=data.ud;
+  sigmaDecimals=sd;
+  usdtDecimals=ud;
 
   document.getElementById("walletBalance").innerText=
-   Number(data.balance).toLocaleString("en-IN",{maximumFractionDigits:5});
+   Number(ethers.formatUnits(balance,sd))
+   .toLocaleString("en-IN",{maximumFractionDigits:6});
 
   document.getElementById("currentRate").innerText=
-   Number(data.rate).toLocaleString("en-IN",{maximumFractionDigits:8});
+   Number(ethers.formatUnits(rate,ud))
+   .toLocaleString("en-IN",{maximumFractionDigits:8});
 
  }catch(error){
-  console.error(error);
-  setStatus("rpcStatus","Contract read: "+error.message);
+  console.error("Contract read:",error);
+  setStatus("rpcStatus","Contract read error: "+error.message);
  }
 }
 
-/* ============== CACHE ============== */
+/* =====================================
+   LOCAL CACHE
+===================================== */
 
 function loadCache(){
  transactions=[];
  cacheLastBlock=START_BLOCK-1;
 
  try{
-  const raw=localStorage.getItem(cacheKey());
-  if(!raw) return;
+  const saved=JSON.parse(localStorage.getItem(cacheKey())||"null");
 
-  const saved=JSON.parse(raw);
   if(saved && Array.isArray(saved.events)){
    transactions=saved.events;
    cacheLastBlock=Number(saved.lastBlock)||START_BLOCK-1;
   }
  }catch(error){
-  console.warn("Cache read error",error);
+  console.warn("Cache error:",error);
  }
 }
 
 function saveCache(lastBlock){
  try{
   localStorage.setItem(cacheKey(),JSON.stringify({
-   lastBlock,
+   lastBlock:lastBlock,
    events:transactions
   }));
   cacheLastBlock=lastBlock;
  }catch(error){
-  console.warn("Cache save failed",error);
-  setStatus("scanStatus","Browser storage full. History remains available for this session.");
+  console.warn("Cache save failed:",error);
+  setStatus("scanStatus","Storage full. Current session data is still available.");
  }
 }
 
@@ -371,33 +389,43 @@ function clearCache(){
   alert("Connect wallet first.");
   return;
  }
+
  if(!confirm("Clear saved history for this wallet?")) return;
 
  localStorage.removeItem(cacheKey());
  transactions=[];
  cacheLastBlock=START_BLOCK-1;
+
  renderHistory();
  updateStats();
- setStatus("scanStatus","Cache cleared. Scan will start from contract deployment block.");
+
+ setStatus("scanStatus","Cache cleared. Full history scan will start again.");
 }
 
-/* ============== EVENT SCAN ============== */
+/* =====================================
+   EVENT DECODING
+===================================== */
 
-function walletTopic(){
- return "0x"+walletAddress.toLowerCase().replace("0x","").padStart(64,"0");
+function getWalletTopic(){
+ return "0x"+
+  walletAddress.toLowerCase().replace("0x","").padStart(64,"0");
 }
 
 function decodeLogs(logs){
- const found=[];
+ const output=[];
 
  for(const log of logs){
   try{
-   const parsed=iface.parseLog({topics:log.topics,data:log.data});
+   const parsed=iface.parseLog({
+    topics:log.topics,
+    data:log.data
+   });
+
    if(!parsed) continue;
 
    const isBuy=parsed.name==="Buy";
 
-   found.push({
+   output.push({
     type:parsed.name,
     amount:ethers.formatUnits(parsed.args.amount,sigmaDecimals),
     rateRaw:parsed.args.rate.toString(),
@@ -410,26 +438,41 @@ function decodeLogs(logs){
     logIndex:Number(log.index??log.logIndex??0),
     timestamp:null
    });
+
   }catch(error){
-   console.warn("Decode error",error);
+   console.warn("Event decode failed:",error);
   }
  }
- return found;
+
+ return output;
 }
+
+/* =====================================
+   FAST BLOCK RANGE SCAN
+===================================== */
 
 async function fetchRange(from,to,retry=0){
  try{
-  const logs=await rpcCall(provider=>provider.getLogs({
+  const p=getProvider();
+
+  const logs=await p.getLogs({
    address:CONTRACT,
    fromBlock:from,
    toBlock:to,
-   topics:[[BUY_TOPIC,SELL_TOPIC],walletTopic()]
-  }));
+   topics:[
+    [BUY_TOPIC,SELL_TOPIC],
+    getWalletTopic()
+   ]
+  });
+
   return decodeLogs(logs);
+
  }catch(error){
+  console.warn("Range failed:",from,to,error);
+
   const size=to-from+1;
 
-  if(size<=MIN_CHUNK || retry>=MAX_RETRIES){
+  if(size<=MIN_CHUNK || retry>=6){
    throw error;
   }
 
@@ -438,38 +481,55 @@ async function fetchRange(from,to,retry=0){
   const left=await fetchRange(from,mid,retry+1);
   const right=await fetchRange(mid+1,to,retry+1);
 
-  return left.concat(right);
+  return [...left,...right];
  }
 }
 
-async function runBatch(ranges){
- return Promise.all(ranges.map(r=>fetchRange(r.from,r.to)));
+function dedupe(items){
+ const map=new Map();
+
+ for(const tx of items){
+  map.set(
+   tx.transactionHash+"_"+tx.logIndex,
+   tx
+  );
+ }
+
+ return [...map.values()].sort((a,b)=>
+  b.blockNumber-a.blockNumber || b.logIndex-a.logIndex
+ );
 }
 
 async function startScan(){
- if(!walletAddress||scanning) return;
+ if(!walletAddress || scanning) return;
 
  scanning=true;
  document.getElementById("scanBtn").disabled=true;
 
  try{
-  const latest=await rpcCall(p=>p.getBlockNumber());
+  const p=getProvider();
+  const latest=await p.getBlockNumber();
 
-  const fromStart=Math.max(START_BLOCK,cacheLastBlock+1);
+  const fromStart=Math.max(
+   START_BLOCK,
+   cacheLastBlock+1
+  );
 
   if(fromStart>latest){
-   setStatus("scanStatus","History is already up to date. "+transactions.length+" saved transactions.");
+   setStatus("scanStatus",
+    "Already up to date. "+transactions.length+" transactions saved."
+   );
    return;
   }
 
   const total=latest-fromStart+1;
-  let completed=0;
   let cursor=fromStart;
+  let completed=0;
 
   setStatus("scanStatus",
    cacheLastBlock>=START_BLOCK
-    ?"Loading only new blocks from cache..."
-    :"First scan: loading complete contract history..."
+    ?"Scanning only new blocks..."
+    :"First scan: reading contract history..."
   );
 
   while(cursor<=latest){
@@ -481,109 +541,131 @@ async function startScan(){
     cursor=end+1;
    }
 
-   const batchResults=await runBatch(ranges);
+   const results=await Promise.all(
+    ranges.map(r=>fetchRange(r.from,r.to))
+   );
 
-   for(let i=0;i<batchResults.length;i++){
-    transactions.push(...batchResults[i]);
+   for(let i=0;i<results.length;i++){
+    transactions.push(...results[i]);
     completed+=ranges[i].to-ranges[i].from+1;
    }
 
    transactions=dedupe(transactions);
 
-   const lastFinished=ranges[ranges.length-1].to;
-   saveCache(lastFinished);
+   const lastBlock=ranges[ranges.length-1].to;
+   saveCache(lastBlock);
 
    const percent=Math.min(100,completed/total*100);
-   document.getElementById("progressBar").style.width=percent+"%";
+
+   document.getElementById("progressBar").style.width=
+    percent+"%";
 
    setStatus("scanStatus",
-    "Scanning: "+percent.toFixed(1)+"% | "+
-    completed.toLocaleString()+" / "+total.toLocaleString()+
-    " blocks | "+transactions.length+" transactions"
+    "Scanning "+percent.toFixed(1)+"% | "+
+    completed.toLocaleString()+" / "+
+    total.toLocaleString()+" blocks | "+
+    transactions.length+" transactions"
    );
 
    renderHistory();
    updateStats();
   }
 
+  setStatus("scanStatus","Loading transaction dates...");
   await loadTimestamps();
+
   saveCache(latest);
   renderHistory();
   updateStats();
 
-  document.getElementById("csvBtn").disabled=transactions.length===0;
   setStatus("scanStatus",
-   "Completed! "+transactions.length+" transactions found. Next scan will load only new blocks."
+   "Completed! "+transactions.length+
+   " transactions found. Next scan will only load new blocks."
   );
 
  }catch(error){
   console.error(error);
-  setStatus("scanStatus","Scan failed: "+error.message);
-  alert("History scan failed:\n"+error.message);
+
+  setStatus("scanStatus",
+   "Scan failed: "+error.message
+  );
+
+  alert(
+   "Scan failed:\n"+error.message+
+   "\n\nIf dRPC does not provide archive logs, an Archive RPC endpoint is required."
+  );
+
  }finally{
   scanning=false;
   document.getElementById("scanBtn").disabled=false;
  }
 }
 
-function dedupe(items){
- const map=new Map();
- for(const tx of items){
-  map.set(tx.transactionHash+"_"+tx.logIndex,tx);
- }
- return [...map.values()].sort((a,b)=>
-  b.blockNumber-a.blockNumber||b.logIndex-a.logIndex
- );
-}
-
-/* ============== TIMESTAMPS ============== */
+/* =====================================
+   BLOCK TIMESTAMPS
+===================================== */
 
 async function loadTimestamps(){
  const missing=[...new Set(
-  transactions.filter(x=>!x.timestamp).map(x=>x.blockNumber)
+  transactions
+   .filter(tx=>!tx.timestamp)
+   .map(tx=>tx.blockNumber)
  )];
 
  if(!missing.length) return;
 
  let index=0;
- const workers=Array.from({length:TIMESTAMP_WORKERS},async()=>{
-  while(index<missing.length){
-   const blockNumber=missing[index++];
 
-   try{
-    const block=await rpcCall(p=>p.getBlock(blockNumber));
-    if(block){
-     const timestamp=Number(block.timestamp);
-     transactions.forEach(tx=>{
-      if(tx.blockNumber===blockNumber) tx.timestamp=timestamp;
-     });
+ const workers=Array.from(
+  {length:TIMESTAMP_WORKERS},
+  async()=>{
+   while(index<missing.length){
+    const blockNumber=missing[index++];
+
+    try{
+     const block=await getProvider().getBlock(blockNumber);
+
+     if(block){
+      const timestamp=Number(block.timestamp);
+
+      transactions.forEach(tx=>{
+       if(tx.blockNumber===blockNumber){
+        tx.timestamp=timestamp;
+       }
+      });
+     }
+    }catch(error){
+     console.warn("Timestamp error:",blockNumber,error);
     }
-   }catch(error){
-    console.warn("Timestamp unavailable",blockNumber,error);
    }
   }
- });
+ );
 
  await Promise.all(workers);
  saveCache(cacheLastBlock);
 }
 
-/* ============== DISPLAY ============== */
+/* =====================================
+   DISPLAY HISTORY
+===================================== */
 
 function renderHistory(){
  const body=document.getElementById("historyBody");
 
  if(!transactions.length){
-  body.innerHTML='<tr><td colspan="7" style="text-align:center">No transactions found.</td></tr>';
+  body.innerHTML=
+   '<tr><td colspan="7" style="text-align:center">No transactions found.</td></tr>';
+  document.getElementById("csvBtn").disabled=true;
   return;
  }
 
  body.innerHTML=transactions.map(tx=>{
   const date=tx.timestamp
    ?new Date(tx.timestamp*1000).toLocaleString("en-IN")
-   :"Loading time...";
+   :"Time unavailable";
 
   const rate=ethers.formatUnits(tx.rateRaw,usdtDecimals);
+
   return `<tr>
    <td class="${tx.type==="Buy"?"buy":"sell"}">${tx.type}</td>
    <td>${date}</td>
@@ -595,12 +677,12 @@ function renderHistory(){
   </tr>`;
  }).join("");
 
- document.getElementById("csvBtn").disabled=transactions.length===0;
+ document.getElementById("csvBtn").disabled=false;
 }
 
 function updateStats(){
- const buys=transactions.filter(x=>x.type==="Buy");
- const sells=transactions.filter(x=>x.type==="Sell");
+ const buys=transactions.filter(tx=>tx.type==="Buy");
+ const sells=transactions.filter(tx=>tx.type==="Sell");
 
  const buyTotal=buys.reduce((s,x)=>s+Number(x.amount),0);
  const sellTotal=sells.reduce((s,x)=>s+Number(x.amount),0);
@@ -615,14 +697,16 @@ function updateStats(){
   sellTotal.toLocaleString("en-IN",{maximumFractionDigits:4});
 }
 
-/* ============== CSV ============== */
+/* =====================================
+   CSV EXPORT
+===================================== */
 
 function downloadCSV(){
  if(!transactions.length) return;
 
  const rows=[[
-  "Type","Date","Sigma Amount","Rate USDT","USDT Value",
-  "Transaction Hash","Block"
+  "Type","Date","Sigma Amount","Rate USDT",
+  "USDT Value","Transaction Hash","Block"
  ]];
 
  transactions.forEach(tx=>{
@@ -637,26 +721,38 @@ function downloadCSV(){
   ]);
  });
 
- const csv=rows.map(row=>row.map(v=>
-  '"'+String(v).replace(/"/g,'""')+'"'
- ).join(",")).join("\n");
+ const csv=rows.map(row=>
+  row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")
+ ).join("\n");
 
- const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+ const blob=new Blob([csv],{
+  type:"text/csv;charset=utf-8"
+ });
+
  const url=URL.createObjectURL(blob);
  const a=document.createElement("a");
+
  a.href=url;
  a.download="sigma-six-buy-sell-history.csv";
  a.click();
+
  URL.revokeObjectURL(url);
 }
+
+/* =====================================
+   DASHBOARD
+===================================== */
 
 function goDashboard(){
  window.location.href="index.html";
 }
 
-/* ============== INIT ============== */
+/* =====================================
+   INITIALIZE
+===================================== */
 
 window.addEventListener("load",checkWallet);
+
 </script>
 </body>
 </html>
