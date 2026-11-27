@@ -2,146 +2,104 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SIGMA SIX | Income Report</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-:root{--primary:#00ffcc;--secondary:#9d4edd;--bg:#0a0b10;--card:#161821;--text:#fff;--border:#2d2f3e;--success:#00ff88;--danger:#ff4d4d;--gold:#ffd700;--gradient:linear-gradient(90deg,#00ffcc,#9d4edd,#ff2a6d,#00ffcc)}
+:root{--primary:#00ffcc;--secondary:#9d4edd;--bg:#0a0b10;--card:#161821;--text:#fff;--border:#2d2f3e;--success:#00ff88;--warning:#ffaa00;--danger:#ff4d4d;--gold:#ffd700;--gradient:linear-gradient(90deg,#00ffcc,#9d4edd,#ff2a6d,#00ffcc)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:Inter,sans-serif;min-height:100vh;overflow-x:hidden}
 .rainbow-border{height:4px;background:var(--gradient);background-size:400% 400%;animation:rainbow 8s ease infinite}
 @keyframes rainbow{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
-.container{max-width:1400px;margin:auto;padding:15px}
-.header-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}
-.back-btn,.refresh-btn,.connect-btn,.apply-btn,.reset-btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
-.back-btn{color:var(--primary);background:#00ffcc18;border:1px solid #00ffcc55}
-.refresh-btn,.connect-btn,.apply-btn{background:linear-gradient(90deg,var(--secondary),#7b2cbf);color:white}
-.connect-row{display:flex;justify-content:flex-end;margin-bottom:12px}
-.connect-btn.connected{background:#00ffcc18;color:var(--primary);border:1px solid var(--primary)}
-.header{text-align:center;margin:25px 0 30px}
-.header h1{font-size:clamp(26px,5vw,40px);font-weight:800;letter-spacing:1px;background:var(--gradient);background-size:400% 400%;animation:rainbow 8s ease infinite;-webkit-background-clip:text;background-clip:text;color:transparent}
-.header p{color:#aaa;font-size:13px;margin-top:8px}
-.filters-section,.main-card{background:rgba(22,24,33,.94);border:1px solid #2d2f3e;border-radius:17px;padding:16px;margin-bottom:20px;position:relative;overflow:hidden}
-.filters-section{border-color:#9d4edd55}
-.main-card:before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:var(--gradient);background-size:400% 400%;animation:rainbow 8s ease infinite}
-.filters-title{color:var(--secondary);font-size:18px;margin-bottom:14px}
-.filter-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
-.filter-group{flex:1;min-width:170px}
-.filter-label{display:block;color:#aaa;font-size:12px;margin-bottom:5px}
-.date-input,.type-select,.search-input{width:100%;padding:10px;background:#090a0f;border:1px solid #9d4edd66;border-radius:8px;color:#fff}
-.filter-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-.apply-btn{background:linear-gradient(90deg,var(--secondary),#7b2cbf)}
+.container{max-width:1400px;margin:auto;padding:16px}
+.header-actions{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:12px 0 20px}
+a,.back-btn{color:var(--primary);text-decoration:none}
+.back-btn,.refresh-btn,.connect-btn,.apply-btn,.reset-btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer}
+.back-btn{background:#00ffcc18;border:1px solid #00ffcc55}
+.refresh-btn,.apply-btn{background:linear-gradient(90deg,var(--secondary),#7b2cbf);color:#fff}
 .reset-btn{background:#ff4d4d18;color:var(--danger);border:1px solid var(--danger)}
-.card-title{color:var(--primary);font-size:20px;margin-bottom:17px}
+.connect-row{text-align:right}
+.connect-btn{background:linear-gradient(90deg,var(--primary),var(--secondary));color:#000}
+.connect-btn.connected{background:#00ffcc18;color:var(--primary);border:1px solid var(--primary)}
+.chain-warning{display:none;color:var(--warning);padding:12px;border:1px solid var(--warning);border-radius:10px;margin:10px 0}
+.chain-warning.show{display:block}
+.header{text-align:center;margin:22px 0 28px}
+.header h1{font-size:clamp(26px,5vw,42px);font-weight:800;letter-spacing:1px;background:var(--gradient);background-size:400% 400%;animation:rainbow 8s ease infinite;background-clip:text;color:transparent}
+.header p{color:#aaa;margin-top:8px}
+.filters-section,.main-card{background:#161821dd;border:1px solid #9d4edd33;border-radius:18px;padding:18px;margin-bottom:18px}
+.filters-title,.card-title{color:var(--primary);font-size:19px;margin-bottom:16px}
+.filter-row{display:flex;flex-wrap:wrap;gap:12px}
+.filter-group{flex:1;min-width:180px}
+.filter-label{display:block;color:#aaa;font-size:12px;margin-bottom:6px}
+.date-input,.type-select,.search-input{width:100%;padding:11px;background:#090a0f;border:1px solid #9d4edd66;border-radius:9px;color:#fff}
+.filter-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.status{color:#aaa;font-size:12px;margin-top:12px;overflow-wrap:anywhere}
 .stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.stat-box{background:#ffffff08;border:1px solid #2d2f3e;border-radius:12px;padding:15px;text-align:center}
+.stat-box{background:#ffffff08;border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
 .stat-label{color:#999;font-size:12px;margin-bottom:8px}
-.stat-value{font-size:clamp(18px,3vw,25px);font-weight:800;color:var(--primary);overflow-wrap:anywhere}
+.stat-value{font-size:clamp(17px,3vw,25px);font-weight:800;color:var(--primary);overflow-wrap:anywhere}
 .gold{color:var(--gold)}.positive{color:var(--success)}.negative{color:var(--danger)}
 .table-container{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:#0003}
 .desktop-table{width:100%;border-collapse:collapse;min-width:680px}
-th{background:#9d4edd20;color:var(--secondary);padding:12px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap}
-td{padding:12px 10px;border-bottom:1px solid #2d2f3e;font-size:13px;vertical-align:middle}
+th{background:#9d4edd20;color:var(--secondary);padding:12px 10px;text-align:left;font-size:11px;text-transform:uppercase;white-space:nowrap}
+td{padding:12px 10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
 tr:hover td{background:#ffffff08}
 .amount-positive{color:var(--success);font-weight:700}.amount-negative{color:var(--danger);font-weight:700}.amount-gold{color:var(--gold);font-weight:700}
 .wallet-address{font-family:monospace;font-size:12px;color:var(--primary);background:#00ffcc15;border:1px solid #00ffcc33;padding:6px 8px;border-radius:7px;cursor:pointer}
 .level-badge,.percent-badge,.reason-badge,.ico-badge{display:inline-block;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:700}
-.level-badge{color:var(--secondary);background:#9d4edd22}.percent-badge{color:var(--primary);background:#00ffcc18}
-.reason-badge{color:var(--danger);background:#ff4d4d18;max-width:220px;overflow-wrap:anywhere}.ico-badge{color:var(--gold);background:#ffd70020}
-.loading,.no-data{text-align:center;padding:25px 12px;color:#999}
-.loading{color:var(--primary)}.status{font-size:12px;color:#aaa;margin-top:10px;overflow-wrap:anywhere}
+.level-badge{color:var(--secondary);background:#9d4edd22}.percent-badge{color:var(--primary);background:#00ffcc18}.reason-badge{color:var(--danger);background:#ff4d4d18;max-width:220px;overflow-wrap:anywhere}.ico-badge{color:var(--gold);background:#ffd70020}
+.loading,.no-data{text-align:center;padding:25px 12px;color:#999}.loading{color:var(--primary)}
 .mobile-cards{display:none}.mobile-card{padding:14px;border:1px solid #00ffcc22;border-radius:12px;margin-bottom:10px;background:#ffffff06}
 .mobile-card-header{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;color:var(--primary);font-weight:700}
 .mobile-card-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #ffffff12;font-size:12px}
 .mobile-card-label{color:#999}.mobile-card-value{text-align:right;overflow-wrap:anywhere}
-.chain-warning{display:none;color:#ffaa00;background:#ffaa0018;border:1px solid #ffaa00;padding:10px;border-radius:8px;margin-bottom:12px}
-.chain-warning.show{display:block}
 @media(max-width:768px){.container{padding:10px}.stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}.desktop-table{display:none}.mobile-cards{display:block}.filter-row{display:block}.filter-group{margin-bottom:10px}.header-actions{align-items:stretch}.back-btn,.refresh-btn{justify-content:center}.header{margin:20px 0}.card-title{font-size:17px}}
-@media(max-width:420px){.stats-row{grid-template-columns:1fr}.header-actions{flex-direction:column}}
+@media(max-width:420px){.stats-row{grid-template-columns:1fr}.header-actions{flex-direction:column}.connect-row{text-align:center}.connect-btn{width:100%}}
 </style>
 </head>
 <body>
 <div class="rainbow-border"></div>
 <div class="container">
-  <div class="connect-row"><button class="connect-btn" id="connectBtn" onclick="handleConnectClick()"><i class="fas fa-wallet"></i><span id="btn-text">Connect Wallet</span></button></div>
+  <div class="connect-row"><button class="connect-btn" id="connectBtn" onclick="handleConnectClick()"><i class="fas fa-wallet"></i> <span id="btn-text">Connect Wallet</span></button></div>
   <div id="chainWarning" class="chain-warning"><i class="fas fa-exclamation-triangle"></i> Please switch to Polygon Mainnet (Chain ID 137).</div>
-  <div class="header-actions">
-    <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-    <button class="refresh-btn" onclick="loadIncomeData()"><i class="fas fa-sync-alt"></i> Refresh</button>
-  </div>
-  <header class="header">
-    <h1>SIGMA SIX | INCOME REPORT</h1>
-    <p>ICO Bonus (10%) • Team Referral • Lapsed Income</p>
-  </header>
-
+  <div class="header-actions"><a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a><button class="refresh-btn" onclick="loadIncomeData()"><i class="fas fa-sync-alt"></i> Refresh</button></div>
+  <header class="header"><h1>SIGMA SIX | INCOME REPORT</h1><p>ICO Bonus (10%) • Team Referral • Lapsed Income</p></header>
   <section class="filters-section">
     <h2 class="filters-title"><i class="fas fa-filter"></i> Filter Income Data</h2>
     <div class="filter-row">
       <div class="filter-group"><label class="filter-label" for="startDate">Start Date</label><input type="date" id="startDate" class="date-input"></div>
       <div class="filter-group"><label class="filter-label" for="endDate">End Date</label><input type="date" id="endDate" class="date-input"></div>
-      <div class="filter-group"><label class="filter-label" for="incomeType">Income Type</label>
-        <select id="incomeType" class="type-select">
-          <option value="all">All Types</option><option value="ICO">ICO Bonus (10%)</option>
-          <option value="REFERRAL">Team Referral</option><option value="lapsed">Lapsed Income</option>
-        </select>
-      </div>
+      <div class="filter-group"><label class="filter-label" for="incomeType">Income Type</label><select id="incomeType" class="type-select"><option value="all">All Types</option><option value="ICO">ICO Bonus (10%)</option><option value="REFERRAL">Team Referral</option><option value="lapsed">Lapsed Income</option></select></div>
       <div class="filter-group"><label class="filter-label" for="searchWallet">Search Wallet</label><input type="text" id="searchWallet" class="search-input" placeholder="Enter wallet address..."></div>
     </div>
-    <div class="filter-buttons">
-      <button class="apply-btn" onclick="applyFilters()"><i class="fas fa-check"></i> Apply Filters</button>
-      <button class="reset-btn" onclick="resetFilters()"><i class="fas fa-times"></i> Reset Filters</button>
-    </div>
+    <div class="filter-buttons"><button class="apply-btn" onclick="applyFilters()"><i class="fas fa-check"></i> Apply Filters</button><button class="reset-btn" onclick="resetFilters()"><i class="fas fa-times"></i> Reset Filters</button></div>
     <div id="loadStatus" class="status" aria-live="polite">Connect your wallet to view on-chain income history.</div>
   </section>
-
-  <section class="main-card">
-    <h2 class="card-title"><i class="fas fa-chart-line"></i> Income Overview</h2>
-    <div class="stats-row">
-      <div class="stat-box"><div class="stat-label">★ ICO Bonus (10%)</div><div id="total-ico" class="stat-value gold">0.000000 SIG6</div></div>
-      <div class="stat-box"><div class="stat-label">♟ Referral Income</div><div id="total-referral" class="stat-value positive">0.000000 SIG6</div></div>
-      <div class="stat-box"><div class="stat-label">⚠ Lapsed Income</div><div id="total-lapsed" class="stat-value negative">0.000000 SIG6</div></div>
-      <div class="stat-box"><div class="stat-label">Total Transactions</div><div id="total-transactions" class="stat-value">0</div></div>
-    </div>
-  </section>
-
-  <section class="main-card">
-    <h2 class="card-title"><i class="fas fa-star"></i> ICO Bonus (10% on First Purchase)</h2>
-    <div class="table-container">
-      <table class="desktop-table"><thead><tr><th>#</th><th>Date &amp; Time</th><th>Bonus Amount (SIG6)</th></tr></thead><tbody id="ico-body-desktop"><tr><td colspan="3" class="no-data">Connect wallet to load data</td></tr></tbody></table>
-      <div class="mobile-cards" id="ico-body-mobile"><div class="no-data">Connect wallet to load data</div></div>
-    </div>
-  </section>
-
-  <section class="main-card">
-    <h2 class="card-title"><i class="fas fa-users"></i> Team Referral Income</h2>
-    <div class="table-container">
-      <table class="desktop-table"><thead><tr><th>#</th><th>From Wallet</th><th>Level</th><th>Percentage</th><th>Amount (SIG6)</th><th>Date &amp; Time</th></tr></thead><tbody id="referral-body-desktop"><tr><td colspan="6" class="no-data">Connect wallet to load data</td></tr></tbody></table>
-      <div class="mobile-cards" id="referral-body-mobile"><div class="no-data">Connect wallet to load data</div></div>
-    </div>
-  </section>
-
-  <section class="main-card">
-    <h2 class="card-title"><i class="fas fa-exclamation-triangle"></i> Lapsed Income</h2>
-    <div class="table-container">
-      <table class="desktop-table"><thead><tr><th>#</th><th>From Wallet</th><th>Amount Lost (SIG6)</th><th>Reason</th><th>Date &amp; Time</th></tr></thead><tbody id="lapsed-body-desktop"><tr><td colspan="5" class="no-data">Connect wallet to load data</td></tr></tbody></table>
-      <div class="mobile-cards" id="lapsed-body-mobile"><div class="no-data">Connect wallet to load data</div></div>
-    </div>
-  </section>
+  <section class="main-card"><h2 class="card-title"><i class="fas fa-chart-line"></i> Income Overview</h2><div class="stats-row">
+    <div class="stat-box"><div class="stat-label">★ ICO Bonus (10%)</div><div id="total-ico" class="stat-value gold">0.000000 SIG6</div></div>
+    <div class="stat-box"><div class="stat-label">♟ Referral Income</div><div id="total-referral" class="stat-value positive">0.000000 SIG6</div></div>
+    <div class="stat-box"><div class="stat-label">⚠ Lapsed Income</div><div id="total-lapsed" class="stat-value negative">0.000000 SIG6</div></div>
+    <div class="stat-box"><div class="stat-label">Total Transactions</div><div id="total-transactions" class="stat-value">0</div></div>
+  </div></section>
+  <section class="main-card"><h2 class="card-title"><i class="fas fa-star"></i> ICO Bonus (10% on First Purchase)</h2><div class="table-container"><table class="desktop-table"><thead><tr><th>#</th><th>Date &amp; Time</th><th>Bonus Amount (SIG6)</th></tr></thead><tbody id="ico-body-desktop"><tr><td colspan="3" class="no-data">Connect wallet to load data</td></tr></tbody></table><div class="mobile-cards" id="ico-body-mobile"><div class="no-data">Connect wallet to load data</div></div></div></section>
+  <section class="main-card"><h2 class="card-title"><i class="fas fa-users"></i> Team Referral Income</h2><div class="table-container"><table class="desktop-table"><thead><tr><th>#</th><th>From Wallet</th><th>Level</th><th>Percentage</th><th>Amount (SIG6)</th><th>Date &amp; Time</th></tr></thead><tbody id="referral-body-desktop"><tr><td colspan="6" class="no-data">Connect wallet to load data</td></tr></tbody></table><div class="mobile-cards" id="referral-body-mobile"><div class="no-data">Connect wallet to load data</div></div></div></section>
+  <section class="main-card"><h2 class="card-title"><i class="fas fa-exclamation-triangle"></i> Lapsed Income</h2><div class="table-container"><table class="desktop-table"><thead><tr><th>#</th><th>From Wallet</th><th>Amount Lost (SIG6)</th><th>Reason</th><th>Date &amp; Time</th></tr></thead><tbody id="lapsed-body-desktop"><tr><td colspan="5" class="no-data">Connect wallet to load data</td></tr></tbody></table><div class="mobile-cards" id="lapsed-body-mobile"><div class="no-data">Connect wallet to load data</div></div></div></section>
 </div>
-
 <script>
 "use strict";
 
-// ===== CONTRACT CONFIGURATION =====
+// Contract and deployment configuration
 const SIGMA_CONTRACT_ADDRESS = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
 const POLYGON_CHAIN_ID = 137;
-const HISTORY_BLOCKS = 5000000; // History window; change only if required.
-const INITIAL_CHUNK_SIZE = 20000; // Below the RPC provider's 100,000-block limit.
+const CONTRACT_START_BLOCK = 85000998;
+const INITIAL_CHUNK_SIZE = 80000;
 const MIN_CHUNK_SIZE = 1000;
-const levelPercent = [0, 10, 4, 3, 2, 1, 0.5, 0.5, 0.5, 0.5, 0.5];
+const levelPercent = [0,10,4,3,2,1,0.5,0.5,0.5,0.5,0.5];
 
+// These event signatures match the event definitions in the existing income.html.
+// If the verified contract ABI differs, these must be updated to the verified ABI.
 const sigmaABI = [
   "event ICO(address indexed user, uint256 amount)",
   "event TeamReferral(address indexed from, address indexed to, uint256 amount, uint256 level)",
@@ -149,359 +107,196 @@ const sigmaABI = [
 ];
 
 let provider, userAddress, sigmaContract;
-let allICOBonusEvents = [], allReferralEvents = [], allLapsedEvents = [];
-let isLoading = false;
+let allICOBonusEvents=[], allReferralEvents=[], allLapsedEvents=[];
+let isLoading=false;
+const $=id=>document.getElementById(id);
+const setStatus=message=>{$("loadStatus").textContent=message;};
+function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+function shortAddress(address){return address&&address.length>12?address.slice(0,6)+"..."+address.slice(-4):(address||"Unknown");}
+function formatAmount(value){return Number(ethers.formatUnits(value,18)).toFixed(6);}
+function dateTime(ev){const d=ev.dateObj||new Date(0);return {date:d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}),time:d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",second:"2-digit"})};}
 
-const $ = id => document.getElementById(id);
-const setStatus = message => { $("loadStatus").textContent = message; };
-
-function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
-  })[ch]);
-}
-function shortAddress(address) {
-  return address && address.length > 12 ? address.slice(0,6) + "..." + address.slice(-4) : (address || "Unknown");
-}
-function formatAmount(value, decimals = 6) {
-  return Number(ethers.formatUnits(value, 18)).toFixed(decimals);
-}
-function dateTime(event) {
-  const d = event.dateObj || new Date(0);
-  return {
-    date: d.toLocaleDateString("en-IN", {day:"2-digit",month:"short",year:"numeric"}),
-    time: d.toLocaleTimeString("en-IN", {hour:"2-digit",minute:"2-digit",second:"2-digit"})
-  };
-}
-
-async function handleConnectClick() {
-  if (!window.ethereum) {
-    alert("Please install MetaMask or another Web3 wallet.");
-    return;
-  }
+async function handleConnectClick(){
+  if(!window.ethereum){alert("Please install MetaMask or another Web3 wallet.");return;}
   await connectWallet();
 }
-
-async function connectWallet() {
-  try {
-    provider = new ethers.BrowserProvider(window.ethereum);
-    const accounts = await provider.send("eth_requestAccounts", []);
-    if (!accounts || !accounts.length) throw new Error("No wallet account was returned.");
-    userAddress = accounts[0].toLowerCase();
-    sigmaContract = new ethers.Contract(SIGMA_CONTRACT_ADDRESS, sigmaABI, provider);
-    $("btn-text").textContent = "🦊 " + shortAddress(userAddress);
+async function connectWallet(){
+  try{
+    provider=new ethers.BrowserProvider(window.ethereum);
+    const accounts=await provider.send("eth_requestAccounts",[]);
+    if(!accounts.length)throw new Error("No wallet account returned.");
+    userAddress=accounts[0].toLowerCase();
+    sigmaContract=new ethers.Contract(SIGMA_CONTRACT_ADDRESS,sigmaABI,provider);
+    $("btn-text").textContent="🦊 "+shortAddress(userAddress);
     $("connectBtn").classList.add("connected");
-    await checkChain();
     await loadIncomeData();
-
-    if (!window.__sigmaListenersAdded) {
-      window.ethereum.on("accountsChanged", async accountsChanged => {
-        if (!accountsChanged || !accountsChanged.length) {
-          userAddress = null;
-          location.reload();
-          return;
-        }
-        userAddress = accountsChanged[0].toLowerCase();
-        $("btn-text").textContent = "🦊 " + shortAddress(userAddress);
-        sigmaContract = new ethers.Contract(SIGMA_CONTRACT_ADDRESS, sigmaABI, provider);
+    if(!window.__sigmaIncomeListeners){
+      window.ethereum.on("accountsChanged",async accounts=>{
+        if(!accounts.length){location.reload();return;}
+        userAddress=accounts[0].toLowerCase();
+        $("btn-text").textContent="🦊 "+shortAddress(userAddress);
         await loadIncomeData();
       });
-      window.ethereum.on("chainChanged", () => location.reload());
-      window.__sigmaListenersAdded = true;
+      window.ethereum.on("chainChanged",()=>location.reload());
+      window.__sigmaIncomeListeners=true;
     }
-  } catch (error) {
-    console.error("Wallet connection failed:", error);
-    alert("Wallet connection failed: " + (error.shortMessage || error.message));
-  }
+  }catch(error){console.error(error);alert("Wallet connection failed: "+(error.shortMessage||error.message));}
+}
+async function checkChain(){
+  if(!provider)return false;
+  try{
+    const network=await provider.getNetwork();
+    const ok=Number(network.chainId)===POLYGON_CHAIN_ID;
+    $("chainWarning").classList.toggle("show",!ok);
+    if(!ok)setStatus("Please switch MetaMask to Polygon Mainnet (Chain ID 137).");
+    return ok;
+  }catch(error){$("chainWarning").classList.add("show");setStatus("Unable to check network: "+error.message);return false;}
 }
 
-async function checkChain() {
-  if (!provider) return false;
-  try {
-    const network = await provider.getNetwork();
-    const isPolygon = Number(network.chainId) === POLYGON_CHAIN_ID;
-    $("chainWarning").classList.toggle("show", !isPolygon);
-    if (!isPolygon) setStatus("Please switch MetaMask to Polygon Mainnet (Chain ID 137).");
-    return isPolygon;
-  } catch (error) {
-    $("chainWarning").classList.add("show");
-    setStatus("Unable to check network: " + error.message);
-    return false;
-  }
-}
-
-// Fetch logs in small ranges. If an RPC rejects a range, split it further.
-async function queryRange(contract, filter, fromBlock, toBlock, chunkSize) {
-  const results = [];
-  for (let start = fromBlock; start <= toBlock;) {
-    const end = Math.min(start + chunkSize - 1, toBlock);
-    try {
-      const logs = await contract.queryFilter(filter, start, end);
-      results.push(...logs);
-      start = end + 1;
-    } catch (error) {
-      const range = end - start + 1;
-      if (range <= MIN_CHUNK_SIZE) {
-        throw new Error("Could not read blocks " + start + "–" + end + ": " +
-          (error.shortMessage || error.reason || error.message));
-      }
-      const smaller = Math.max(MIN_CHUNK_SIZE, Math.floor(range / 2));
-      console.warn("RPC range rejected; retrying with smaller chunk:", start, end, error);
-      const partial = await queryRange(contract, filter, start, end, smaller);
-      results.push(...partial);
-      start = end + 1;
+// Queries logs emitted by this contract address only, starting at its deployment block.
+async function queryRange(filter,fromBlock,toBlock,chunkSize){
+  const output=[];
+  for(let start=fromBlock;start<=toBlock;){
+    const end=Math.min(start+chunkSize-1,toBlock);
+    try{
+      const logs=await sigmaContract.queryFilter(filter,start,end);
+      output.push(...logs);
+      start=end+1;
+      setStatus("Reading contract logs: block "+end.toLocaleString("en-IN")+" / "+toBlock.toLocaleString("en-IN")+" ...");
+    }catch(error){
+      const range=end-start+1;
+      if(range<=MIN_CHUNK_SIZE)throw new Error("RPC could not read blocks "+start+"–"+end+": "+(error.shortMessage||error.reason||error.message));
+      const smaller=Math.max(MIN_CHUNK_SIZE,Math.floor(range/2));
+      console.warn("Reducing RPC block range",start,end,error);
+      output.push(...await queryRange(filter,start,end,smaller));
+      start=end+1;
     }
   }
-  return results;
+  return output;
 }
-
-async function queryAllEvents(currentBlock) {
-  const fromBlock = Math.max(0, currentBlock - HISTORY_BLOCKS);
-  const tasks = [
-    queryRange(sigmaContract, sigmaContract.filters.ICO(userAddress), fromBlock, currentBlock, INITIAL_CHUNK_SIZE),
-    queryRange(sigmaContract, sigmaContract.filters.TeamReferral(null, userAddress), fromBlock, currentBlock, INITIAL_CHUNK_SIZE),
-    queryRange(sigmaContract, sigmaContract.filters.IncomeLapsed(userAddress), fromBlock, currentBlock, INITIAL_CHUNK_SIZE)
+async function queryAllEvents(currentBlock){
+  const fromBlock=CONTRACT_START_BLOCK;
+  if(currentBlock<fromBlock)throw new Error("Current Polygon block is lower than the configured contract deployment block.");
+  const tasks=[
+    queryRange(sigmaContract.filters.ICO(userAddress),fromBlock,currentBlock,INITIAL_CHUNK_SIZE),
+    queryRange(sigmaContract.filters.TeamReferral(null,userAddress),fromBlock,currentBlock,INITIAL_CHUNK_SIZE),
+    queryRange(sigmaContract.filters.IncomeLapsed(userAddress),fromBlock,currentBlock,INITIAL_CHUNK_SIZE)
   ];
-  const settled = await Promise.allSettled(tasks);
+  const results=await Promise.allSettled(tasks);
   return {
-    ico: settled[0].status === "fulfilled" ? settled[0].value : [],
-    referral: settled[1].status === "fulfilled" ? settled[1].value : [],
-    lapsed: settled[2].status === "fulfilled" ? settled[2].value : [],
-    errors: settled.map((item, i) => item.status === "rejected" ?
-      ["ICO Bonus", "Team Referral", "Lapsed Income"][i] + ": " + item.reason.message : null).filter(Boolean),
-    fromBlock,
-    currentBlock
+    ico:results[0].status==="fulfilled"?results[0].value:[],
+    referral:results[1].status==="fulfilled"?results[1].value:[],
+    lapsed:results[2].status==="fulfilled"?results[2].value:[],
+    errors:results.map((r,i)=>r.status==="rejected"?["ICO Bonus","Team Referral","Lapsed Income"][i]+": "+r.reason.message:null).filter(Boolean),
+    fromBlock,currentBlock
   };
 }
 
-// Fetch each distinct block timestamp once, with limited parallel requests.
-async function addTimestamps(events) {
-  const blockNumbers = [...new Set(events.map(e => Number(e.blockNumber)))];
-  const timestampMap = new Map();
-  let cursor = 0;
-  const workers = Array.from({length:5}, async () => {
-    while (cursor < blockNumbers.length) {
-      const blockNumber = blockNumbers[cursor++];
-      try {
-        const block = await provider.getBlock(blockNumber);
-        timestampMap.set(blockNumber, block ? Number(block.timestamp) : 0);
-      } catch (error) {
-        console.warn("Timestamp unavailable for block", blockNumber, error);
-        timestampMap.set(blockNumber, 0);
-      }
+// Get each unique block timestamp once; concurrent requests reduce waiting time.
+async function addTimestamps(events){
+  const blockNumbers=[...new Set(events.map(e=>Number(e.blockNumber)))];
+  const timestamps=new Map();let cursor=0;
+  const workers=Array.from({length:8},async()=>{
+    while(cursor<blockNumbers.length){
+      const number=blockNumbers[cursor++];
+      try{const block=await provider.getBlock(number);timestamps.set(number,block?Number(block.timestamp):0);}
+      catch(error){console.warn("Timestamp unavailable",number,error);timestamps.set(number,0);}
     }
   });
   await Promise.all(workers);
-  for (const event of events) {
-    const timestamp = timestampMap.get(Number(event.blockNumber)) || 0;
-    event.timestamp = timestamp;
-    event.dateObj = new Date(timestamp * 1000);
-  }
+  for(const ev of events){const ts=timestamps.get(Number(ev.blockNumber))||0;ev.timestamp=ts;ev.dateObj=new Date(ts*1000);}
 }
-
-async function loadIncomeData() {
-  if (!userAddress) {
-    await handleConnectClick();
-    return;
-  }
-  if (isLoading) return;
-  isLoading = true;
-  $("ico-body-desktop").innerHTML = '<tr><td colspan="3" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading ICO history...</td></tr>';
-  $("referral-body-desktop").innerHTML = '<tr><td colspan="6" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading referral history...</td></tr>';
-  $("lapsed-body-desktop").innerHTML = '<tr><td colspan="5" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading lapsed history...</td></tr>';
-  $("ico-body-mobile").innerHTML = '<div class="loading">Loading...</div>';
-  $("referral-body-mobile").innerHTML = '<div class="loading">Loading...</div>';
-  $("lapsed-body-mobile").innerHTML = '<div class="loading">Loading...</div>';
-
-  try {
-    if (!(await checkChain())) return;
-    setStatus("Reading latest Polygon block...");
-    const currentBlock = await provider.getBlockNumber();
-    setStatus("Fetching event history from Polygon. Large histories may take some time...");
-    const result = await queryAllEvents(currentBlock);
-
-    allICOBonusEvents = result.ico;
-    allReferralEvents = result.referral;
-    allLapsedEvents = result.lapsed;
-
-    const allEvents = [...allICOBonusEvents, ...allReferralEvents, ...allLapsedEvents];
-    setStatus("Found " + allEvents.length + " events. Loading timestamps...");
-    await addTimestamps(allEvents);
-
-    displayICOData(allICOBonusEvents);
-    displayReferralData(allReferralEvents);
-    displayLapsedData(allLapsedEvents);
-    updateStats(allReferralEvents, allICOBonusEvents, allLapsedEvents);
-
-    let message = "Scanned blocks " + result.fromBlock.toLocaleString("en-IN") +
-      " to " + result.currentBlock.toLocaleString("en-IN") + ". ";
-    message += "ICO: " + allICOBonusEvents.length + ", Referral: " +
-      allReferralEvents.length + ", Lapsed: " + allLapsedEvents.length + ".";
-    if (result.errors.length) message += " Some sections failed: " + result.errors.join(" | ");
+function showLoading(){
+  $("ico-body-desktop").innerHTML='<tr><td colspan="3" class="loading">Loading ICO history...</td></tr>';
+  $("referral-body-desktop").innerHTML='<tr><td colspan="6" class="loading">Loading referral history...</td></tr>';
+  $("lapsed-body-desktop").innerHTML='<tr><td colspan="5" class="loading">Loading lapsed history...</td></tr>';
+  $("ico-body-mobile").innerHTML='<div class="loading">Loading...</div>';
+  $("referral-body-mobile").innerHTML='<div class="loading">Loading...</div>';
+  $("lapsed-body-mobile").innerHTML='<div class="loading">Loading...</div>';
+}
+async function loadIncomeData(){
+  if(!userAddress){await handleConnectClick();return;}
+  if(isLoading)return;
+  isLoading=true;showLoading();
+  try{
+    if(!(await checkChain()))return;
+    setStatus("Getting latest Polygon block...");
+    const currentBlock=await provider.getBlockNumber();
+    setStatus("Searching only Sigma Six contract logs from deployment block "+CONTRACT_START_BLOCK.toLocaleString("en-IN")+"...");
+    const result=await queryAllEvents(currentBlock);
+    allICOBonusEvents=result.ico;allReferralEvents=result.referral;allLapsedEvents=result.lapsed;
+    const all=[...allICOBonusEvents,...allReferralEvents,...allLapsedEvents];
+    setStatus("Found "+all.length+" events. Loading dates...");
+    await addTimestamps(all);
+    applyFilters();
+    let message="Contract blocks "+result.fromBlock.toLocaleString("en-IN")+"–"+result.currentBlock.toLocaleString("en-IN")+
+      ". ICO: "+allICOBonusEvents.length+", Referral: "+allReferralEvents.length+", Lapsed: "+allLapsedEvents.length+".";
+    if(result.errors.length)message+=" Some sections failed: "+result.errors.join(" | ");
     setStatus(message);
-    if (result.errors.length) console.error("Income report partial errors:", result.errors);
-  } catch (error) {
-    console.error("Income report error:", error);
-    setStatus("Income report could not load: " + (error.shortMessage || error.message));
-    showSectionError("ico", error.message);
-    showSectionError("referral", error.message);
-    showSectionError("lapsed", error.message);
-  } finally {
-    isLoading = false;
-  }
+    if(result.errors.length)console.error("Income report partial errors:",result.errors);
+  }catch(error){
+    console.error("Income report error:",error);
+    setStatus("Income report could not load: "+(error.shortMessage||error.message));
+    showSectionError("ico",error.message);showSectionError("referral",error.message);showSectionError("lapsed",error.message);
+  }finally{isLoading=false;}
 }
-
-function showSectionError(type, message) {
-  const config = {
-    ico:["ico-body-desktop","ico-body-mobile",3],
-    referral:["referral-body-desktop","referral-body-mobile",6],
-    lapsed:["lapsed-body-desktop","lapsed-body-mobile",5]
-  }[type];
-  $(config[0]).innerHTML = '<tr><td colspan="' + config[2] + '" class="no-data">Error: ' + escapeHTML(message) + '</td></tr>';
-  $(config[1]).innerHTML = '<div class="no-data">Error: ' + escapeHTML(message) + '</div>';
+function showSectionError(type,message){
+  const cfg={ico:["ico-body-desktop","ico-body-mobile",3],referral:["referral-body-desktop","referral-body-mobile",6],lapsed:["lapsed-body-desktop","lapsed-body-mobile",5]}[type];
+  $(cfg[0]).innerHTML='<tr><td colspan="'+cfg[2]+'" class="no-data">Error: '+escapeHTML(message)+'</td></tr>';
+  $(cfg[1]).innerHTML='<div class="no-data">Error: '+escapeHTML(message)+'</div>';
 }
-
-function displayICOData(events) {
-  const desktop = $("ico-body-desktop"), mobile = $("ico-body-mobile");
-  if (!events.length) {
-    desktop.innerHTML = '<tr><td colspan="3" class="no-data">No ICO bonus events found for this wallet.</td></tr>';
-    mobile.innerHTML = '<div class="no-data">No ICO bonus events found for this wallet.</div>';
-    return;
-  }
-  const sorted = [...events].sort((a,b) => b.timestamp - a.timestamp);
-  let rows = "", cards = "";
-  sorted.forEach((ev,i) => {
-    const amount = formatAmount(ev.args.amount);
-    const dt = dateTime(ev);
-    rows += `<tr><td>${i+1}</td><td>${dt.date}<br><small>${dt.time}</small></td><td class="amount-gold">+${amount} SIG6</td></tr>`;
-    cards += `<div class="mobile-card"><div class="mobile-card-header"><span>ICO Bonus</span><span class="ico-badge">10% Bonus</span></div><div class="mobile-card-row"><span class="mobile-card-label">Date &amp; Time</span><span class="mobile-card-value">${dt.date} ${dt.time}</span></div><div class="mobile-card-row"><span class="mobile-card-label">Bonus Amount</span><span class="mobile-card-value amount-gold">+${amount} SIG6</span></div></div>`;
-  });
-  desktop.innerHTML = rows; mobile.innerHTML = cards;
+function displayICOData(events){
+  const desktop=$("ico-body-desktop"),mobile=$("ico-body-mobile");
+  if(!events.length){desktop.innerHTML='<tr><td colspan="3" class="no-data">No ICO bonus events found for this wallet.</td></tr>';mobile.innerHTML='<div class="no-data">No ICO bonus events found for this wallet.</div>';return;}
+  const sorted=[...events].sort((a,b)=>b.timestamp-a.timestamp);let rows="",cards="";
+  sorted.forEach((ev,i)=>{const amount=formatAmount(ev.args.amount),dt=dateTime(ev);
+    rows+=`<tr><td>${i+1}</td><td>${dt.date}<br><small>${dt.time}</small></td><td class="amount-gold">+${amount} SIG6</td></tr>`;
+    cards+=`<div class="mobile-card"><div class="mobile-card-header"><span>ICO Bonus</span><span class="ico-badge">10% Bonus</span></div><div class="mobile-card-row"><span class="mobile-card-label">Date &amp; Time</span><span class="mobile-card-value">${dt.date} ${dt.time}</span></div><div class="mobile-card-row"><span class="mobile-card-label">Bonus Amount</span><span class="mobile-card-value amount-gold">+${amount} SIG6</span></div></div>`;
+  });desktop.innerHTML=rows;mobile.innerHTML=cards;
 }
-
-function displayReferralData(events) {
-  const desktop = $("referral-body-desktop"), mobile = $("referral-body-mobile");
-  if (!events.length) {
-    desktop.innerHTML = '<tr><td colspan="6" class="no-data">No referral income events found for this wallet.</td></tr>';
-    mobile.innerHTML = '<div class="no-data">No referral income events found for this wallet.</div>';
-    return;
-  }
-  const sorted = [...events].sort((a,b) => b.timestamp - a.timestamp);
-  let rows = "", cards = "";
-  sorted.forEach((ev,i) => {
-    const from = String(ev.args.from).toLowerCase();
-    const level = Number(ev.args.level);
-    const percent = level >= 1 && level < levelPercent.length ? levelPercent[level] : 0;
-    const amount = formatAmount(ev.args.amount);
-    const dt = dateTime(ev);
-    const short = shortAddress(from);
-    rows += `<tr><td>${i+1}</td><td><button class="wallet-address" onclick="copyToClipboard('${from}')">${short} <i class="fas fa-copy"></i></button></td><td><span class="level-badge">Level ${level}</span></td><td><span class="percent-badge">${percent}%</span></td><td class="amount-positive">${amount} SIG6</td><td>${dt.date}<br><small>${dt.time}</small></td></tr>`;
-    cards += `<div class="mobile-card"><div class="mobile-card-header"><span>Level ${level}</span><span class="percent-badge">${percent}%</span></div><div class="mobile-card-row"><span class="mobile-card-label">From Wallet</span><span class="mobile-card-value"><button class="wallet-address" onclick="copyToClipboard('${from}')">${short}</button></span></div><div class="mobile-card-row"><span class="mobile-card-label">Amount</span><span class="mobile-card-value amount-positive">${amount} SIG6</span></div><div class="mobile-card-row"><span class="mobile-card-label">Date &amp; Time</span><span class="mobile-card-value">${dt.date} ${dt.time}</span></div></div>`;
-  });
-  desktop.innerHTML = rows; mobile.innerHTML = cards;
+function displayReferralData(events){
+  const desktop=$("referral-body-desktop"),mobile=$("referral-body-mobile");
+  if(!events.length){desktop.innerHTML='<tr><td colspan="6" class="no-data">No referral income events found for this wallet.</td></tr>';mobile.innerHTML='<div class="no-data">No referral income events found for this wallet.</div>';return;}
+  const sorted=[...events].sort((a,b)=>b.timestamp-a.timestamp);let rows="",cards="";
+  sorted.forEach((ev,i)=>{const from=String(ev.args.from).toLowerCase(),level=Number(ev.args.level),percent=level>=1&&level<levelPercent.length?levelPercent[level]:0,amount=formatAmount(ev.args.amount),dt=dateTime(ev),short=shortAddress(from);
+    rows+=`<tr><td>${i+1}</td><td><button class="wallet-address" onclick="copyToClipboard('${from}')">${short} <i class="fas fa-copy"></i></button></td><td><span class="level-badge">Level ${level}</span></td><td><span class="percent-badge">${percent}%</span></td><td class="amount-positive">${amount} SIG6</td><td>${dt.date}<br><small>${dt.time}</small></td></tr>`;
+    cards+=`<div class="mobile-card"><div class="mobile-card-header"><span>Level ${level}</span><span class="percent-badge">${percent}%</span></div><div class="mobile-card-row"><span class="mobile-card-label">From Wallet</span><span class="mobile-card-value"><button class="wallet-address" onclick="copyToClipboard('${from}')">${short}</button></span></div><div class="mobile-card-row"><span class="mobile-card-label">Amount</span><span class="mobile-card-value amount-positive">${amount} SIG6</span></div><div class="mobile-card-row"><span class="mobile-card-label">Date &amp; Time</span><span class="mobile-card-value">${dt.date} ${dt.time}</span></div></div>`;
+  });desktop.innerHTML=rows;mobile.innerHTML=cards;
 }
-
-function displayLapsedData(events) {
-  const desktop = $("lapsed-body-desktop"), mobile = $("lapsed-body-mobile");
-  if (!events.length) {
-    desktop.innerHTML = '<tr><td colspan="5" class="no-data">No lapsed income events found for this wallet.</td></tr>';
-    mobile.innerHTML = '<div class="no-data">No lapsed income events found for this wallet.</div>';
-    return;
-  }
-  const sorted = [...events].sort((a,b) => b.timestamp - a.timestamp);
-  let rows = "", cards = "";
-  sorted.forEach((ev,i) => {
-    const from = String(ev.args.user || "Unknown").toLowerCase();
-    const reason = String(ev.args.reason || "Unknown");
-    const amount = formatAmount(ev.args.amount);
-    const dt = dateTime(ev);
-    const short = shortAddress(from);
-    rows += `<tr><td>${i+1}</td><td>${from === "unknown" ? "Unknown" : `<button class="wallet-address" onclick="copyToClipboard('${from}')">${short} <i class="fas fa-copy"></i></button>`}</td><td class="amount-negative">${amount} SIG6</td><td><span class="reason-badge" title="${escapeHTML(reason)}">${escapeHTML(reason)}</span></td><td>${dt.date}<br><small>${dt.time}</small></td></tr>`;
-    cards += `<div class="mobile-card"><div class="mobile-card-header"><span>Lapsed Income</span></div><div class="mobile-card-row"><span class="mobile-card-label">Wallet</span><span class="mobile-card-value">${escapeHTML(short)}</span></div><div class="mobile-card-row"><span class="mobile-card-label">Amount Lost</span><span class="mobile-card-value amount-negative">${amount} SIG6</span></div><div class="mobile-card-row"><span class="mobile-card-label">Reason</span><span class="mobile-card-value">${escapeHTML(reason)}</span></div><div class="mobile-card-row"><span class="mobile-card-label">Date &amp; Time</span><span class="mobile-card-value">${dt.date} ${dt.time}</span></div></div>`;
-  });
-  desktop.innerHTML = rows; mobile.innerHTML = cards;
+function displayLapsedData(events){
+  const desktop=$("lapsed-body-desktop"),mobile=$("lapsed-body-mobile");
+  if(!events.length){desktop.innerHTML='<tr><td colspan="5" class="no-data">No lapsed income events found for this wallet.</td></tr>';mobile.innerHTML='<div class="no-data">No lapsed income events found for this wallet.</div>';return;}
+  const sorted=[...events].sort((a,b)=>b.timestamp-a.timestamp);let rows="",cards="";
+  sorted.forEach((ev,i)=>{const from=String(ev.args.user||"Unknown").toLowerCase(),reason=String(ev.args.reason||"Unknown"),amount=formatAmount(ev.args.amount),dt=dateTime(ev),short=shortAddress(from);
+    rows+=`<tr><td>${i+1}</td><td>${from==="unknown"?"Unknown":`<button class="wallet-address" onclick="copyToClipboard('${from}')">${short} <i class="fas fa-copy"></i></button>`}</td><td class="amount-negative">${amount} SIG6</td><td><span class="reason-badge" title="${escapeHTML(reason)}">${escapeHTML(reason)}</span></td><td>${dt.date}<br><small>${dt.time}</small></td></tr>`;
+    cards+=`<div class="mobile-card"><div class="mobile-card-header"><span>Lapsed Income</span></div><div class="mobile-card-row"><span class="mobile-card-label">Wallet</span><span class="mobile-card-value">${escapeHTML(short)}</span></div><div class="mobile-card-row"><span class="mobile-card-label">Amount Lost</span><span class="mobile-card-value amount-negative">${amount} SIG6</span></div><div class="mobile-card-row"><span class="mobile-card-label">Reason</span><span class="mobile-card-value">${escapeHTML(reason)}</span></div><div class="mobile-card-row"><span class="mobile-card-label">Date &amp; Time</span><span class="mobile-card-value">${dt.date} ${dt.time}</span></div></div>`;
+  });desktop.innerHTML=rows;mobile.innerHTML=cards;
 }
-
-function updateStats(refEvents, icoEvents, lapEvents) {
-  const sum = events => events.reduce((total,ev) => total + Number(ethers.formatUnits(ev.args.amount,18)),0);
-  $("total-ico").textContent = sum(icoEvents).toFixed(6) + " SIG6";
-  $("total-referral").textContent = sum(refEvents).toFixed(6) + " SIG6";
-  $("total-lapsed").textContent = sum(lapEvents).toFixed(6) + " SIG6";
-  $("total-transactions").textContent = refEvents.length + icoEvents.length + lapEvents.length;
+function updateStats(ref,ico,lap){
+  const sum=events=>events.reduce((total,ev)=>total+Number(ethers.formatUnits(ev.args.amount,18)),0);
+  $("total-ico").textContent=sum(ico).toFixed(6)+" SIG6";$("total-referral").textContent=sum(ref).toFixed(6)+" SIG6";$("total-lapsed").textContent=sum(lap).toFixed(6)+" SIG6";$("total-transactions").textContent=ref.length+ico.length+lap.length;
 }
-
-function getFilteredEvents() {
-  const start = $("startDate").value;
-  const end = $("endDate").value;
-  const type = $("incomeType").value;
-  const search = $("searchWallet").value.toLowerCase().trim();
-  const startTime = start ? new Date(start + "T00:00:00").getTime()/1000 : null;
-  const endTime = end ? new Date(end + "T23:59:59").getTime()/1000 : null;
-  const inDate = ev => (!startTime || ev.timestamp >= startTime) && (!endTime || ev.timestamp <= endTime);
-  let ico = allICOBonusEvents.filter(inDate);
-  let referral = allReferralEvents.filter(inDate);
-  let lapsed = allLapsedEvents.filter(inDate);
-
-  if (search) {
-    ico = ico.filter(ev => String(ev.args.user).toLowerCase().includes(search));
-    referral = referral.filter(ev => String(ev.args.from).toLowerCase().includes(search) || String(ev.args.to).toLowerCase().includes(search));
-    lapsed = lapsed.filter(ev => String(ev.args.user).toLowerCase().includes(search));
-  }
-  if (type === "ICO") { referral = []; lapsed = []; }
-  else if (type === "REFERRAL") { ico = []; lapsed = []; }
-  else if (type === "lapsed") { ico = []; referral = []; }
-  return {ico,referral,lapsed};
+function getFilteredEvents(){
+  const start=$("startDate").value,end=$("endDate").value,type=$("incomeType").value,search=$("searchWallet").value.toLowerCase().trim();
+  const startTime=start?new Date(start+"T00:00:00").getTime()/1000:null,endTime=end?new Date(end+"T23:59:59").getTime()/1000:null;
+  const inDate=ev=>(!startTime||ev.timestamp>=startTime)&&(!endTime||ev.timestamp<=endTime);
+  let ico=allICOBonusEvents.filter(inDate),ref=allReferralEvents.filter(inDate),lap=allLapsedEvents.filter(inDate);
+  if(search){ico=ico.filter(ev=>String(ev.args.user).toLowerCase().includes(search));ref=ref.filter(ev=>String(ev.args.from).toLowerCase().includes(search)||String(ev.args.to).toLowerCase().includes(search));lap=lap.filter(ev=>String(ev.args.user).toLowerCase().includes(search));}
+  if(type==="ICO"){ref=[];lap=[];}else if(type==="REFERRAL"){ico=[];lap=[];}else if(type==="lapsed"){ico=[];ref=[];}
+  return {ico,ref,lap};
 }
-
-function applyFilters() {
-  const filtered = getFilteredEvents();
-  displayICOData(filtered.ico);
-  displayReferralData(filtered.referral);
-  displayLapsedData(filtered.lapsed);
-  updateStats(filtered.referral,filtered.ico,filtered.lapsed);
-}
-function resetFilters() {
-  $("startDate").value = "";
-  $("endDate").value = "";
-  $("incomeType").value = "all";
-  $("searchWallet").value = "";
-  applyFilters();
-}
-async function copyToClipboard(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    setStatus("Wallet address copied.");
-  } catch (error) {
-    prompt("Copy wallet address:", text);
-  }
-}
-
-window.addEventListener("load", async () => {
-  const end = new Date(), start = new Date();
-  start.setDate(start.getDate() - 30);
-  $("startDate").valueAsDate = start;
-  $("endDate").valueAsDate = end;
-
-  if (window.ethereum) {
-    try {
-      provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await provider.send("eth_accounts", []);
-      if (accounts.length) {
-        userAddress = accounts[0].toLowerCase();
-        sigmaContract = new ethers.Contract(SIGMA_CONTRACT_ADDRESS, sigmaABI, provider);
-        $("btn-text").textContent = "🦊 " + shortAddress(userAddress);
-        $("connectBtn").classList.add("connected");
-        await loadIncomeData();
-        if (!window.__sigmaListenersAdded) {
-          window.ethereum.on("accountsChanged", () => location.reload());
-          window.ethereum.on("chainChanged", () => location.reload());
-          window.__sigmaListenersAdded = true;
-        }
-      }
-    } catch (error) {
-      console.warn("Automatic wallet reconnect skipped:", error);
-      setStatus("Click Connect Wallet to connect and load your report.");
-    }
+function applyFilters(){const f=getFilteredEvents();displayICOData(f.ico);displayReferralData(f.ref);displayLapsedData(f.lap);updateStats(f.ref,f.ico,f.lap);}
+function resetFilters(){$("startDate").value="";$("endDate").value="";$("incomeType").value="all";$("searchWallet").value="";applyFilters();}
+async function copyToClipboard(value){try{await navigator.clipboard.writeText(value);setStatus("Wallet address copied.");}catch(error){prompt("Copy wallet address:",value);}}
+window.addEventListener("load",async()=>{
+  const end=new Date(),start=new Date();start.setDate(start.getDate()-30);$("startDate").valueAsDate=start;$("endDate").valueAsDate=end;
+  if(window.ethereum){
+    try{
+      provider=new ethers.BrowserProvider(window.ethereum);
+      const accounts=await provider.send("eth_accounts",[]);
+      if(accounts.length){userAddress=accounts[0].toLowerCase();sigmaContract=new ethers.Contract(SIGMA_CONTRACT_ADDRESS,sigmaABI,provider);$("btn-text").textContent="🦊 "+shortAddress(userAddress);$("connectBtn").classList.add("connected");await loadIncomeData();}
+      if(!window.__sigmaIncomeListeners){window.ethereum.on("accountsChanged",()=>location.reload());window.ethereum.on("chainChanged",()=>location.reload());window.__sigmaIncomeListeners=true;}
+    }catch(error){console.warn("Automatic wallet reconnect skipped:",error);setStatus("Click Connect Wallet to connect and load your report.");}
   }
 });
 </script>
