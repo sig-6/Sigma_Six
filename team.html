@@ -881,17 +881,6 @@
             body.innerHTML = `<tr><td colspan="10" class="${isError ? 'empty-state' : 'loading'}">${isError ? '<i class="fas fa-exclamation-triangle"></i><br>' : ''}${escapeHtml(message)}</td></tr>`;
         }
 
-        function formatCountdown(seconds) {
-            if (!Number.isFinite(seconds) || seconds < 0) return 'Calculating...';
-            seconds = Math.ceil(seconds);
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
-            if (hours > 0) return `${hours}h ${minutes}m ${secs}s`;
-            if (minutes > 0) return `${minutes}m ${secs}s`;
-            return `${secs}s`;
-        }
-
         function escapeHtml(value) {
             return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
         }
@@ -966,25 +955,10 @@
                 const transferFilter = sigmaContract.filters.Transfer();
                 const boughtFilter = sigmaContract.filters.Buy();
                 const totalBlocks = latestBlock - CONTRACT_START_BLOCK + 1;
-                const totalChunks = Math.ceil(totalBlocks / EVENT_SCAN_CHUNK);
                 let scannedBlocks = 0;
-                let completedChunks = 0;
-                const scanStartedAt = Date.now();
-                let countdownTimer = null;
 
                 for (let fromBlock = CONTRACT_START_BLOCK; fromBlock <= latestBlock; fromBlock += EVENT_SCAN_CHUNK) {
                     const toBlock = Math.min(fromBlock + EVENT_SCAN_CHUNK - 1, latestBlock);
-                    const chunksLeftIncludingCurrent = totalChunks - completedChunks;
-                    const updateCountdown = () => {
-                        const elapsedSeconds = (Date.now() - scanStartedAt) / 1000;
-                        const averagePerChunk = completedChunks > 0 ? elapsedSeconds / completedChunks : 0;
-                        const eta = completedChunks > 0 ? averagePerChunk * chunksLeftIncludingCurrent : NaN;
-                        const percentNow = Math.min(100, (scannedBlocks / totalBlocks) * 100).toFixed(1);
-                        const etaText = Number.isFinite(eta) ? formatCountdown(eta) : 'Estimating...';
-                        showTableMessage(`Scanning contract events: ${percentNow}% | ${scannedBlocks.toLocaleString()} / ${totalBlocks.toLocaleString()} blocks | Estimated time left: ${etaText}`);
-                    };
-                    updateCountdown();
-                    countdownTimer = setInterval(updateCountdown, 1000);
                     try {
                         const [transferEvents, boughtEvents] = await Promise.all([
                             sigmaContract.queryFilter(transferFilter, fromBlock, toBlock),
@@ -1001,17 +975,12 @@
                             addressSet.add(String(event.args.user).toLowerCase());
                         }
                     } catch (scanError) {
-                        if (countdownTimer) clearInterval(countdownTimer);
                         throw new Error(`Polygon event scan failed at blocks ${fromBlock}-${toBlock}: ${scanError.message}. Try a different Polygon RPC if this continues.`);
                     }
-                    if (countdownTimer) clearInterval(countdownTimer);
-                    countdownTimer = null;
+
                     scannedBlocks += (toBlock - fromBlock + 1);
-                    completedChunks++;
                     const percent = Math.min(100, (scannedBlocks / totalBlocks) * 100).toFixed(1);
-                    const elapsedSeconds = (Date.now() - scanStartedAt) / 1000;
-                    const etaSeconds = completedChunks < totalChunks ? (elapsedSeconds / completedChunks) * (totalChunks - completedChunks) : 0;
-                    showTableMessage(`Scanning contract events: ${percent}% | ${scannedBlocks.toLocaleString()} / ${totalBlocks.toLocaleString()} blocks | Estimated time left: ${formatCountdown(etaSeconds)}`);
+                    showTableMessage(`Scanning contract events: ${percent}% (${scannedBlocks.toLocaleString()} / ${totalBlocks.toLocaleString()} blocks). Please wait...`);
                     // Brief pause reduces the chance of RPC rate limiting.
                     await new Promise(resolve => setTimeout(resolve, 80));
                 }
