@@ -1,49 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SIGMA SIX | SIGMA Transfer History</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes">
+<title>SIGMA SIX | My Transfers</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-:root{--bg:#080b12;--line:#263244;--cyan:#00e5c3;--purple:#9b6cff;--green:#22d69b;--red:#ff667a;--muted:#8b9ab0}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#102b35 0,transparent 35%),radial-gradient(circle at 90% 15%,#24163d 0,transparent 32%),var(--bg);color:#eef5ff;font-family:Inter,Arial,sans-serif}.wrap{max-width:1350px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:24px}.btn{border:1px solid #315064;background:#142536;color:#dff;border-radius:11px;padding:11px 16px;font-weight:700;cursor:pointer;text-decoration:none}.btn.primary{background:linear-gradient(100deg,var(--cyan),var(--purple));color:#071018;border:0}.btn:disabled{opacity:.5;cursor:wait}h1{font-size:clamp(28px,5vw,44px);margin:8px 0;background:linear-gradient(90deg,var(--cyan),#fff,var(--purple));color:transparent;background-clip:text}.sub{color:var(--muted);margin:0 0 22px}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:18px 0}.card,.panel{background:linear-gradient(145deg,rgba(21,32,49,.96),rgba(12,18,30,.96));border:1px solid var(--line);border-radius:17px;padding:18px;box-shadow:0 12px 32px #0004}.k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1px}.v{font-size:25px;font-weight:800;margin-top:9px;overflow-wrap:anywhere}.small{font-size:12px;color:var(--muted);margin-top:5px}.panel{margin:16px 0}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.filters{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:10px;margin-top:14px}input{width:100%;background:#0a1320;border:1px solid #304258;color:#eaf5ff;border-radius:9px;padding:11px;min-width:0}.progress{height:9px;background:#263244;border-radius:20px;overflow:hidden;margin:12px 0}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:width .2s}.status{font-size:13px;color:#a8bad0;min-height:20px;overflow-wrap:anywhere}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:13px 11px;border-bottom:1px solid #263244;text-align:left;font-size:12px;white-space:nowrap}th{color:var(--cyan);background:#142133;position:sticky;top:0}td{color:#d9e5f5}.pill{padding:5px 9px;border-radius:20px;font-weight:800;font-size:10px}.sent{color:var(--red);background:#ff667a1c}.received{color:var(--green);background:#22d69b1c}.sigma{color:var(--cyan);background:#00e5c31c}.addr{font-family:monospace;color:#9de9df;cursor:pointer}.hash{font-family:monospace;color:#bda4ff;text-decoration:none}.empty{text-align:center;padding:32px;color:var(--muted)}.good{color:var(--green)}.warn{color:#ffc56b}.contract{font-family:monospace;overflow-wrap:anywhere;color:#9de9df;font-size:12px}@media(max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.wrap{padding:12px}.cards{grid-template-columns:1fr 1fr}.v{font-size:19px}.filters{grid-template-columns:1fr}.btn{padding:10px 12px}}
+:root{--primary:#00ffcc;--secondary:#9d4edd;--bg:#0a0b10;--card:#161821;--text:#fff;--border:#2d2f3e;--success:#00ff88;--danger:#ff4d4d;--gradient:linear-gradient(90deg,#00ffcc,#9d4edd,#ff2a6d,#00ffcc)}*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg);color:var(--text);font-family:Inter,sans-serif;min-height:100vh;overflow-x:hidden}.rainbow-border{position:fixed;top:0;left:0;width:100%;height:4px;background:var(--gradient);background-size:400%;animation:rainbow 8s ease infinite;z-index:1000}.glass-bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(circle at 20% 30%,#00ffcc18,transparent 40%),radial-gradient(circle at 80% 70%,#9d4edd20,transparent 40%)}@keyframes rainbow{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}.container{max-width:1400px;margin:auto;padding:15px}.connect-btn{position:fixed;top:15px;right:15px;background:linear-gradient(90deg,var(--primary),var(--secondary));color:#000;border:0;border-radius:14px;padding:12px 22px;font-weight:800;cursor:pointer;z-index:1001;box-shadow:0 4px 20px #00ffcc44}.connect-btn.connected{background:#00ffcc18;color:var(--primary);border:1px solid var(--primary)}.nav-container{display:flex;gap:10px;flex-wrap:wrap;margin:65px 0 25px}.back-btn,.nav-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 17px;border-radius:12px;border:1px solid var(--border);background:#ffffff08;color:var(--primary);text-decoration:none;font-weight:600;font-size:13px;cursor:pointer}.header{text-align:center;margin:15px 0 30px}.header h1{font-size:clamp(30px,5vw,46px);font-weight:900;letter-spacing:2px;background:var(--gradient);background-size:400%;animation:rainbow 8s infinite;-webkit-background-clip:text;background-clip:text;color:transparent}.header p{color:#aaa;margin-top:10px;font-size:14px}.stats-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:25px}.stat-card,.main-card{background:#161821cc;border:1px solid #00ffcc22;border-radius:20px;padding:22px;box-shadow:0 15px 35px #0005}.stat-title{color:#aaa;font-weight:600;font-size:14px;margin-bottom:12px}.stat-title i{color:var(--primary);margin-right:8px}.stat-value{font-size:clamp(23px,4vw,32px);font-weight:800;color:var(--primary);overflow-wrap:anywhere}.stat-note{font-size:12px;color:#888;margin-top:6px}.main-card{margin-bottom:25px}.card-header{display:flex;align-items:center;gap:13px;margin-bottom:20px}.card-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));display:grid;place-items:center;color:#000}.card-title{color:var(--primary);font-weight:800;font-size:20px}.card-subtitle{font-size:12px;color:#999;margin-top:4px}.filter-section{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.filter-group{display:flex;gap:9px;align-items:center;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:#ffffff08}.filter-group label{color:var(--primary)}.filter-group input,.filter-group select{background:transparent;color:#fff;border:0;outline:0;padding:3px;max-width:170px}.filter-group option{background:#161821;color:#fff}.table-responsive{overflow-x:auto;border:1px solid #2d2f3e88;border-radius:14px}table{width:100%;border-collapse:collapse;min-width:850px}thead{background:#00ffcc12}th{padding:15px 10px;text-align:left;color:var(--primary);font-size:11px;letter-spacing:.7px;white-space:nowrap}td{padding:13px 10px;border-top:1px solid #2d2f3e66;font-size:12px;white-space:nowrap}tr:hover td{background:#ffffff08}.wallet-address{font-family:monospace;font-size:11px;color:var(--primary);background:#00ffcc12;border:1px solid #00ffcc33;border-radius:6px;padding:5px 7px;cursor:pointer}.direction-badge{padding:5px 9px;border-radius:20px;font-size:10px;font-weight:800}.sent{color:var(--danger);background:#ff4d4d20}.received{color:var(--success);background:#00ff8820}.loading,.empty-state{text-align:center;padding:45px 15px;color:#999;white-space:normal}.loading i,.empty-state i{display:block;font-size:28px;color:var(--primary);margin-bottom:14px}.status{font-size:12px;color:#aaa;margin:12px 0 0;line-height:1.6}.progress{height:5px;background:#ffffff14;border-radius:9px;overflow:hidden;margin-top:10px}.progress>div{height:100%;width:0;background:var(--gradient);transition:width .2s}@media(max-width:700px){.container{padding:10px}.connect-btn{position:relative;display:flex;margin:18px auto 0;right:auto;top:auto;width:max-content;max-width:100%}.nav-container{margin:18px 0 22px}.stats-container{grid-template-columns:1fr 1fr;gap:10px}.stat-card,.main-card{padding:16px}.card-title{font-size:17px}.filter-section{display:grid;grid-template-columns:1fr}.filter-group input,.filter-group select{max-width:none;width:100%}}@media(max-width:420px){.stats-container{grid-template-columns:1fr}.header p{line-height:1.5}}
 </style>
 </head>
-<body><main class="wrap">
-<div class="top"><a class="btn" href="index.html">← Back to Dashboard</a><div class="row"><button class="btn primary" id="connectBtn">Connect Wallet</button><button class="btn" id="refreshBtn" disabled>↻ Refresh Scan</button><button class="btn" id="csvBtn" disabled>↓ Export CSV</button></div></div>
-<h1>SIGMA TRANSFER HISTORY</h1><p class="sub">Only SIGMA token · Polygon Mainnet · Connected Wallet Send / Receive</p>
-<div class="cards"><div class="card"><div class="k">Total Sent</div><div class="v" id="sent">0</div><div class="small">SIGMA</div></div><div class="card"><div class="k">Total Received</div><div class="v" id="received">0</div><div class="small">SIGMA</div></div><div class="card"><div class="k">My Transactions</div><div class="v" id="count">0</div><div class="small" id="range">Not scanned</div></div><div class="card"><div class="k">Net Flow</div><div class="v" id="net">0</div><div class="small">SIGMA received − sent</div></div></div>
-<section class="panel"><div class="row"><strong>SIGMA CONTRACT SCANNER</strong><span class="small" id="walletLabel">Wallet not connected</span></div><div class="contract" id="contractLabel">Contract: 0xaf215838d156f7d348a6d56ca962cbc680a2153f</div><div class="progress"><div class="bar" id="bar"></div></div><div class="status" id="status">Connect your wallet to scan SIGMA transfers.</div></section>
-<section class="panel"><strong>FILTER TRANSFERS</strong><div class="filters"><select id="direction" style="width:100%;background:#0a1320;border:1px solid #304258;color:#eaf5ff;border-radius:9px;padding:11px"><option value="all">All Directions</option><option value="sent">Sent</option><option value="received">Received</option></select><input id="fromDate" type="date" aria-label="From date"><input id="toDate" type="date" aria-label="To date"><input id="search" placeholder="Search counterparty wallet"></div><div class="row" style="margin-top:12px"><button class="btn" id="applyBtn">Apply Filters</button><button class="btn" id="clearBtn">Clear Filters</button></div></section>
-<section class="panel"><div class="row" style="justify-content:space-between;margin-bottom:12px"><strong>SIGMA TRANSFER HISTORY</strong><span class="small" id="shown">0 records</span></div><div class="tablewrap"><table><thead><tr><th>#</th><th>Date &amp; Time</th><th>Direction</th><th>From</th><th>To</th><th>Amount</th><th>Block</th><th>Transaction</th></tr></thead><tbody id="tbody"><tr><td colspan="8" class="empty">Connect wallet to view SIGMA history</td></tr></tbody></table></div></section>
-</main>
+<body>
+<div class="rainbow-border"></div><div class="glass-bg"></div>
+<button class="connect-btn" id="connectBtn" onclick="connectWallet()"><i class="fas fa-wallet"></i><span id="btnText">Connect Wallet</span></button>
+<div class="container">
+ <div class="nav-container"><a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a><button class="nav-btn" onclick="loadData()"><i class="fas fa-sync-alt"></i> Refresh</button><button class="nav-btn" onclick="exportData()"><i class="fas fa-download"></i> Export CSV</button><button class="nav-btn" onclick="clearFilters()"><i class="fas fa-times"></i> Clear Filters</button></div>
+ <div class="header"><h1>MY SIGMA TRANSFERS</h1><p>Your SIGMA token transfer history — sent and received on Polygon</p></div>
+ <div class="stats-container">
+  <div class="stat-card"><div class="stat-title"><i class="fas fa-paper-plane"></i>Total SIGMA Sent</div><div class="stat-value" id="totalSent">0</div><div class="stat-note">SIGMA tokens</div></div>
+  <div class="stat-card"><div class="stat-title"><i class="fas fa-inbox"></i>Total SIGMA Received</div><div class="stat-value" id="totalReceived">0</div><div class="stat-note">SIGMA tokens</div></div>
+  <div class="stat-card"><div class="stat-title"><i class="fas fa-exchange-alt"></i>My Transfers</div><div class="stat-value" id="totalTx">0</div><div class="stat-note" id="counterparties">0 counterparties</div></div>
+  <div class="stat-card"><div class="stat-title"><i class="fas fa-chart-line"></i>Net SIGMA Flow</div><div class="stat-value" id="netFlow">0</div><div class="stat-note" id="netStatus">Balanced</div></div>
+ </div>
+ <div class="main-card"><div class="card-header"><div class="card-icon"><i class="fas fa-filter"></i></div><div><div class="card-title">FILTER TRANSFERS</div><div class="card-subtitle">Filter SIGMA transfers by direction, date or wallet</div></div></div>
+  <div class="filter-section"><div class="filter-group"><label><i class="fas fa-arrow-right"></i></label><select id="directionFilter" onchange="applyFilters()"><option value="all">All Directions</option><option value="sent">Sent</option><option value="received">Received</option></select></div><div class="filter-group"><label><i class="far fa-calendar"></i></label><input type="date" id="startDate"></div><div class="filter-group"><label><i class="far fa-calendar"></i></label><input type="date" id="endDate"></div><div class="filter-group"><label><i class="fas fa-search"></i></label><input type="text" id="searchWallet" placeholder="Search wallet..." oninput="applyFilters()"></div><button class="nav-btn" onclick="applyFilters()"><i class="fas fa-check"></i> Apply</button></div>
+ </div>
+ <div class="main-card"><div class="card-header"><div class="card-icon"><i class="fas fa-history"></i></div><div><div class="card-title">SIGMA TRANSFER HISTORY</div><div class="card-subtitle">Only SIGMA token Transfer events involving your connected wallet</div></div></div>
+  <div class="table-responsive"><table><thead><tr><th>#</th><th>Date & Time</th><th>Direction</th><th>Sender</th><th>Receiver</th><th>Amount (SIGMA)</th><th>Transaction</th></tr></thead><tbody id="transferBody"><tr><td colspan="7" class="empty-state"><i class="fas fa-wallet"></i>Connect your wallet to load SIGMA history</td></tr></tbody></table></div>
+  <div class="status" id="scanStatus">Waiting for wallet connection.</div><div class="progress"><div id="progressBar"></div></div>
+ </div>
+</div>
 <script>
 'use strict';
-const SIGMA='0xaf215838d156f7d348a6d56ca962cbc680a2153f';
-const TRANSFER_TOPIC=ethers.id('Transfer(address,address,uint256)');
-const START_BLOCK=85000998;
-const LOOKBACK_BLOCKS=500000;
-const INITIAL_CHUNK=10000;
-const SCAN_RPC_URLS=['https://polygon-bor-rpc.publicnode.com','https://polygon.drpc.org'];
-let provider=null,scanProviders=[],wallet=null,records=[],visible=[],scanBusy=false;
-const $=id=>document.getElementById(id);
-const short=a=>a.slice(0,8)+'…'+a.slice(-6);
-const padAddress=a=>'0x'+a.toLowerCase().replace(/^0x/,'').padStart(64,'0');
-function setStatus(s,p){$('status').textContent=s;if(Number.isFinite(p))$('bar').style.width=Math.max(0,Math.min(100,p))+'%';}
-function rowMessage(msg){$('tbody').innerHTML=`<tr><td colspan="8" class="empty">${msg}</td></tr>`;}
-function fmt(n){return Number(n).toLocaleString('en-US',{maximumFractionDigits:6});}
-async function connect(){if(!window.ethereum){alert('MetaMask or a compatible wallet is required.');return;}try{provider=new ethers.BrowserProvider(window.ethereum);const accounts=await provider.send('eth_requestAccounts',[]);if(!accounts.length)throw new Error('No wallet account selected.');wallet=accounts[0].toLowerCase();let net=await provider.getNetwork();if(Number(net.chainId)!==137){try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x89'}]});provider=new ethers.BrowserProvider(window.ethereum);net=await provider.getNetwork();}catch(e){throw new Error('Please switch your wallet to Polygon Mainnet (Chain ID 137).');}}if(Number(net.chainId)!==137)throw new Error('Wallet is not connected to Polygon Mainnet.');$('connectBtn').textContent=short(wallet);$('walletLabel').textContent='Connected: '+wallet;scanProviders=SCAN_RPC_URLS.map(url=>new ethers.JsonRpcProvider(url,137,{staticNetwork:true}));$('refreshBtn').disabled=false;window.ethereum.removeListener?.('accountsChanged',accountChanged);window.ethereum.on?.('accountsChanged',accountChanged);await scan();}catch(e){console.error(e);setStatus('Connection failed: '+(e.shortMessage||e.message));}}
-function accountChanged(a){if(a&&a[0]){wallet=a[0].toLowerCase();$('connectBtn').textContent=short(wallet);$('walletLabel').textContent='Connected: '+wallet;scan();}else{wallet=null;records=[];visible=[];$('connectBtn').textContent='Connect Wallet';$('walletLabel').textContent='Wallet not connected';rowMessage('Wallet disconnected');}}
-// Search the SIGMA contract directly by the indexed wallet topics.
-// Transfer(address indexed from,address indexed to,uint256 value)
-async function rpcGetLogs(filter){let lastError=null;for(const rpc of scanProviders){try{return await rpc.send('eth_getLogs',[filter]);}catch(e){lastError=e;}}throw lastError||new Error('All Polygon scan RPC endpoints failed.');}
-async function getWalletLogs(from,to,topicPosition,depth=0){const topics=topicPosition==='from'?[TRANSFER_TOPIC,padAddress(wallet)]:[TRANSFER_TOPIC,null,padAddress(wallet)];const filter={address:SIGMA,fromBlock:ethers.toQuantity(from),toBlock:ethers.toQuantity(to),topics};try{return await rpcGetLogs(filter);}catch(e){if(from>=to||depth>=18)throw e;const mid=Math.floor((from+to)/2);const left=await getWalletLogs(from,mid,topicPosition,depth+1);const right=await getWalletLogs(mid+1,to,topicPosition,depth+1);return left.concat(right);}}
-async function scanRange(from,to){const ranges=[];for(let s=from;s<=to;s+=INITIAL_CHUNK)ranges.push([s,Math.min(s+INITIAL_CHUNK-1,to)]);let next=0,finished=0,fromEvents=0,toEvents=0,matched=[];const workers=Array.from({length:3},async()=>{while(next<ranges.length){const idx=next++,[a,b]=ranges[idx];const [sent,received]=await Promise.all([getWalletLogs(a,b,'from'),getWalletLogs(a,b,'to')]);fromEvents+=sent.length;toEvents+=received.length;const combined=new Map();for(const l of [...sent,...received]){const key=(l.transactionHash||'').toLowerCase()+':'+String(l.index??l.logIndex??0);combined.set(key,l);}for(const l of combined.values()){if(!l.topics||l.topics.length<3)continue;const f=('0x'+l.topics[1].slice(-40)).toLowerCase(),t=('0x'+l.topics[2].slice(-40)).toLowerCase();if(f!==wallet&&t!==wallet)continue;let amount;try{amount=Number(ethers.formatUnits(BigInt(l.data),18));}catch{continue;}matched.push({hash:l.transactionHash,logIndex:Number(l.index??l.logIndex??0),blockNumber:Number(BigInt(l.blockNumber)),from:f,to:t,amount,timestamp:0});}finished++;setStatus(`Scanning SIGMA wallet events · ${finished}/${ranges.length} ranges · ${fromEvents+toEvents} matched logs · ${matched.length} unique transfers`,(finished/ranges.length)*88);}});await Promise.all(workers);return{matched,contractEvents:fromEvents+toEvents};}
-async function scan(){if(!wallet||!provider||scanBusy)return;scanBusy=true;$('refreshBtn').disabled=true;$('csvBtn').disabled=true;records=[];rowMessage('Scanning SIGMA contract events…');setStatus('Checking Polygon block height…',1);try{let latest=0,lastHeightError=null;for(const rpc of scanProviders){try{latest=await rpc.getBlockNumber();if(latest>0)break;}catch(e){lastHeightError=e;}}if(!latest)throw lastHeightError||new Error('Could not read Polygon block height from scan RPCs.');const from=Math.max(START_BLOCK,latest-LOOKBACK_BLOCKS);$('range').textContent=`Blocks ${from.toLocaleString()}–${latest.toLocaleString()}`;const result=await scanRange(from,latest);records=result.matched;const unique=[...new Set(records.map(x=>x.blockNumber))];let cursor=0,failed=0;const workers=Array.from({length:Math.min(8,unique.length)},async()=>{while(cursor<unique.length){const b=unique[cursor++];try{let block=null,lastBlockError=null;for(const rpc of scanProviders){try{block=await rpc.getBlock(b);if(block)break;}catch(e){lastBlockError=e;}}if(!block&&lastBlockError)throw lastBlockError;if(block){for(const r of records)if(r.blockNumber===b)r.timestamp=Number(block.timestamp);}}catch(e){failed++;console.warn('Timestamp lookup failed',b,e);}}});await Promise.all(workers);records.sort((a,b)=>(b.blockNumber-a.blockNumber)||(b.logIndex-a.logIndex));setStatus(`Scan complete · ${records.length} SIGMA transfers found · ${result.contractEvents} indexed wallet logs · ${failed} timestamp lookup failures · blocks ${from.toLocaleString()}–${latest.toLocaleString()}`,100);$('csvBtn').disabled=records.length===0;applyFilters();if(records.length===0&&result.contractEvents===0)rowMessage('No Transfer events were returned by the Polygon RPC for this SIGMA contract. Try another Polygon RPC endpoint.');else if(records.length===0)rowMessage(`No indexed SIGMA Transfer log matched this wallet in either the From or To topic. Queried the wallet address directly against the SIGMA contract.`);}catch(e){console.error('SIGMA scan failed',e);setStatus('SIGMA scan failed: '+(e.shortMessage||e.message||'RPC error'));rowMessage('Scan failed. The error is shown above.');}finally{$('refreshBtn').disabled=false;scanBusy=false;}}
-function applyFilters(){const dir=$('direction').value,search=$('search').value.trim().toLowerCase(),from=$('fromDate').value?Math.floor(new Date($('fromDate').value+'T00:00:00').getTime()/1000):0,to=$('toDate').value?Math.floor(new Date($('toDate').value+'T23:59:59').getTime()/1000):Infinity;visible=records.filter(x=>(dir==='all'||(dir==='sent'?x.from===wallet:x.to===wallet))&&(x.timestamp===0?(from===0&&to===Infinity):(x.timestamp>=from&&x.timestamp<=to))&&(!search||x.from.includes(search)||x.to.includes(search)));render();stats();}
-function render(){$('shown').textContent=visible.length+' records';if(!visible.length){if(records.length)rowMessage('No matching SIGMA transfers for these filters.');else if(!$('status').textContent.startsWith('Scan complete'))rowMessage('Connect wallet to view SIGMA history.');return;}$('tbody').innerHTML=visible.map((x,i)=>{const sent=x.from===wallet,date=x.timestamp>0?new Date(x.timestamp*1000).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'Timestamp unavailable';return `<tr><td>${i+1}</td><td>${date}</td><td><span class="pill ${sent?'sent':'received'}">${sent?'SENT':'RECEIVED'}</span></td><td class="addr" title="${x.from}" onclick="copyText('${x.from}')">${short(x.from)}</td><td class="addr" title="${x.to}" onclick="copyText('${x.to}')">${short(x.to)}</td><td>${sent?'-':'+'}${fmt(x.amount)} SIGMA</td><td><a class="hash" target="_blank" rel="noopener" href="https://polygonscan.com/block/${x.blockNumber}">${x.blockNumber.toLocaleString()}</a></td><td><a class="hash" target="_blank" rel="noopener" href="https://polygonscan.com/tx/${x.hash}">${short(x.hash)}</a></td></tr>`;}).join('');}
-function stats(){const sent=visible.filter(x=>x.from===wallet),received=visible.filter(x=>x.to===wallet),s=sent.reduce((a,x)=>a+x.amount,0),r=received.reduce((a,x)=>a+x.amount,0);$('sent').textContent=fmt(s);$('received').textContent=fmt(r);$('count').textContent=visible.length;$('net').textContent=fmt(r-s);}
-function copyText(s){navigator.clipboard?.writeText(s).then(()=>setStatus('Copied: '+s)).catch(()=>{});}
-function csv(){if(!visible.length)return;const cols=['date','direction','from','to','amount_SIGMA','txHash','block'];const lines=[cols.join(','),...visible.map(x=>[(x.timestamp>0?new Date(x.timestamp*1000).toISOString():'Timestamp unavailable'),x.from===wallet?'SENT':'RECEIVED',x.from,x.to,x.amount,x.hash,x.blockNumber].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','))];const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='sigma-transfers.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-$('connectBtn').addEventListener('click',connect);$('refreshBtn').addEventListener('click',scan);$('csvBtn').addEventListener('click',csv);$('applyBtn').addEventListener('click',applyFilters);$('clearBtn').addEventListener('click',()=>{$('direction').value='all';$('fromDate').value='';$('toDate').value='';$('search').value='';applyFilters();});$('direction').addEventListener('change',applyFilters);
-</script></body></html>
+// Contract address is used internally for event lookup; it is not displayed in the page.
+const SIGMA_CONTRACT = '0xaf215838d156f7d348a6d56ca962cbc680a2153f';
+const TRANSFER_TOPIC = ethers.id('Transfer(address,address,uint256)');
+const ZERO = '0x0000000000000000000000000000000000000000';
+const RPC_URLS = ['https://polygon-bor-rpc.publicnode.com','https://polygon.drpc.org'];
+const LOOKBACK_BLOCKS = 500000;
+let provider=null, wallet=null, transfers=[], filtered=[], scanBusy=false, scanCancelled=false;
+const $ = id => document.getElementById(id);
+function short(v){return v.slice(0,8)+'...'+v.slice(-6)}
+function setStatus(msg){$('scanStatus').textContent=msg}
+function setProgress(p){$('progressBar').style.width=Math.max(0,Math.min(100,p))+'%'}
+function showMessage(msg,icon='fa-info-circle'){ $('transferBody').innerHTML=`<tr><td colspan="7" class="empty-state"><i class="fas ${icon}"></i>${msg}</td></tr>` }
+function padAddress(a){return '0x'+'0'.repeat(24)+a.slice(2).toLowerCase()}
+async function connectWallet(){
+ if(!window.ethereum){alert('Please install MetaMask or a compatible wallet.');return}
+ try{
+  provider=new ethers.BrowserProvider(window.ethereum);
+  const accounts=await provider.send('eth_requestAccounts',[]);
+  if(!accounts.length)return;
+  await finishConnect(accounts[0]);
+ }catch(e){console.error(e);alert('Wallet connection failed: '+(e.shortMessage||e.message||'Unknown error'))}
+}
+async function finishConnect(address){
+ wallet=address.toLowerCase();
+ const network=await provider.getNetwork();
+ if(Number(network.chainId)!==137){
+  try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x89'}]});provider=new ethers.BrowserProvider(window.ethereum)}
+  catch(e){setStatus('Please switch your wallet network to Polygon Mainnet (Chain ID 137).');showMessage('Switch wallet network to Polygon Mainnet to view history.','fa-exclamation-triangle');return}
+ }
+ $('btnText').textContent=short(wallet);$('connectBtn').classList.add('connected');
+ await loadData();
+}
+function handleAccountsChanged(accounts){
+ if(!accounts.length){wallet=null;transfers=[];filtered=[];$('btnText').textContent='Connect Wallet';$('connectBtn').classList.remove('connected');resetStats();showMessage('Wallet disconnected. Connect wallet to view SIGMA history.','fa-wallet');setStatus('Wallet disconnected.');return}
+ provider=new ethers.BrowserProvider(window.ethereum);finishConnect(accounts[0]).catch(console.error);
+}
+function resetStats(){$('totalSent').textContent='0';$('totalReceived').textContent='0';$('totalTx').textContent='0';$('counterparties').textContent='0 counterparties';$('netFlow').textContent='0';$('netStatus').textContent='Balanced'}
+async function rpcLogs(filter){
+ let lastError;
+ for(const url of RPC_URLS){
+  try{const p=new ethers.JsonRpcProvider(url,137,{staticNetwork:true});return await p.send('eth_getLogs',[filter])}
+  catch(e){lastError=e;console.warn('RPC log query failed:',url,e.message)}
+ }
+ // Last fallback: use the connected wallet's Polygon RPC.
+ try{return await provider.send('eth_getLogs',[filter])}catch(e){throw lastError||e}
+}
+async function getLogsAdaptive(filter,from,to){
+ let out=[],start=from,chunk=5000;
+ while(start<=to){if(scanCancelled)break;let end=Math.min(start+chunk-1,to);
+  try{const logs=await rpcLogs({...filter,fromBlock:ethers.toQuantity(start),toBlock:ethers.toQuantity(end)});out.push(...logs);start=end+1;setProgress(((start-from)/(to-from+1))*100);setStatus(`Scanning Polygon blocks ${start.toLocaleString()} / ${to.toLocaleString()} · ${out.length} matching logs`)}
+  catch(e){if(chunk>250){chunk=Math.max(250,Math.floor(chunk/2));continue}throw new Error('Polygon RPC scan failed: '+(e.shortMessage||e.message||'Please retry'))}
+ }
+ return out;
+}
+async function loadData(){
+ if(!wallet){showMessage('Please connect wallet to view SIGMA transfers.','fa-wallet');return}
+ if(scanBusy)return;scanBusy=true;scanCancelled=false;transfers=[];filtered=[];setProgress(0);showMessage('Scanning SIGMA transfer events...','fa-spinner fa-spin');
+ try{
+  const latest=await provider.getBlockNumber();const from=Math.max(0,latest-LOOKBACK_BLOCKS);
+  const walletTopic=padAddress(wallet);
+  const base={address:SIGMA_CONTRACT,topics:[TRANSFER_TOPIC]};
+  // Query sent and received separately: indexed topic positions are from and to.
+  const [sent,received]=await Promise.all([
+   getLogsAdaptive({...base,topics:[TRANSFER_TOPIC,walletTopic]},from,latest),
+   getLogsAdaptive({...base,topics:[TRANSFER_TOPIC,null,walletTopic]},from,latest)
+  ]);
+  const unique=new Map();
+  for(const log of [...sent,...received]){
+   const key=(log.transactionHash||'').toLowerCase()+':'+String(log.logIndex??log.index??0);
+   unique.set(key,log);
+  }
+  const logs=[...unique.values()];
+  const blockTimes=new Map();
+  for(let i=0;i<logs.length;i++){
+   if(scanCancelled)break;
+   const l=logs[i];const fromAddr='0x'+l.topics[1].slice(-40);const toAddr='0x'+l.topics[2].slice(-40);
+   if(fromAddr.toLowerCase()!==wallet&&toAddr.toLowerCase()!==wallet)continue;
+   if(fromAddr.toLowerCase()===ZERO||toAddr.toLowerCase()===ZERO)continue;
+   const bn=Number(BigInt(l.blockNumber));
+   if(!blockTimes.has(bn)){
+    const block=await provider.getBlock(bn);
+    blockTimes.set(bn,block?Number(block.timestamp):0);
+   }
+   const timestamp=blockTimes.get(bn);
+   const amount=Number(ethers.formatUnits(BigInt(l.data),18));
+   transfers.push({hash:l.transactionHash,logIndex:Number(BigInt(l.logIndex??l.index??0)),from:fromAddr.toLowerCase(),to:toAddr.toLowerCase(),amount,timestamp,date:new Date(timestamp*1000),blockNumber:bn});
+   if(i%20===0)setStatus(`Reading timestamps · ${i+1}/${logs.length} logs`);
+  }
+  transfers.sort((a,b)=>b.blockNumber-a.blockNumber||b.logIndex-a.logIndex);
+  applyFilters();updateStats();
+  setProgress(100);setStatus(`Scan complete · ${transfers.length} SIGMA transfers found · blocks ${from.toLocaleString()}–${latest.toLocaleString()}`);
+  if(!transfers.length)showMessage('No SIGMA transfers found for this wallet in the last 500,000 blocks.','fa-exchange-alt');
+ }catch(e){console.error('SIGMA scan error:',e);showMessage('Scan failed: '+(e.message||'Unknown error'),'fa-exclamation-circle');setStatus('Scan failed. Press Refresh to try again.');}
+ finally{scanBusy=false}
+}
+function applyFilters(){
+ const dir=$('directionFilter').value,start=$('startDate').value,end=$('endDate').value,search=$('searchWallet').value.trim().toLowerCase();
+ filtered=transfers.filter(t=>{
+  if(dir==='sent'&&t.from!==wallet)return false;if(dir==='received'&&t.to!==wallet)return false;
+  if(start&&t.timestamp<Math.floor(new Date(start+'T00:00:00').getTime()/1000))return false;
+  if(end&&t.timestamp>=Math.floor(new Date(end+'T00:00:00').getTime()/1000)+86400)return false;
+  if(search&&!t.from.includes(search)&&!t.to.includes(search))return false;return true;
+ });displayTransfers();updateStats();
+}
+function clearFilters(){$('directionFilter').value='all';$('startDate').value='';$('endDate').value='';$('searchWallet').value='';applyFilters()}
+function updateStats(){let sent=0,received=0,peers=new Set();for(const t of filtered){if(t.from===wallet){sent+=t.amount;peers.add(t.to)}if(t.to===wallet){received+=t.amount;peers.add(t.from)}}const net=received-sent;$('totalSent').textContent=sent.toLocaleString('en-US',{maximumFractionDigits:4});$('totalReceived').textContent=received.toLocaleString('en-US',{maximumFractionDigits:4});$('totalTx').textContent=filtered.length;$('counterparties').textContent=peers.size+' counterparties';$('netFlow').textContent=(net>0?'+':'')+net.toLocaleString('en-US',{maximumFractionDigits:4});$('netFlow').style.color=net>=0?'var(--success)':'var(--danger)';$('netStatus').textContent=net>0?'Net Received':net<0?'Net Sent':'Balanced'}
+function displayTransfers(){if(!filtered.length){showMessage('No matching SIGMA transfers.','fa-exchange-alt');return}let html='';filtered.forEach((t,i)=>{const sent=t.from===wallet,d=t.date;const date=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});const time=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});html+=`<tr><td>${i+1}</td><td><b>${date}</b><div style="color:#888;font-size:10px">${time}</div></td><td><span class="direction-badge ${sent?'sent':'received'}"><i class="fas fa-arrow-${sent?'up':'down'}"></i> ${sent?'SENT':'RECEIVED'}</span></td><td><span class="wallet-address" onclick="copyText('${t.from}')">${short(t.from)} <i class="fas fa-copy"></i></span></td><td><span class="wallet-address" onclick="copyText('${t.to}')">${short(t.to)} <i class="fas fa-copy"></i></span></td><td style="font-weight:800;color:${sent?'var(--danger)':'var(--success)'}">${sent?'-':'+'}${t.amount.toLocaleString('en-US',{maximumFractionDigits:6})}</td><td><a class="wallet-address" style="text-decoration:none" target="_blank" rel="noopener" href="https://polygonscan.com/tx/${t.hash}">${short(t.hash)} <i class="fas fa-external-link-alt"></i></a></td></tr>`});$('transferBody').innerHTML=html}
+function exportData(){if(!wallet){alert('Connect wallet first');return}const rows=[['#','Date','Time','Direction','Sender','Receiver','Amount SIGMA','Tx Hash']];filtered.forEach((t,i)=>rows.push([i+1,t.date.toLocaleDateString(),t.date.toLocaleTimeString(),t.from===wallet?'SENT':'RECEIVED',t.from,t.to,t.amount,t.hash]));const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='sigma_transfers.csv';a.click();URL.revokeObjectURL(a.href)}
+async function copyText(text){try{await navigator.clipboard.writeText(text);setStatus('Copied to clipboard: '+short(text))}catch(e){setStatus('Could not copy. Please copy manually.')}}
+async function autoConnect(){if(!window.ethereum){setStatus('No wallet detected. Install MetaMask or a compatible wallet.');return}try{provider=new ethers.BrowserProvider(window.ethereum);const accounts=await provider.send('eth_accounts',[]);if(accounts.length)await finishConnect(accounts[0]);else setStatus('Wallet detected. Click Connect Wallet to authorize access.')}catch(e){console.warn('Auto-connect:',e);setStatus('Click Connect Wallet to connect.')}}
+window.addEventListener('load',()=>{const today=new Date();$('endDate').valueAsDate=today;const start=new Date();start.setDate(start.getDate()-30);$('startDate').valueAsDate=start;autoConnect();if(window.ethereum){window.ethereum.on('accountsChanged',handleAccountsChanged);window.ethereum.on('chainChanged',()=>location.reload())}});
+</script>
+</body></html>
