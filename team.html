@@ -859,7 +859,8 @@
         // Contract creation block supplied by the user. Scan only from this block onward.
         const CONTRACT_START_BLOCK = 85000998;
         // Keep each eth_getLogs request below common Polygon RPC range limits.
-        const EVENT_SCAN_CHUNK = 2000;
+        const EVENT_SCAN_CHUNK = 10000;
+        const EVENT_SCAN_WORKERS = 4;
 
         window.onload = async () => {
             try {
@@ -879,6 +880,17 @@
         function showTableMessage(message, isError = false) {
             const body = document.getElementById('team-body');
             body.innerHTML = `<tr><td colspan="10" class="${isError ? 'empty-state' : 'loading'}">${isError ? '<i class="fas fa-exclamation-triangle"></i><br>' : ''}${escapeHtml(message)}</td></tr>`;
+        }
+
+        function formatCountdown(seconds) {
+            if (!Number.isFinite(seconds) || seconds < 0) return 'Calculating...';
+            seconds = Math.ceil(seconds);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            if (hours > 0) return `${hours}h ${minutes}m ${secs}s`;
+            if (minutes > 0) return `${minutes}m ${secs}s`;
+            return `${secs}s`;
         }
 
         function escapeHtml(value) {
@@ -952,73 +964,84 @@
                     throw new Error(`Current Polygon block (${latestBlock}) is earlier than the supplied contract start block (${CONTRACT_START_BLOCK}).`);
                 }
 
-                const transferFilter = sigmaContract.filters.Transfer();
-                const boughtFilter = sigmaContract.filters.Buy();
+                // Scan ONLY Buy events emitted by the Sigma contract address.
+                // Transfer logs are intentionally excluded to reduce RPC load.
+                const buyTopic = ethers.id("Buy(address,uint256,uint256,uint256)");
+                const eventInterface = new ethers.Interface([
+                    "event Buy(address indexed user, uint256 amount, uint256 rate, uint256 usdtSpent)"
+                ]);
                 const totalBlocks = latestBlock - CONTRACT_START_BLOCK + 1;
+                const chunks = [];
+                for (let from = CONTRACT_START_BLOCK; from <= latestBlock; from += EVENT_SCAN_CHUNK) {
+                    chunks.push({ from, to: Math.min(from + EVENT_SCAN_CHUNK - 1, latestBlock) });
+                }
+
+                let nextChunk = 0;
                 let scannedBlocks = 0;
+                let completedChunks = 0;
+                const startedAt = Date.now();
+                let scanError = null;
 
-                for (let fromBlock = CONTRACT_START_BLOCK; fromBlock <= latestBlock; fromBlock += EVENT_SCAN_CHUNK) {
-                    const toBlock = Math.min(fromBlock + EVENT_SCAN_CHUNK - 1, latestBlock);
-                    try {
-                        const [transferEvents, boughtEvents] = await Promise.all([
-                            sigmaContract.queryFilter(transferFilter, fromBlock, toBlock),
-                            sigmaContract.queryFilter(boughtFilter, fromBlock, toBlock)
-                        ]);
+                const updateProgress = () => {
+                    const elapsed = (Date.now() - startedAt) / 1000;
+                    const rate = scannedBlocks / Math.max(elapsed, 1);
+                    const remainingBlocks = Math.max(0, totalBlocks - scannedBlocks);
+                    const eta = rate > 0 ? remainingBlocks / rate : NaN;
+                    const percent = Math.min(100, scannedBlocks / totalBlocks * 100).toFixed(1);
+                    showTableMessage(`Sigma contract BUY scan: ${percent}% | ${scannedBlocks.toLocaleString()} / ${totalBlocks.toLocaleString()} blocks | ${completedChunks}/${chunks.length} batches | ETA: ${formatCountdown(eta)}`);
+                };
+                updateProgress();
+                const progressTimer = setInterval(updateProgress, 1000);
 
-                        for (const event of transferEvents) {
-                            const from = String(event.args.from).toLowerCase();
-                            const to = String(event.args.to).toLowerCase();
-                            if (from !== zeroAddress) addressSet.add(from);
-                            if (to !== zeroAddress) addressSet.add(to);
-                        }
-                        for (const event of boughtEvents) {
-                            addressSet.add(String(event.args.user).toLowerCase());
-                        }
-                    } catch (scanError) {
-                        throw new Error(`Polygon event scan failed at blocks ${fromBlock}-${toBlock}: ${scanError.message}. Try a different Polygon RPC if this continues.`);
-                    }
-
-                    scannedBlocks += (toBlock - fromBlock + 1);
-                    const percent = Math.min(100, (scannedBlocks / totalBlocks) * 100).toFixed(1);
-                    showTableMessage(`Scanning contract events: ${percent}% (${scannedBlocks.toLocaleString()} / ${totalBlocks.toLocaleString()} blocks). Please wait...`);
-                    // Brief pause reduces the chance of RPC rate limiting.
-                    await new Promise(resolve => setTimeout(resolve, 80));
-                }
-
-                // Read upline records for discovered addresses. Add only their ancestors,
-                // not every wallet on Polygon; visited sets prevent cycles/duplicates.
-                const checked = new Set();
-                let frontier = Array.from(addressSet);
-                while (frontier.length) {
-                    const nextFrontier = [];
-                    for (let i = 0; i < frontier.length; i += 40) {
-                        const batch = frontier.slice(i, i + 40);
-                        const results = await Promise.all(batch.map(async addr => {
-                            if (checked.has(addr)) return null;
-                            checked.add(addr);
-                            try { return await sigmaContract.users(addr); } catch { return null; }
-                        }));
-                        for (const userStruct of results) {
-                            const upline = userStruct?.upline ? String(userStruct.upline).toLowerCase() : zeroAddress;
-                            if (upline !== zeroAddress && !checked.has(upline) && !addressSet.has(upline)) {
-                                addressSet.add(upline);
-                                nextFrontier.push(upline);
+                const worker = async () => {
+                    while (!scanError) {
+                        const index = nextChunk++;
+                        if (index >= chunks.length) return;
+                        const { from, to } = chunks[index];
+                        try {
+                            const logs = await provider.send("eth_getLogs", [{
+                                address: SIGMA_ADDR,
+                                fromBlock: ethers.toQuantity(from),
+                                toBlock: ethers.toQuantity(to),
+                                topics: [buyTopic]
+                            }]);
+                            for (const log of logs) {
+                                const parsed = eventInterface.parseLog(log);
+                                if (parsed && parsed.name === "Buy") {
+                                    addressSet.add(String(parsed.args.user).toLowerCase());
+                                }
                             }
+                            scannedBlocks += (to - from + 1);
+                            completedChunks++;
+                            updateProgress();
+                        } catch (err) {
+                            scanError = new Error(`Sigma contract BUY scan failed at blocks ${from}-${to}: ${err.message}. Try reducing EVENT_SCAN_CHUNK to 2000 or 1000 for this RPC provider.`);
+                            return;
                         }
                     }
-                    frontier = nextFrontier;
+                };
+
+                try {
+                    await Promise.all(Array.from({ length: Math.min(EVENT_SCAN_WORKERS, chunks.length) }, () => worker()));
+                } finally {
+                    clearInterval(progressTimer);
                 }
+                if (scanError) throw scanError;
+
+                showTableMessage(`Event scan complete. Found ${addressSet.size.toLocaleString()} unique addresses. Loading referral links...`);
+
+                // Buy event addresses are sufficient candidates for downline matching.
+                // No unrelated Polygon contracts or Transfer-event history is scanned.
 
                 const addresses = Array.from(addressSet);
                 console.log(`Found ${addresses.length} unique addresses from contract block ${CONTRACT_START_BLOCK}.`);
                 allUsersData = [];
-                for (let i = 0; i < addresses.length; i += 40) {
-                    const batch = addresses.slice(i, i + 40);
+                for (let i = 0; i < addresses.length; i += 80) {
+                    const batch = addresses.slice(i, i + 80);
                     const results = await Promise.all(batch.map(async addr => {
                         try {
                             const [balanceBN, userStruct] = await Promise.all([
-                                sigmaContract.balanceOf(addr),
-                                sigmaContract.users(addr)
+                                sigmaContract.balanceOf(addr), sigmaContract.users(addr)
                             ]);
                             return {
                                 address: addr,
@@ -1030,10 +1053,7 @@
                             };
                         } catch (error) {
                             console.warn(`Could not load member ${addr}:`, error);
-                            return {
-                                address: addr, balance: 0, upline: zeroAddress,
-                                directCount: 0, lastBuyTimestamp: 0, hasBoughtBefore: false
-                            };
+                            return { address: addr, balance: 0, upline: zeroAddress, directCount: 0, lastBuyTimestamp: 0, hasBoughtBefore: false };
                         }
                     }));
                     allUsersData.push(...results);
