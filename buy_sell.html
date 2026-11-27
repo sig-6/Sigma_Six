@@ -3,36 +3,69 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SIGMA SIX | Buy Sell History</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGMA SIX | Buy & Sell History</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:18px;background:#0b1020;color:#eef2ff;font-family:Arial,sans-serif}
+body{
+ margin:0;padding:18px;background:#0b1220;color:#e8eefc;
+ font-family:Arial,sans-serif
+}
 .container{max-width:1150px;margin:auto}
-.header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px}
-h1{font-size:25px;margin:0}
-.sub,.muted{color:#9ca9c8;font-size:13px;margin-top:7px}
-button{border:0;border-radius:8px;padding:11px 16px;font-weight:bold;cursor:pointer;background:#2563eb;color:white}
+.header{
+ display:flex;justify-content:space-between;align-items:center;
+ flex-wrap:wrap;gap:12px;margin-bottom:20px
+}
+h1{font-size:25px;margin:0;color:#fff}
+button{
+ border:0;border-radius:8px;padding:11px 16px;
+ cursor:pointer;font-weight:bold;background:#2563eb;color:white
+}
 button:disabled{opacity:.5;cursor:not-allowed}
-.secondary{background:#34415e}
+.secondary{background:#334155}
 .green{background:#059669}
-.panel,.card{background:#151e34;border:1px solid #293653;border-radius:12px;padding:17px;margin-bottom:15px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0}
-.card small{color:#9ca9c8}
-.card h2{font-size:22px;margin:10px 0 0;overflow-wrap:anywhere}
-.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
-.status{font-size:13px;color:#aab7d3;line-height:1.7;overflow-wrap:anywhere;margin-top:9px}
-.progress{height:9px;background:#26334f;border-radius:20px;overflow:hidden;margin-top:12px}
-.bar{height:100%;width:0;background:#10b981;transition:width .2s}
-.table-wrap{overflow-x:auto;margin-top:12px}
-table{width:100%;border-collapse:collapse;min-width:740px}
-th,td{padding:12px 9px;border-bottom:1px solid #293653;text-align:left;font-size:13px;white-space:nowrap}
-th{color:#9ca9c8;background:#111a2d}
+.cards{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+ gap:12px;margin:18px 0
+}
+.card{
+ background:#172338;border:1px solid #293a54;
+ border-radius:12px;padding:17px
+}
+.card small{color:#9fb0c9}
+.card strong{display:block;font-size:22px;margin-top:9px;word-break:break-word}
+.panel{
+ background:#172338;border:1px solid #293a54;
+ border-radius:12px;padding:17px;margin-bottom:16px
+}
+.status{font-size:13px;color:#a9bad4;line-height:1.7;word-break:break-word}
+.progress{
+ height:10px;background:#334155;border-radius:10px;
+ overflow:hidden;margin:12px 0
+}
+.progress div{height:100%;width:0;background:#10b981;transition:width .2s}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th,td{
+ padding:12px 10px;border-bottom:1px solid #2c3b52;
+ text-align:left;font-size:13px
+}
+th{color:#9fb0c9;background:#1c2b42}
 .buy{color:#34d399;font-weight:bold}
 .sell{color:#fb7185;font-weight:bold}
 a{color:#60a5fa;text-decoration:none}
-.footer{color:#8290ae;font-size:12px;margin:18px 0}
+input{
+ background:#0b1220;color:white;border:1px solid #40516b;
+ padding:10px;border-radius:7px;width:100%
+}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.empty{text-align:center;color:#9fb0c9;padding:28px}
+@media(max-width:600px){
+ body{padding:10px}
+ h1{font-size:20px}
+ .card strong{font-size:19px}
+}
 </style>
 </head>
 <body>
@@ -40,150 +73,152 @@ a{color:#60a5fa;text-decoration:none}
 
  <div class="header">
   <div>
-   <h1>💎 SIGMA SIX</h1>
-   <div class="sub">BUY / SELL TRANSACTION HISTORY</div>
+   <h1> SIGMA SIX | BUY & SELL HISTORY</h1>
+   <div class="status">Polygon Network · Wallet Based Scanner</div>
   </div>
-  <div class="actions">
-   <button class="secondary" onclick="goDashboard()">← Back to Dashboard</button>
-   <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
-  </div>
+  <button class="secondary" onclick="location.href='index.html'">
+   ← Back to Dashboard
+  </button>
  </div>
 
  <div class="panel">
-  <b>Wallet Connection</b>
-  <div class="status" id="walletStatus">Checking wallet...</div>
+  <div class="status" id="walletStatus">Checking wallet connection...</div>
   <div class="actions">
-   <button class="green" id="scanBtn" onclick="startScan()" disabled>Scan History</button>
-   <button class="secondary" id="csvBtn" onclick="downloadCSV()" disabled>Download CSV</button>
-   <button class="secondary" onclick="clearCache()">Clear History Cache</button>
+   <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+   <button id="scanBtn" class="green" onclick="startScan()" disabled>Scan History</button>
+   <button class="secondary" onclick="location.reload()">Refresh</button>
   </div>
  </div>
 
  <div class="cards">
-  <div class="card"><small>Total Buy Transactions</small><h2 id="buyCount">0</h2></div>
-  <div class="card"><small>Total Sell Transactions</small><h2 id="sellCount">0</h2></div>
-  <div class="card"><small>Total Sigma Bought</small><h2 id="totalBuy">0</h2></div>
-  <div class="card"><small>Total Sigma Sold</small><h2 id="totalSell">0</h2></div>
-  <div class="card"><small>Wallet Sigma Balance</small><h2 id="walletBalance">-</h2></div>
-  <div class="card"><small>Current Buy Rate (USDT)</small><h2 id="currentRate">-</h2></div>
+  <div class="card">
+   <small>Total Buy (SIGMA)</small>
+   <strong id="totalBuy">0</strong>
+  </div>
+  <div class="card">
+   <small>Total Sell (SIGMA)</small>
+   <strong id="totalSell">0</strong>
+  </div>
+  <div class="card">
+   <small>Net SIGMA</small>
+   <strong id="netSigma">0</strong>
+  </div>
+  <div class="card">
+   <small>Total Transactions</small>
+   <strong id="totalTx">0</strong>
+  </div>
  </div>
 
  <div class="panel">
-  <b>Fast History Scanner</b>
-  <div class="status" id="scanStatus">Ready.</div>
-  <div class="progress"><div class="bar" id="progressBar"></div></div>
-  <div class="status" id="rpcStatus">RPC: Waiting</div>
+  <b>Blockchain Scan Progress</b>
+  <div class="progress"><div id="progressBar"></div></div>
+  <div class="status" id="progressText">Waiting to scan...</div>
+  <div class="status" id="scanDetails"></div>
  </div>
 
  <div class="panel">
-  <b>Buy / Sell History</b>
+  <div class="header">
+   <b>Transaction History</b>
+   <button id="csvBtn" class="green" onclick="downloadCSV()" disabled>Download CSV</button>
+  </div>
   <div class="table-wrap">
    <table>
     <thead>
      <tr>
-      <th>Type</th><th>Date & Time</th><th>Sigma Amount</th>
-      <th>Rate (USDT)</th><th>USDT Value</th><th>Transaction</th><th>Block</th>
+      <th>#</th>
+      <th>Type</th>
+      <th>SIGMA Amount</th>
+      <th>Rate (USDT)</th>
+      <th>USDT Value</th>
+      <th>Block</th>
+      <th>Transaction</th>
      </tr>
     </thead>
     <tbody id="historyBody">
-     <tr><td colspan="7" style="text-align:center">Connect wallet to view history</td></tr>
+     <tr><td colspan="7" class="empty">Connect wallet and scan history</td></tr>
     </tbody>
    </table>
   </div>
  </div>
 
- <div class="panel">
-  <b>Contract Information</b>
-  <div class="status">
-   Network: Polygon Mainnet (137)<br>
-   Contract:
-   <a target="_blank" href="https://polygonscan.com/address/0xaF215838d156F7d348A6d56cA962cbC680A2153F">0xaF215838d156F7d348A6d56cA962cbC680A2153F</a><br>
-   Start Block: 85000998
-  </div>
- </div>
-
- <div class="footer">SIGMA SIX | Polygon Blockchain History</div>
 </div>
 
 <script>
-/* =====================================
-   CONFIGURATION
-===================================== */
+"use strict";
+
+/* ================= CONFIGURATION ================= */
 
 const CONTRACT = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
-const START_BLOCK = 85000998;
-const CHAIN_ID = 137;
+const CONTRACT_START_BLOCK = 85000998;
 
-/* PublicNode intentionally removed.
-   This page will ONLY use dRPC. */
+const EVENT_SCAN_CHUNK = 10000;
+const EVENT_SCAN_WORKERS = 4;
 
-const RPC_URL = "https://polygon.drpc.org";
-
-const INITIAL_CHUNK = 2000;
-const MIN_CHUNK = 100;
-const PARALLEL_REQUESTS = 2;
-const TIMESTAMP_WORKERS = 6;
+const POLYGON_CHAIN_ID = "0x89";
 
 const ABI = [
  "event Buy(address indexed user,uint256 amount,uint256 rate,uint256 usdtSpent)",
  "event Sell(address indexed user,uint256 amount,uint256 rate,uint256 usdtReceived)",
- "function balanceOf(address) view returns(uint256)",
- "function getCurrentBuyRate() view returns(uint256)",
- "function SIGMA_DECIMALS() view returns(uint256)",
- "function USDT_DECIMALS() view returns(uint256)",
- "function decimals() view returns(uint8)",
- "function usdt() view returns(address)"
+ "function SIGMA_DECIMALS() view returns (uint256)",
+ "function USDT_DECIMALS() view returns (uint256)",
+ "function decimals() view returns (uint8)",
+ "function usdt() view returns (address)",
+ "function balanceOf(address) view returns (uint256)",
+ "function getCurrentBuyRate() view returns (uint256)",
+ "function symbol() view returns (string)",
+ "function name() view returns (string)"
 ];
 
 const ERC20_ABI = [
- "function decimals() view returns(uint8)"
+ "function decimals() view returns (uint8)"
 ];
 
 const iface = new ethers.Interface(ABI);
-const BUY_TOPIC = ethers.id("Buy(address,uint256,uint256,uint256)");
-const SELL_TOPIC = ethers.id("Sell(address,uint256,uint256,uint256)");
+
+const BUY_TOPIC = ethers.id(
+ "Buy(address,uint256,uint256,uint256)"
+);
+
+const SELL_TOPIC = ethers.id(
+ "Sell(address,uint256,uint256,uint256)"
+);
+
+/* ================= GLOBAL VARIABLES ================= */
 
 let provider = null;
+let signer = null;
 let walletAddress = null;
-let transactions = [];
+let contract = null;
+
 let sigmaDecimals = 18;
 let usdtDecimals = 6;
-let scanning = false;
-let cacheLastBlock = START_BLOCK - 1;
 
-/* =====================================
-   PROVIDER
-===================================== */
+let historyData = [];
+let isScanning = false;
 
-function getProvider(){
- if(!provider){
-  provider = new ethers.JsonRpcProvider(
-   RPC_URL,
-   CHAIN_ID,
-   {
-    staticNetwork:true,
-    batchMaxCount:1
-   }
-  );
- }
- return provider;
+/* ================= ELEMENTS ================= */
+
+const $ = id => document.getElementById(id);
+
+function setStatus(message){
+ $("walletStatus").textContent = message;
 }
 
-function setStatus(id,message){
- document.getElementById(id).innerText = message;
+function setProgress(message, percent){
+ $("progressText").textContent = message;
+ $("progressBar").style.width =
+ Math.max(0,Math.min(100,percent)) + "%";
 }
 
-function cacheKey(){
- return "SIGMA_BUYSELL_V4_" + walletAddress.toLowerCase();
+function shortAddress(address){
+ return address.slice(0,6)+"..."+address.slice(-4);
 }
 
-/* =====================================
-   WALLET CONNECTION
-===================================== */
+/* ================= WALLET CONNECTION ================= */
 
-async function checkWallet(){
+async function initializeWallet(){
  if(!window.ethereum){
-  setStatus("walletStatus","MetaMask / EVM wallet not detected.");
+  setStatus("Wallet not detected. Please install MetaMask or another Web3 wallet.");
   return;
  }
 
@@ -193,19 +228,36 @@ async function checkWallet(){
   });
 
   if(accounts && accounts.length){
-   walletAddress = ethers.getAddress(accounts[0]);
-   await setupWallet();
+   await setupWallet(accounts[0]);
   }else{
-   setStatus("walletStatus","Wallet detected. Click Connect Wallet.");
+   setStatus("Wallet found. Click Connect Wallet.");
   }
+
+  window.ethereum.on("accountsChanged", async accounts => {
+   if(accounts.length){
+    await setupWallet(accounts[0]);
+   }else{
+    walletAddress = null;
+    provider = null;
+    signer = null;
+    contract = null;
+    $("scanBtn").disabled = true;
+    setStatus("Wallet disconnected.");
+   }
+  });
+
+  window.ethereum.on("chainChanged",()=>{
+   location.reload();
+  });
+
  }catch(error){
-  setStatus("walletStatus","Wallet check failed: "+error.message);
+  setStatus("Wallet initialization failed: "+error.message);
  }
 }
 
 async function connectWallet(){
  if(!window.ethereum){
-  alert("Please install MetaMask or another EVM wallet.");
+  alert("Please install MetaMask or another Web3 wallet.");
   return;
  }
 
@@ -214,544 +266,471 @@ async function connectWallet(){
    method:"eth_requestAccounts"
   });
 
-  if(!accounts || !accounts.length){
-   throw new Error("Wallet account not selected.");
-  }
+  if(!accounts.length) throw new Error("No wallet account found.");
 
-  walletAddress = ethers.getAddress(accounts[0]);
-
-  await switchPolygon();
-  await setupWallet();
-
- }catch(error){
-  console.error(error);
-  alert("Wallet connection failed: "+error.message);
- }
-}
-
-async function switchPolygon(){
- const chainId = await window.ethereum.request({
-  method:"eth_chainId"
- });
-
- if(Number(chainId) === CHAIN_ID) return;
-
- try{
-  await window.ethereum.request({
-   method:"wallet_switchEthereumChain",
-   params:[{chainId:"0x89"}]
-  });
- }catch(error){
-  if(error.code !== 4902) throw error;
-
-  await window.ethereum.request({
-   method:"wallet_addEthereumChain",
-   params:[{
-    chainId:"0x89",
-    chainName:"Polygon Mainnet",
-    nativeCurrency:{
-     name:"POL",
-     symbol:"POL",
-     decimals:18
-    },
-    rpcUrls:[RPC_URL],
-    blockExplorerUrls:["https://polygonscan.com/"]
-   }]
-  });
- }
-}
-
-async function setupWallet(){
- loadCache();
-
- setStatus("walletStatus","Connected: "+walletAddress);
-
- document.getElementById("connectBtn").innerText="Wallet Connected";
- document.getElementById("scanBtn").disabled=false;
-
- renderHistory();
- updateStats();
-
- await readContractData();
-}
-
-if(window.ethereum){
- window.ethereum.on("accountsChanged",async accounts=>{
-  if(!accounts || !accounts.length){
-   walletAddress=null;
-   transactions=[];
-   setStatus("walletStatus","Wallet disconnected.");
-   document.getElementById("scanBtn").disabled=true;
-   return;
-  }
-
-  walletAddress=ethers.getAddress(accounts[0]);
-  await setupWallet();
- });
-
- window.ethereum.on("chainChanged",()=>{
-  location.reload();
- });
-}
-
-/* =====================================
-   CONTRACT DATA
-===================================== */
-
-async function readContractData(){
- try{
-  const p=getProvider();
-  const c=new ethers.Contract(CONTRACT,ABI,p);
-
-  const [
-   balance,
-   rate,
-   sdRaw,
-   udRaw,
-   usdtAddress
-  ]=await Promise.all([
-   c.balanceOf(walletAddress),
-   c.getCurrentBuyRate(),
-   c.SIGMA_DECIMALS(),
-   c.USDT_DECIMALS(),
-   c.usdt()
-  ]);
-
-  let sd=Number(sdRaw);
-  let ud=Number(udRaw);
-
-  if(!Number.isInteger(sd)||sd<0||sd>80){
-   sd=Number(await c.decimals());
-  }
-
-  if(!Number.isInteger(ud)||ud<0||ud>80){
-   const token=new ethers.Contract(usdtAddress,ERC20_ABI,p);
-   ud=Number(await token.decimals());
-  }
-
-  if(!Number.isInteger(sd)||sd<0||sd>80||
-     !Number.isInteger(ud)||ud<0||ud>80){
-   throw new Error("Invalid decimals: Sigma "+sd+", USDT "+ud);
-  }
-
-  sigmaDecimals=sd;
-  usdtDecimals=ud;
-
-  document.getElementById("walletBalance").innerText=
-   Number(ethers.formatUnits(balance,sd))
-   .toLocaleString("en-IN",{maximumFractionDigits:6});
-
-  document.getElementById("currentRate").innerText=
-   Number(ethers.formatUnits(rate,ud))
-   .toLocaleString("en-IN",{maximumFractionDigits:8});
-
- }catch(error){
-  console.error("Contract read:",error);
-  setStatus("rpcStatus","Contract read error: "+error.message);
- }
-}
-
-/* =====================================
-   LOCAL CACHE
-===================================== */
-
-function loadCache(){
- transactions=[];
- cacheLastBlock=START_BLOCK-1;
-
- try{
-  const saved=JSON.parse(localStorage.getItem(cacheKey())||"null");
-
-  if(saved && Array.isArray(saved.events)){
-   transactions=saved.events;
-   cacheLastBlock=Number(saved.lastBlock)||START_BLOCK-1;
-  }
- }catch(error){
-  console.warn("Cache error:",error);
- }
-}
-
-function saveCache(lastBlock){
- try{
-  localStorage.setItem(cacheKey(),JSON.stringify({
-   lastBlock:lastBlock,
-   events:transactions
-  }));
-  cacheLastBlock=lastBlock;
- }catch(error){
-  console.warn("Cache save failed:",error);
-  setStatus("scanStatus","Storage full. Current session data is still available.");
- }
-}
-
-function clearCache(){
- if(!walletAddress){
-  alert("Connect wallet first.");
-  return;
- }
-
- if(!confirm("Clear saved history for this wallet?")) return;
-
- localStorage.removeItem(cacheKey());
- transactions=[];
- cacheLastBlock=START_BLOCK-1;
-
- renderHistory();
- updateStats();
-
- setStatus("scanStatus","Cache cleared. Full history scan will start again.");
-}
-
-/* =====================================
-   EVENT DECODING
-===================================== */
-
-function getWalletTopic(){
- return "0x"+
-  walletAddress.toLowerCase().replace("0x","").padStart(64,"0");
-}
-
-function decodeLogs(logs){
- const output=[];
-
- for(const log of logs){
-  try{
-   const parsed=iface.parseLog({
-    topics:log.topics,
-    data:log.data
-   });
-
-   if(!parsed) continue;
-
-   const isBuy=parsed.name==="Buy";
-
-   output.push({
-    type:parsed.name,
-    amount:ethers.formatUnits(parsed.args.amount,sigmaDecimals),
-    rateRaw:parsed.args.rate.toString(),
-    value:ethers.formatUnits(
-     isBuy?parsed.args.usdtSpent:parsed.args.usdtReceived,
-     usdtDecimals
-    ),
-    blockNumber:Number(log.blockNumber),
-    transactionHash:log.transactionHash,
-    logIndex:Number(log.index??log.logIndex??0),
-    timestamp:null
-   });
-
-  }catch(error){
-   console.warn("Event decode failed:",error);
-  }
- }
-
- return output;
-}
-
-/* =====================================
-   FAST BLOCK RANGE SCAN
-===================================== */
-
-async function fetchRange(from,to,retry=0){
- try{
-  const p=getProvider();
-
-  const logs=await p.getLogs({
-   address:CONTRACT,
-   fromBlock:from,
-   toBlock:to,
-   topics:[
-    [BUY_TOPIC,SELL_TOPIC],
-    getWalletTopic()
-   ]
+  const chainId = await window.ethereum.request({
+   method:"eth_chainId"
   });
 
-  return decodeLogs(logs);
-
- }catch(error){
-  console.warn("Range failed:",from,to,error);
-
-  const size=to-from+1;
-
-  if(size<=MIN_CHUNK || retry>=6){
-   throw error;
-  }
-
-  const mid=Math.floor((from+to)/2);
-
-  const left=await fetchRange(from,mid,retry+1);
-  const right=await fetchRange(mid+1,to,retry+1);
-
-  return [...left,...right];
- }
-}
-
-function dedupe(items){
- const map=new Map();
-
- for(const tx of items){
-  map.set(
-   tx.transactionHash+"_"+tx.logIndex,
-   tx
-  );
- }
-
- return [...map.values()].sort((a,b)=>
-  b.blockNumber-a.blockNumber || b.logIndex-a.logIndex
- );
-}
-
-async function startScan(){
- if(!walletAddress || scanning) return;
-
- scanning=true;
- document.getElementById("scanBtn").disabled=true;
-
- try{
-  const p=getProvider();
-  const latest=await p.getBlockNumber();
-
-  const fromStart=Math.max(
-   START_BLOCK,
-   cacheLastBlock+1
-  );
-
-  if(fromStart>latest){
-   setStatus("scanStatus",
-    "Already up to date. "+transactions.length+" transactions saved."
-   );
-   return;
-  }
-
-  const total=latest-fromStart+1;
-  let cursor=fromStart;
-  let completed=0;
-
-  setStatus("scanStatus",
-   cacheLastBlock>=START_BLOCK
-    ?"Scanning only new blocks..."
-    :"First scan: reading contract history..."
-  );
-
-  while(cursor<=latest){
-   const ranges=[];
-
-   for(let i=0;i<PARALLEL_REQUESTS && cursor<=latest;i++){
-    const end=Math.min(cursor+INITIAL_CHUNK-1,latest);
-    ranges.push({from:cursor,to:end});
-    cursor=end+1;
-   }
-
-   const results=await Promise.all(
-    ranges.map(r=>fetchRange(r.from,r.to))
-   );
-
-   for(let i=0;i<results.length;i++){
-    transactions.push(...results[i]);
-    completed+=ranges[i].to-ranges[i].from+1;
-   }
-
-   transactions=dedupe(transactions);
-
-   const lastBlock=ranges[ranges.length-1].to;
-   saveCache(lastBlock);
-
-   const percent=Math.min(100,completed/total*100);
-
-   document.getElementById("progressBar").style.width=
-    percent+"%";
-
-   setStatus("scanStatus",
-    "Scanning "+percent.toFixed(1)+"% | "+
-    completed.toLocaleString()+" / "+
-    total.toLocaleString()+" blocks | "+
-    transactions.length+" transactions"
-   );
-
-   renderHistory();
-   updateStats();
-  }
-
-  setStatus("scanStatus","Loading transaction dates...");
-  await loadTimestamps();
-
-  saveCache(latest);
-  renderHistory();
-  updateStats();
-
-  setStatus("scanStatus",
-   "Completed! "+transactions.length+
-   " transactions found. Next scan will only load new blocks."
-  );
-
- }catch(error){
-  console.error(error);
-
-  setStatus("scanStatus",
-   "Scan failed: "+error.message
-  );
-
-  alert(
-   "Scan failed:\n"+error.message+
-   "\n\nIf dRPC does not provide archive logs, an Archive RPC endpoint is required."
-  );
-
- }finally{
-  scanning=false;
-  document.getElementById("scanBtn").disabled=false;
- }
-}
-
-/* =====================================
-   BLOCK TIMESTAMPS
-===================================== */
-
-async function loadTimestamps(){
- const missing=[...new Set(
-  transactions
-   .filter(tx=>!tx.timestamp)
-   .map(tx=>tx.blockNumber)
- )];
-
- if(!missing.length) return;
-
- let index=0;
-
- const workers=Array.from(
-  {length:TIMESTAMP_WORKERS},
-  async()=>{
-   while(index<missing.length){
-    const blockNumber=missing[index++];
-
-    try{
-     const block=await getProvider().getBlock(blockNumber);
-
-     if(block){
-      const timestamp=Number(block.timestamp);
-
-      transactions.forEach(tx=>{
-       if(tx.blockNumber===blockNumber){
-        tx.timestamp=timestamp;
-       }
-      });
-     }
-    }catch(error){
-     console.warn("Timestamp error:",blockNumber,error);
+  if(chainId !== POLYGON_CHAIN_ID){
+   try{
+    await window.ethereum.request({
+     method:"wallet_switchEthereumChain",
+     params:[{chainId:POLYGON_CHAIN_ID}]
+    });
+   }catch(switchError){
+    if(switchError.code === 4902){
+     await window.ethereum.request({
+      method:"wallet_addEthereumChain",
+      params:[{
+       chainId:POLYGON_CHAIN_ID,
+       chainName:"Polygon Mainnet",
+       nativeCurrency:{
+        name:"POL",
+        symbol:"POL",
+        decimals:18
+       },
+       rpcUrls:["https://polygon-rpc.com"],
+       blockExplorerUrls:["https://polygonscan.com"]
+      }]
+     });
+    }else{
+     throw switchError;
     }
    }
   }
- );
 
- await Promise.all(workers);
- saveCache(cacheLastBlock);
+  await setupWallet(accounts[0]);
+
+ }catch(error){
+  setStatus("Connection failed: "+error.message);
+ }
 }
 
-/* =====================================
-   DISPLAY HISTORY
-===================================== */
+async function setupWallet(address){
+ try{
+  const network = await window.ethereum.request({
+   method:"eth_chainId"
+  });
 
-function renderHistory(){
- const body=document.getElementById("historyBody");
+  if(network !== POLYGON_CHAIN_ID){
+   setStatus("Please switch your wallet to Polygon Mainnet.");
+   $("scanBtn").disabled = true;
+   return;
+  }
 
- if(!transactions.length){
-  body.innerHTML=
-   '<tr><td colspan="7" style="text-align:center">No transactions found.</td></tr>';
-  document.getElementById("csvBtn").disabled=true;
+  // SAME PROVIDER APPROACH AS TEAM PAGE
+  const browserProvider = new ethers.BrowserProvider(window.ethereum);
+  provider = browserProvider;
+  signer = await browserProvider.getSigner();
+
+  walletAddress = ethers.getAddress(address);
+
+  contract = new ethers.Contract(CONTRACT,ABI,provider);
+
+  setStatus(
+   "Connected: "+shortAddress(walletAddress)+
+   " | Polygon Mainnet"
+  );
+
+  $("connectBtn").textContent = "Wallet Connected";
+  $("scanBtn").disabled = false;
+
+ }catch(error){
+  setStatus("Wallet setup failed: "+error.message);
+ }
+}
+
+/* ================= DECIMALS ================= */
+
+async function readDecimals(){
+ const validDecimals = value =>
+  Number.isInteger(Number(value)) &&
+  Number(value)>=0 &&
+  Number(value)<=80;
+
+ try{
+  const value = await contract.SIGMA_DECIMALS();
+  const parsed = Number(value);
+  if(validDecimals(parsed)){
+   sigmaDecimals = parsed;
+  }else{
+   throw new Error("Invalid SIGMA_DECIMALS");
+  }
+ }catch(error){
+  try{
+   const value = await contract.decimals();
+   const parsed = Number(value);
+   if(validDecimals(parsed)){
+    sigmaDecimals = parsed;
+   }else{
+    sigmaDecimals = 18;
+   }
+  }catch(e){
+   sigmaDecimals = 18;
+  }
+ }
+
+ try{
+  const value = await contract.USDT_DECIMALS();
+  const parsed = Number(value);
+  if(validDecimals(parsed)){
+   usdtDecimals = parsed;
+  }else{
+   throw new Error("Invalid USDT_DECIMALS");
+  }
+ }catch(error){
+  try{
+   const tokenAddress = await contract.usdt();
+   const usdtContract = new ethers.Contract(
+    tokenAddress,ERC20_ABI,provider
+   );
+   const value = await usdtContract.decimals();
+   const parsed = Number(value);
+
+   if(validDecimals(parsed)){
+    usdtDecimals = parsed;
+   }else{
+    usdtDecimals = 6;
+   }
+  }catch(e){
+   usdtDecimals = 6;
+  }
+ }
+}
+
+/* ================= TOPIC ADDRESS ================= */
+
+function addressTopic(address){
+ return ethers.zeroPadValue(
+  ethers.getAddress(address),32
+ );
+}
+
+/* ================= SCAN HISTORY ================= */
+
+async function startScan(){
+ if(isScanning) return;
+
+ if(!provider || !walletAddress){
+  alert("Please connect your wallet first.");
   return;
  }
 
- body.innerHTML=transactions.map(tx=>{
-  const date=tx.timestamp
-   ?new Date(tx.timestamp*1000).toLocaleString("en-IN")
-   :"Time unavailable";
+ isScanning = true;
+ $("scanBtn").disabled = true;
+ $("csvBtn").disabled = true;
 
-  const rate=ethers.formatUnits(tx.rateRaw,usdtDecimals);
+ historyData = [];
+ renderHistory();
 
-  return `<tr>
-   <td class="${tx.type==="Buy"?"buy":"sell"}">${tx.type}</td>
-   <td>${date}</td>
-   <td>${Number(tx.amount).toLocaleString("en-IN",{maximumFractionDigits:6})}</td>
-   <td>${Number(rate).toLocaleString("en-IN",{maximumFractionDigits:8})}</td>
-   <td>${Number(tx.value).toLocaleString("en-IN",{maximumFractionDigits:6})}</td>
-   <td><a target="_blank" href="https://polygonscan.com/tx/${tx.transactionHash}">View TX ↗</a></td>
-   <td><a target="_blank" href="https://polygonscan.com/block/${tx.blockNumber}">${tx.blockNumber}</a></td>
-  </tr>`;
+ try{
+  setProgress("Reading contract settings...",0);
+  await readDecimals();
+
+  const latestBlock = await provider.getBlockNumber();
+
+  if(latestBlock < CONTRACT_START_BLOCK){
+   throw new Error("Latest block is before contract start block.");
+  }
+
+  const totalBlocks =
+   latestBlock-CONTRACT_START_BLOCK+1;
+
+  const chunks = [];
+
+  for(
+   let from=CONTRACT_START_BLOCK;
+   from<=latestBlock;
+   from+=EVENT_SCAN_CHUNK
+  ){
+   chunks.push({
+    from,
+    to:Math.min(from+EVENT_SCAN_CHUNK-1,latestBlock)
+   });
+  }
+
+  let nextChunk = 0;
+  let scannedBlocks = 0;
+  let completedChunks = 0;
+  let scanError = null;
+
+  const walletTopic = addressTopic(walletAddress);
+  const allLogs = [];
+
+  const startedAt = Date.now();
+
+  function updateScanProgress(){
+   const percent = scannedBlocks/totalBlocks*100;
+   const elapsed = (Date.now()-startedAt)/1000;
+
+   const speed = elapsed>0 ? scannedBlocks/elapsed : 0;
+   const remaining = speed>0
+    ? (totalBlocks-scannedBlocks)/speed
+    : 0;
+
+   setProgress(
+    "Scanned "+scannedBlocks.toLocaleString()+
+    " / "+totalBlocks.toLocaleString()+
+    " blocks ("+percent.toFixed(2)+"%)",
+    percent
+   );
+
+   $("scanDetails").textContent =
+    "Completed chunks: "+completedChunks+
+    " / "+chunks.length+
+    " | Speed: "+Math.round(speed).toLocaleString()+
+    " blocks/sec"+
+    " | Estimated time left: "+Math.ceil(remaining)+" sec";
+  }
+
+  // EXACT TEAM PAGE STYLE: 4 WORKERS + 10,000 BLOCK CHUNKS
+  const worker = async()=>{
+   while(!scanError){
+    const index = nextChunk++;
+
+    if(index>=chunks.length) return;
+
+    const {from,to} = chunks[index];
+
+    try{
+     // Direct wallet-provider eth_getLogs.
+     // Only this Sigma contract + connected wallet Buy/Sell events.
+     const logs = await provider.send("eth_getLogs",[{
+      address:CONTRACT,
+      fromBlock:ethers.toQuantity(from),
+      toBlock:ethers.toQuantity(to),
+      topics:[
+       [BUY_TOPIC,SELL_TOPIC],
+       walletTopic
+      ]
+     }]);
+
+     for(const log of logs){
+      allLogs.push(log);
+     }
+
+     scannedBlocks += (to-from+1);
+     completedChunks++;
+     updateScanProgress();
+
+    }catch(error){
+     scanError = new Error(
+      "Sigma BUY/SELL scan failed at blocks "+
+      from+"-"+to+": "+error.message+
+      ". If your wallet RPC rejects this range, reduce EVENT_SCAN_CHUNK to 2000 or 1000."
+     );
+     return;
+    }
+   }
+  };
+
+  await Promise.all(
+   Array.from(
+    {length:Math.min(EVENT_SCAN_WORKERS,chunks.length)},
+    ()=>worker()
+   )
+  );
+
+  if(scanError) throw scanError;
+
+  setProgress("Processing transactions...",98);
+
+  const uniqueLogs = new Map();
+
+  for(const log of allLogs){
+   uniqueLogs.set(
+    log.transactionHash+":"+log.index,
+    log
+   );
+  }
+
+  const parsedEvents = [];
+
+  for(const log of uniqueLogs.values()){
+   try{
+    const parsed = iface.parseLog({
+     topics:log.topics,
+     data:log.data
+    });
+
+    if(!parsed) continue;
+
+    const eventName = parsed.name;
+
+    if(eventName!=="Buy" && eventName!=="Sell") continue;
+
+    const eventUser = ethers.getAddress(parsed.args.user);
+
+    if(eventUser.toLowerCase()!==walletAddress.toLowerCase()) continue;
+
+    const isBuy = eventName==="Buy";
+
+    const sigmaAmount = ethers.formatUnits(
+     parsed.args.amount,sigmaDecimals
+    );
+
+    const rate = ethers.formatUnits(
+     parsed.args.rate,usdtDecimals
+    );
+
+    const usdtValue = ethers.formatUnits(
+     isBuy ? parsed.args.usdtSpent : parsed.args.usdtReceived,
+     usdtDecimals
+    );
+
+    parsedEvents.push({
+     type:eventName,
+     amount:sigmaAmount,
+     rate,
+     usdt:usdtValue,
+     blockNumber:Number(log.blockNumber),
+     transactionHash:log.transactionHash,
+     logIndex:Number(log.index)
+    });
+
+   }catch(error){
+    console.warn("Event parse error:",error);
+   }
+  }
+
+  parsedEvents.sort((a,b)=>{
+   return b.blockNumber-a.blockNumber ||
+          b.logIndex-a.logIndex;
+  });
+
+  historyData = parsedEvents;
+
+  renderHistory();
+  updateTotals();
+
+  setProgress(
+   "Scan completed successfully. "+
+   historyData.length+" transactions found.",
+   100
+  );
+
+  $("scanDetails").textContent =
+   "Contract: "+CONTRACT+
+   " | Wallet: "+walletAddress;
+
+  $("csvBtn").disabled = historyData.length===0;
+
+ }catch(error){
+  console.error(error);
+  setProgress("Scan failed.",0);
+  $("scanDetails").textContent = error.message;
+  alert(error.message);
+
+ }finally{
+  isScanning = false;
+  $("scanBtn").disabled = !walletAddress;
+ }
+}
+
+/* ================= RENDER HISTORY ================= */
+
+function formatNumber(value){
+ const number = Number(value);
+ if(!Number.isFinite(number)) return value;
+ return number.toLocaleString("en-US",{
+  maximumFractionDigits:6
+ });
+}
+
+function renderHistory(){
+ const body = $("historyBody");
+
+ if(!historyData.length){
+  body.innerHTML =
+   '<tr><td colspan="7" class="empty">No transactions found</td></tr>';
+  return;
+ }
+
+ body.innerHTML = historyData.map((item,index)=>{
+  const isBuy = item.type==="Buy";
+
+  return `
+   <tr>
+    <td>${index+1}</td>
+    <td class="${isBuy?"buy":"sell"}">${item.type}</td>
+    <td>${formatNumber(item.amount)}</td>
+    <td>${formatNumber(item.rate)}</td>
+    <td>${formatNumber(item.usdt)} USDT</td>
+    <td>${item.blockNumber.toLocaleString()}</td>
+    <td>
+     <a href="https://polygonscan.com/tx/${item.transactionHash}"
+        target="_blank" rel="noopener">
+       View TX ↗
+     </a>
+    </td>
+   </tr>
+  `;
  }).join("");
-
- document.getElementById("csvBtn").disabled=false;
 }
 
-function updateStats(){
- const buys=transactions.filter(tx=>tx.type==="Buy");
- const sells=transactions.filter(tx=>tx.type==="Sell");
+/* ================= TOTALS ================= */
 
- const buyTotal=buys.reduce((s,x)=>s+Number(x.amount),0);
- const sellTotal=sells.reduce((s,x)=>s+Number(x.amount),0);
+function updateTotals(){
+ let buy=0;
+ let sell=0;
 
- document.getElementById("buyCount").innerText=buys.length;
- document.getElementById("sellCount").innerText=sells.length;
+ for(const item of historyData){
+  const amount=Number(item.amount);
 
- document.getElementById("totalBuy").innerText=
-  buyTotal.toLocaleString("en-IN",{maximumFractionDigits:4});
+  if(item.type==="Buy") buy+=amount;
+  if(item.type==="Sell") sell+=amount;
+ }
 
- document.getElementById("totalSell").innerText=
-  sellTotal.toLocaleString("en-IN",{maximumFractionDigits:4});
+ $("totalBuy").textContent=formatNumber(buy);
+ $("totalSell").textContent=formatNumber(sell);
+ $("netSigma").textContent=formatNumber(buy-sell);
+ $("totalTx").textContent=historyData.length.toLocaleString();
 }
 
-/* =====================================
-   CSV EXPORT
-===================================== */
+/* ================= CSV DOWNLOAD ================= */
 
 function downloadCSV(){
- if(!transactions.length) return;
+ if(!historyData.length) return;
 
- const rows=[[
-  "Type","Date","Sigma Amount","Rate USDT",
-  "USDT Value","Transaction Hash","Block"
- ]];
+ const rows=[
+  ["Type","SIGMA Amount","Rate USDT","USDT Value","Block","Transaction Hash"]
+ ];
 
- transactions.forEach(tx=>{
+ historyData.forEach(item=>{
   rows.push([
-   tx.type,
-   tx.timestamp?new Date(tx.timestamp*1000).toISOString():"",
-   tx.amount,
-   ethers.formatUnits(tx.rateRaw,usdtDecimals),
-   tx.value,
-   tx.transactionHash,
-   tx.blockNumber
+   item.type,
+   item.amount,
+   item.rate,
+   item.usdt,
+   item.blockNumber,
+   item.transactionHash
   ]);
  });
 
  const csv=rows.map(row=>
-  row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")
+  row.map(value=>
+   '"'+String(value).replace(/"/g,'""')+'"'
+  ).join(",")
  ).join("\n");
 
  const blob=new Blob([csv],{
-  type:"text/csv;charset=utf-8"
+  type:"text/csv;charset=utf-8;"
  });
 
  const url=URL.createObjectURL(blob);
  const a=document.createElement("a");
 
  a.href=url;
- a.download="sigma-six-buy-sell-history.csv";
+ a.download="Sigma_Buy_Sell_History.csv";
  a.click();
 
  URL.revokeObjectURL(url);
 }
 
-/* =====================================
-   DASHBOARD
-===================================== */
+/* ================= START ================= */
 
-function goDashboard(){
- window.location.href="index.html";
-}
-
-/* =====================================
-   INITIALIZE
-===================================== */
-
-window.addEventListener("load",checkWallet);
+initializeWallet();
 
 </script>
 </body>
