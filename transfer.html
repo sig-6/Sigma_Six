@@ -1,183 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SIGMA SIX | My Transfers</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--primary:#00ffcc;--secondary:#9d4edd;--bg:#080b12;--card:#111722;--text:#f4f7fb;--muted:#8d9aaa;--border:#263244;--green:#00e59b;--red:#ff5d73;--usdt:#26a17b}
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,Arial,sans-serif;background:radial-gradient(circle at 15% 15%,#07332f55,transparent 32%),radial-gradient(circle at 85% 80%,#39205b55,transparent 35%),var(--bg);color:var(--text);min-height:100vh}
-.topline{height:3px;background:linear-gradient(90deg,var(--primary),var(--secondary),#ff4d8d,var(--primary));background-size:300% 100%;animation:move 8s linear infinite}@keyframes move{to{background-position:300% 0}}
-.container{max-width:1400px;margin:auto;padding:20px}.nav{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 24px}.btn{border:1px solid #2b4050;background:#111c28;color:#dce8ef;padding:11px 16px;border-radius:11px;text-decoration:none;cursor:pointer;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:8px}.btn:hover{border-color:var(--primary);color:var(--primary)}.btn.primary{background:linear-gradient(100deg,var(--primary),#8b72ff);color:#071014;border:0}.connect{margin-left:auto}
-.header{text-align:center;margin:12px 0 28px}.header h1{font-size:clamp(30px,5vw,46px);font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,var(--primary),#b58aff);color:transparent;background-clip:text}.header p{color:var(--muted);margin-top:8px;font-size:14px}
-.panel{background:linear-gradient(145deg,#141d2aee,#0d1420ee);border:1px solid #263648;border-radius:18px;padding:20px;margin-bottom:20px;box-shadow:0 14px 40px #0005}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}.stat{background:#111b28;border:1px solid #243647;border-radius:15px;padding:18px;min-width:0}.stat .label{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px}.stat .value{font-size:clamp(19px,2.5vw,28px);font-weight:900;color:var(--primary);margin:10px 0 4px;overflow-wrap:anywhere}.stat small{color:var(--muted);font-size:12px}
-.panel-title{font-weight:800;color:var(--primary);font-size:17px;margin-bottom:5px}.sub{color:var(--muted);font-size:12px;margin-bottom:16px}.filters{display:flex;flex-wrap:wrap;gap:10px}.field{background:#0a111b;border:1px solid #2a394b;border-radius:10px;padding:9px 11px;display:flex;align-items:center;gap:8px;min-height:42px}.field label{color:var(--muted);font-size:12px}.field select,.field input{background:transparent;border:0;outline:0;color:var(--text);font:inherit;font-size:13px;min-width:100px}.field input[type=date]{color-scheme:dark}.field input::placeholder{color:#718094}.field select option{background:#101a27;color:white}
-.progress-wrap{display:none;margin:14px 0 4px}.progress-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;margin-bottom:7px}.progress-track{height:8px;background:#263244;border-radius:99px;overflow:hidden}.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:99px;transition:width .25s}.table-wrap{overflow:auto;border:1px solid #263648;border-radius:13px}table{width:100%;border-collapse:collapse;min-width:980px}thead{background:#142333}th{padding:14px 11px;text-align:left;color:var(--primary);font-size:11px;letter-spacing:.6px;white-space:nowrap}td{padding:12px 11px;border-top:1px solid #243244;font-size:12px;white-space:nowrap}tbody tr:hover{background:#ffffff08}.badge{display:inline-flex;padding:5px 9px;border-radius:30px;font-size:10px;font-weight:800}.sigma{color:var(--primary);background:#00ffcc18;border:1px solid #00ffcc44}.usdt{color:#52d6a6;background:#26a17b20;border:1px solid #26a17b55}.sent{color:var(--red);background:#ff5d7318}.received{color:var(--green);background:#00e59b18}.address,.hash{font-family:monospace;color:#9cefe0;background:#00ffcc0d;border:1px solid #00ffcc22;padding:5px 7px;border-radius:6px;cursor:pointer}.muted{color:var(--muted)}.state{text-align:center;padding:42px 15px;color:var(--muted);white-space:normal}.state i{display:block;font-size:28px;margin-bottom:12px;color:var(--primary)}.footnote{color:#8493a5;font-size:11px;line-height:1.6;margin-top:12px}
-@media(max-width:850px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.connect{margin-left:0}.container{padding:12px}}@media(max-width:520px){.stats{grid-template-columns:1fr 1fr;gap:8px}.stat{padding:13px}.stat .value{font-size:18px}.panel{padding:14px}.field{width:100%}.field select,.field input{flex:1;min-width:0}.btn{flex:1;justify-content:center}}
+:root{--bg:#080b12;--card:#111827;--line:#263244;--cyan:#00e5c3;--purple:#9b6cff;--green:#22d69b;--red:#ff667a;--muted:#8b9ab0}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#102b35 0,transparent 35%),radial-gradient(circle at 90% 15%,#24163d 0,transparent 32%),var(--bg);color:#eef5ff;font-family:Inter,Arial,sans-serif}.wrap{max-width:1350px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:24px}.btn{border:1px solid #315064;background:#142536;color:#dff;border-radius:11px;padding:11px 16px;font-weight:700;cursor:pointer;text-decoration:none}.btn.primary{background:linear-gradient(100deg,var(--cyan),var(--purple));color:#071018;border:0}.btn:disabled{opacity:.5;cursor:wait}h1{font-size:clamp(28px,5vw,44px);margin:8px 0;background:linear-gradient(90deg,var(--cyan),#fff,var(--purple));color:transparent;background-clip:text}.sub{color:var(--muted);margin:0 0 22px}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:18px 0}.card,.panel{background:linear-gradient(145deg,rgba(21,32,49,.96),rgba(12,18,30,.96));border:1px solid var(--line);border-radius:17px;padding:18px;box-shadow:0 12px 32px #0004}.k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1px}.v{font-size:25px;font-weight:800;margin-top:9px;overflow-wrap:anywhere}.small{font-size:12px;color:var(--muted);margin-top:5px}.panel{margin:16px 0}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.filters{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:10px;margin-top:14px}input,select{width:100%;background:#0a1320;border:1px solid #304258;color:#eaf5ff;border-radius:9px;padding:11px;min-width:0}.progress{height:9px;background:#263244;border-radius:20px;overflow:hidden;margin:12px 0}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:width .2s}.status{font-size:13px;color:#a8bad0;min-height:20px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:950px}th,td{padding:13px 11px;border-bottom:1px solid #263244;text-align:left;font-size:12px;white-space:nowrap}th{color:var(--cyan);background:#142133;position:sticky;top:0}td{color:#d9e5f5}.pill{padding:5px 9px;border-radius:20px;font-weight:800;font-size:10px}.sent{color:var(--red);background:#ff667a1c}.received{color:var(--green);background:#22d69b1c}.sigma{color:var(--cyan);background:#00e5c31c}.usdt{color:#5de0a9;background:#26a17b25}.addr{font-family:monospace;color:#9de9df;cursor:pointer}.hash{font-family:monospace;color:#bda4ff;text-decoration:none}.empty{text-align:center;padding:32px;color:var(--muted)}.warn{color:#ffc56b}.good{color:var(--green)}@media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.wrap{padding:12px}.cards{grid-template-columns:1fr 1fr}.v{font-size:19px}.filters{grid-template-columns:1fr}.btn{padding:10px 12px}}
 </style>
 </head>
-<body>
-<div class="topline"></div>
-<div class="container">
-  <div class="nav">
-    <a class="btn" href="index.html"><i class="fa fa-arrow-left"></i> Back to Dashboard</a>
-    <button class="btn" onclick="loadData()"><i class="fa fa-rotate"></i> Refresh</button>
-    <button class="btn" onclick="exportData()"><i class="fa fa-download"></i> Export CSV</button>
-    <button class="btn" onclick="clearFilters()"><i class="fa fa-filter-circle-xmark"></i> Clear Filters</button>
-    <button class="btn primary connect" id="connectBtn" onclick="connectWallet()"><i class="fa fa-wallet"></i><span id="btnText">Connect Wallet</span></button>
-  </div>
-  <header class="header"><h1>MY TRANSFERS</h1><p>SIGMA &amp; USDT · Wallet Send / Receive History on Polygon</p></header>
-  <section class="stats">
-    <div class="stat"><div class="label">Total Sent · Selected Token</div><div class="value" id="totalSent">0</div><small id="sentValue">Approx. $0.00 USDT</small></div>
-    <div class="stat"><div class="label">Total Received · Selected Token</div><div class="value" id="totalReceived">0</div><small id="receivedValue">Approx. $0.00 USDT</small></div>
-    <div class="stat"><div class="label">My Transactions</div><div class="value" id="totalTx">0</div><small id="counterparties">0 counterparties</small></div>
-    <div class="stat"><div class="label">Net Flow · USDT Estimate</div><div class="value" id="netFlow">$0.00</div><small id="netStatus">Balanced</small></div>
-  </section>
-  <section class="panel">
-    <div class="panel-title"><i class="fa fa-sliders"></i> FILTER TRANSACTIONS</div>
-    <div class="sub">Filter by token, direction, date range or wallet address</div>
-    <div class="filters">
-      <div class="field"><label>Token</label><select id="tokenFilter" onchange="applyFilters()"><option value="SIGMA">SIGMA</option><option value="USDT">USDT</option></select></div>
-      <div class="field"><label>Direction</label><select id="directionFilter" onchange="applyFilters()"><option value="all">All</option><option value="sent">Sent</option><option value="received">Received</option></select></div>
-      <div class="field"><label>From</label><input type="date" id="startDate" onchange="applyFilters()"></div>
-      <div class="field"><label>To</label><input type="date" id="endDate" onchange="applyFilters()"></div>
-      <div class="field"><label><i class="fa fa-search"></i></label><input type="text" id="searchWallet" placeholder="Search wallet address" oninput="applyFilters()"></div>
-    </div>
-  </section>
-  <section class="panel">
-    <div class="panel-title"><i class="fa fa-clock-rotate-left"></i> TRANSFER HISTORY</div>
-    <div class="sub" id="scanSummary">Connect your wallet to scan its indexed SIGMA and USDT transfers.</div>
-    <div class="progress-wrap" id="progressWrap"><div class="progress-meta"><span id="progressText">Preparing scan…</span><b id="progressPct">0%</b></div><div class="progress-track"><div class="progress-bar" id="progressBar"></div></div></div>
-    <div class="table-wrap"><table><thead><tr><th>#</th><th>Date &amp; Time</th><th>Direction</th><th>Token</th><th>Sender</th><th>Receiver</th><th>Amount</th><th>Value (USDT)</th><th>Transaction</th></tr></thead><tbody id="transferBody"><tr><td colspan="9" class="state"><i class="fa fa-wallet"></i>Connect your Polygon wallet to view transfers.</td></tr></tbody></table></div>
-    <p class="footnote">Fast scan method: the page requests only SIGMA and USDT Transfer logs where your wallet is the sender or receiver. It does not scan every transfer on Polygon. SIGMA value is an estimate using the current contract buy rate, not the historical transaction price. The scan covers the latest 500,000 Polygon blocks.</p>
-  </section>
-</div>
+<body><main class="wrap">
+<div class="top"><a class="btn" href="index.html">← Back to Dashboard</a><div class="row"><button class="btn primary" id="connectBtn">Connect Wallet</button><button class="btn" id="refreshBtn" disabled>↻ Refresh Scan</button><button class="btn" id="csvBtn" disabled>↓ Export CSV</button></div></div>
+<h1>MY TRANSFERS</h1><p class="sub">Wallet-specific SIGMA & USDT Send / Receive History on Polygon</p>
+<div class="cards"><div class="card"><div class="k">Total Sent</div><div class="v" id="sent">0</div><div class="small" id="sentVal">—</div></div><div class="card"><div class="k">Total Received</div><div class="v" id="received">0</div><div class="small" id="receivedVal">—</div></div><div class="card"><div class="k">My Transactions</div><div class="v" id="count">0</div><div class="small" id="range">Not scanned</div></div><div class="card"><div class="k">Net Flow</div><div class="v" id="net">0</div><div class="small" id="netVal">Selected token</div></div></div>
+<section class="panel"><div class="row"><strong>Blockchain Scanner</strong><span class="small" id="walletLabel">Wallet not connected</span></div><div class="progress"><div class="bar" id="bar"></div></div><div class="status" id="status">Connect your wallet to scan its SIGMA and USDT transfers.</div></section>
+<section class="panel"><strong>FILTER TRANSFERS</strong><div class="filters"><select id="token"><option value="SIGMA">SIGMA</option><option value="USDT">USDT</option><option value="ALL">All Tokens</option></select><select id="direction"><option value="all">All Directions</option><option value="sent">Sent</option><option value="received">Received</option></select><input id="fromDate" type="date" aria-label="From date"><input id="toDate" type="date" aria-label="To date"><input id="search" placeholder="Search counterparty wallet"></div><div class="row" style="margin-top:12px"><button class="btn" id="applyBtn">Apply Filters</button><button class="btn" id="clearBtn">Clear Filters</button></div></section>
+<section class="panel"><div class="row" style="justify-content:space-between;margin-bottom:12px"><strong>TRANSFER HISTORY</strong><span class="small" id="shown">0 records</span></div><div class="tablewrap"><table><thead><tr><th>#</th><th>Date & Time</th><th>Direction</th><th>Token</th><th>From</th><th>To</th><th>Amount</th><th>Transaction</th></tr></thead><tbody id="tbody"><tr><td colspan="8" class="empty">Connect wallet to view history</td></tr></tbody></table></div></section>
+</main>
 <script>
 'use strict';
-const SIGMA_ADDRESS = '0xaF215838d156F7d348A6d56cA962cbC680A2153F';
-const USDT_ADDRESS = '0xc2132D05D31c914a87C6611C10748AEb04B58e8F';
-const POLYGON_CHAIN_ID = '0x89';
-const SCAN_BLOCKS = 500000;
-const TRANSFER_TOPIC = ethers.id('Transfer(address,address,uint256)');
-const ZERO = '0x0000000000000000000000000000000000000000';
-const iface = new ethers.Interface(['event Transfer(address indexed from,address indexed to,uint256 value)']);
-const sigmaABI = ['function getCurrentBuyRate() view returns (uint256)','function decimals() view returns (uint8)'];
-const erc20ABI = ['function decimals() view returns (uint8)'];
-let provider=null,userAddress=null,allTransfers=[],filteredTransfers=[],currentBuyRate=null,sigmaDecimals=18,usdtDecimals=6,loading=false;
-
-function setState(message,icon='fa-circle-info'){document.getElementById('transferBody').innerHTML=`<tr><td colspan="9" class="state"><i class="fa ${icon}"></i>${escapeHtml(message)}</td></tr>`;}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function progress(pct,msg){const wrap=document.getElementById('progressWrap');wrap.style.display='block';document.getElementById('progressBar').style.width=Math.max(0,Math.min(100,pct))+'%';document.getElementById('progressPct').textContent=Math.round(pct)+'%';document.getElementById('progressText').textContent=msg;}
-function finishProgress(msg){progress(100,msg);setTimeout(()=>{document.getElementById('progressWrap').style.display='none';},1800);}
-function short(a){return a.slice(0,8)+'…'+a.slice(-6);}
-function fmt(n,d=4){return Number(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:d});}
-function fmtUsd(n){return Number.isFinite(n)?'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';}
-function topicAddress(a){return ethers.zeroPadValue(a,32);}
-
-async function ensurePolygon(){const chain=await provider.send('eth_chainId',[]);if(chain.toLowerCase()===POLYGON_CHAIN_ID)return;try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:POLYGON_CHAIN_ID}]});}catch(e){if(e.code===4902){await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:POLYGON_CHAIN_ID,chainName:'Polygon Mainnet',nativeCurrency:{name:'POL',symbol:'POL',decimals:18},rpcUrls:['https://polygon-rpc.com'],blockExplorerUrls:['https://polygonscan.com/']}]});}else throw e;}}
-function setWalletButton(){const el=document.getElementById('btnText');el.textContent=userAddress?short(userAddress):'Connect Wallet';document.getElementById('connectBtn').classList.toggle('primary',true);}
-async function connectWallet(){if(!window.ethereum){alert('MetaMask or a compatible wallet is required.');return;}try{provider=new ethers.BrowserProvider(window.ethereum);await provider.send('eth_requestAccounts',[]);await ensurePolygon();const signer=await provider.getSigner();userAddress=(await signer.getAddress()).toLowerCase();setWalletButton();await loadData();if(!window.__sigmaTransferListeners){window.ethereum.on('accountsChanged',onAccountsChanged);window.ethereum.on('chainChanged',()=>location.reload());window.__sigmaTransferListeners=true;}}catch(e){console.error(e);alert('Wallet connection failed: '+(e.shortMessage||e.message));}}
-async function onAccountsChanged(accounts){if(!accounts.length){userAddress=null;allTransfers=[];filteredTransfers=[];setWalletButton();setState('Wallet disconnected. Connect again to view transfers.','fa-wallet');updateStats([]);return;}userAddress=accounts[0].toLowerCase();setWalletButton();await loadData();}
-
-// Multi-RPC scanner: injected wallet RPC first, then public Polygon RPC fallbacks.
-const RPC_URLS = [
- 'https://polygon-bor-rpc.publicnode.com',
- 'https://polygon.drpc.org',
- 'https://polygon-rpc.com'
-];
-let activeRPC=0;const rpcQueue=[];let rpcRequestId=1;
-async function rpcSlot(fn){if(activeRPC>=4)await new Promise(resolve=>rpcQueue.push(resolve));activeRPC++;try{return await fn();}finally{activeRPC--;const next=rpcQueue.shift();if(next)next();}}
-async function directRpc(url,method,params){
- const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),18000);
- try{const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:rpcRequestId++,method,params}),signal:controller.signal});if(!res.ok)throw new Error(`${url} HTTP ${res.status}`);const data=await res.json();if(data.error)throw new Error(data.error.message||JSON.stringify(data.error));return data.result;}
- finally{clearTimeout(timer);}
-}
-async function rpcAny(method,params){
- const errors=[];
- for(const url of RPC_URLS){try{return await rpcSlot(()=>directRpc(url,method,params));}catch(e){errors.push(e.message||String(e));}}
- try{return await rpcSlot(()=>provider.send(method,params));}catch(e){errors.push(e.shortMessage||e.message||String(e));}
- throw new Error(`All Polygon RPC endpoints failed: ${errors.slice(0,3).join(' | ')}`);
-}
-async function getLogsAdaptive(address,topicWallet,isOutgoing,fromBlock,toBlock,depth=0){
- const topics=isOutgoing?[TRANSFER_TOPIC,topicWallet]:[TRANSFER_TOPIC,null,topicWallet];
- try{return {logs:await rpcAny('eth_getLogs',[{address,fromBlock:ethers.toQuantity(fromBlock),toBlock:ethers.toQuantity(toBlock),topics}]),failures:[]};}
- catch(err){
-  if(fromBlock>=toBlock||depth>=18)return {logs:[],failures:[{from:fromBlock,to:toBlock,message:err.message||String(err)}]};
-  const mid=Math.floor((fromBlock+toBlock)/2);
-  const halves=await Promise.all([getLogsAdaptive(address,topicWallet,isOutgoing,fromBlock,mid,depth+1),getLogsAdaptive(address,topicWallet,isOutgoing,mid+1,toBlock,depth+1)]);
-  return {logs:halves.flatMap(x=>x.logs),failures:halves.flatMap(x=>x.failures)};
- }
-}
-async function mapLimit(items,limit,fn){const out=new Array(items.length);let next=0;const workers=Array.from({length:Math.min(limit,items.length)},async()=>{while(true){const i=next++;if(i>=items.length)return;out[i]=await fn(items[i],i);}});await Promise.all(workers);return out;}
-async function scanSide(address,topicWallet,isOutgoing,fromBlock,toBlock,onProgress,label){
- const chunkSize=5000,chunks=[];for(let a=fromBlock;a<=toBlock;a+=chunkSize)chunks.push([a,Math.min(toBlock,a+chunkSize-1)]);
- const output=[],failures=[];let completed=0;
- await mapLimit(chunks,3,async(range)=>{try{const result=await getLogsAdaptive(address,topicWallet,isOutgoing,range[0],range[1]);output.push(...result.logs);failures.push(...result.failures);}catch(e){failures.push({from:range[0],to:range[1],message:e.message||String(e)});}finally{completed++;onProgress?.(completed,chunks.length,label);}});
- return {logs:output,failures};
-}
-async function readBlockTimestamp(blockNumber){
- try{const hex=ethers.toQuantity(blockNumber);const block=await rpcAny('eth_getBlockByNumber',[hex,false]);return block?.timestamp?Number(BigInt(block.timestamp)):0;}
- catch(e){console.warn('Timestamp unavailable for block',blockNumber,e);return 0;}
-}
-async function readDecimals(address,abi,fallback){try{const c=new ethers.Contract(address,abi,provider);return Number(await c.decimals());}catch(_){return fallback;}}
-async function loadData(){
- if(loading)return;if(!userAddress){setState('Connect your wallet first.','fa-wallet');return;}loading=true;
- allTransfers=[];filteredTransfers=[];document.getElementById('scanSummary').textContent='Scanning wallet-matched SIGMA and USDT logs using multiple Polygon RPCs…';setState('Starting optimized wallet scan…','fa-spinner fa-spin');progress(2,'Checking Polygon network…');
- try{
-  const chain=await provider.send('eth_chainId',[]);if(chain.toLowerCase()!==POLYGON_CHAIN_ID)throw new Error('Please switch your wallet to Polygon Mainnet.');
-  const currentBlock=Number(BigInt(await rpcAny('eth_blockNumber',[])));const fromBlock=Math.max(0,currentBlock-SCAN_BLOCKS),walletTopic=topicAddress(userAddress);
-  progress(7,'Reading token settings…');
-  [sigmaDecimals,usdtDecimals]=await Promise.all([readDecimals(SIGMA_ADDRESS,sigmaABI,18),readDecimals(USDT_ADDRESS,erc20ABI,6)]);
-  try{const sc=new ethers.Contract(SIGMA_ADDRESS,sigmaABI,provider);const rate=await sc.getCurrentBuyRate();currentBuyRate=Number(ethers.formatUnits(rate,6));if(!Number.isFinite(currentBuyRate)||currentBuyRate<=0)currentBuyRate=null;}catch(_){currentBuyRate=null;}
-  const jobs=[
-   [SIGMA_ADDRESS,true,'SIGMA sent'],[SIGMA_ADDRESS,false,'SIGMA received'],
-   [USDT_ADDRESS,true,'USDT sent'],[USDT_ADDRESS,false,'USDT received']
-  ];
-  const sideResults=[];let finishedSides=0;
-  progress(12,'Scanning SIGMA and USDT wallet logs…');
-  await mapLimit(jobs,4,async(job)=>{
-   const result=await scanSide(job[0],walletTopic,job[1],fromBlock,currentBlock,(done,total,label)=>{
-    const pct=12+38*((finishedSides+(done/Math.max(total,1)))/jobs.length);progress(pct,`${label}: ${done}/${total} block ranges`);
-   },job[2]);
-   sideResults.push({job,result});finishedSides++;
-  });
-  progress(53,'Decoding available transfer records…');
-  const seen=new Set(),parsed=[],failures=[];
-  for(const item of sideResults){failures.push(...item.result.failures);const token=item.job[0].toLowerCase()===SIGMA_ADDRESS.toLowerCase()?'SIGMA':'USDT';const decimals=token==='SIGMA'?sigmaDecimals:usdtDecimals;
-   for(const log of item.result.logs){
-    const logIndex=Number(log.index??log.logIndex??0);const key=log.address.toLowerCase()+':'+log.transactionHash.toLowerCase()+':'+logIndex;if(seen.has(key))continue;seen.add(key);
-    try{const decoded=iface.parseLog({topics:log.topics,data:log.data});if(!decoded)continue;const from=decoded.args.from.toLowerCase(),to=decoded.args.to.toLowerCase();if(from!==userAddress&&to!==userAddress)continue;
-     const amount=Number(ethers.formatUnits(decoded.args.value,decimals));const value=token==='USDT'?amount:(currentBuyRate===null?null:amount*currentBuyRate);
-     parsed.push({hash:log.transactionHash,logIndex,blockNumber:Number(BigInt(log.blockNumber)),token,from,to,amount,value,timestamp:0,date:null});
-    }catch(decodeError){console.warn('Skipped undecodable transfer log',decodeError);}
-   }
-  }
-  progress(58,`Found ${parsed.length.toLocaleString()} transfers. Loading timestamps…`);
-  const blockNumbers=[...new Set(parsed.map(x=>x.blockNumber))];let done=0;
-  const blocks=await mapLimit(blockNumbers,6,async n=>{const ts=await readBlockTimestamp(n);done++;if(done%10===0||done===blockNumbers.length)progress(58+37*done/Math.max(blockNumbers.length,1),`Loading timestamps ${done}/${blockNumbers.length}…`);return [n,ts];});
-  const timeMap=new Map(blocks);for(const tx of parsed){tx.timestamp=timeMap.get(tx.blockNumber)||0;tx.date=new Date(tx.timestamp?tx.timestamp*1000:0);}
-  allTransfers=parsed.filter(x=>x.timestamp>0).sort((a,b)=>b.timestamp-a.timestamp||b.logIndex-a.logIndex);applyFilters();
-  const failedCount=failures.length;const summary=`${allTransfers.length.toLocaleString()} transfers found · blocks ${fromBlock.toLocaleString()}–${currentBlock.toLocaleString()}`;
-  if(failedCount){document.getElementById('scanSummary').textContent=`PARTIAL SCAN · ${summary} · ${failedCount} block ranges could not be read. Refresh to retry.`;finishProgress('Partial results loaded');setStateIfEmpty('Some RPC ranges failed. Displaying all successfully retrieved transfers.','fa-triangle-exclamation');}
-  else{document.getElementById('scanSummary').textContent=`Scan complete · ${summary}.`;finishProgress('Scan complete');if(!allTransfers.length)setState('No SIGMA or USDT Transfer events found for this wallet in the scanned block range.','fa-magnifying-glass');}
- }catch(e){console.error('Transfer scan failed:',e);document.getElementById('scanSummary').textContent='Scan could not complete. Please check wallet network or RPC connection.';setState('Scan error: '+(e.shortMessage||e.message||'Unknown RPC error'),'fa-triangle-exclamation');document.getElementById('progressText').textContent='Scan failed';}
- finally{loading=false;}
-}
-function setStateIfEmpty(message,icon){if(!filteredTransfers.length)setState(message,icon);}
-function applyFilters(){const token=document.getElementById('tokenFilter').value,dir=document.getElementById('directionFilter').value,start=document.getElementById('startDate').value,end=document.getElementById('endDate').value,search=document.getElementById('searchWallet').value.trim().toLowerCase();let startTs=null,endTs=null;if(start)startTs=new Date(start+'T00:00:00').getTime()/1000;if(end)endTs=new Date(end+'T00:00:00').getTime()/1000+86400;
- filteredTransfers=allTransfers.filter(tx=>{if(tx.token!==token)return false;if(dir==='sent'&&tx.from!==userAddress)return false;if(dir==='received'&&tx.to!==userAddress)return false;if(startTs!==null&&tx.timestamp<startTs)return false;if(endTs!==null&&tx.timestamp>=endTs)return false;if(search&&!tx.from.includes(search)&&!tx.to.includes(search))return false;return true;});displayTransfers();updateStats(filteredTransfers,token);}
-function clearFilters(){document.getElementById('tokenFilter').value='SIGMA';document.getElementById('directionFilter').value='all';document.getElementById('startDate').value='';document.getElementById('endDate').value='';document.getElementById('searchWallet').value='';applyFilters();}
-function updateStats(rows,token){let sent=0,received=0,sentUsd=0,receivedUsd=0;const counterparties=new Set();for(const tx of rows){if(tx.from===userAddress){sent+=tx.amount;if(tx.value!==null)sentUsd+=tx.value;counterparties.add(tx.to);}else if(tx.to===userAddress){received+=tx.amount;if(tx.value!==null)receivedUsd+=tx.value;counterparties.add(tx.from);}}
- const hasUnknown=token==='SIGMA'&&currentBuyRate===null;document.getElementById('totalSent').textContent=fmt(sent)+' '+token;document.getElementById('totalReceived').textContent=fmt(received)+' '+token;document.getElementById('sentValue').textContent=hasUnknown?'USDT estimate unavailable':'Approx. '+fmtUsd(sentUsd)+' USDT';document.getElementById('receivedValue').textContent=hasUnknown?'USDT estimate unavailable':'Approx. '+fmtUsd(receivedUsd)+' USDT';document.getElementById('totalTx').textContent=rows.length.toLocaleString();document.getElementById('counterparties').textContent=counterparties.size+' counterparties';const net=receivedUsd-sentUsd;document.getElementById('netFlow').textContent=hasUnknown?'—':fmtUsd(Math.abs(net));document.getElementById('netFlow').style.color=net>=0?'var(--green)':'var(--red)';document.getElementById('netStatus').textContent=hasUnknown?'Rate unavailable':net>0?'Net received':net<0?'Net sent':'Balanced';}
-function displayTransfers(){const body=document.getElementById('transferBody');if(!filteredTransfers.length){setState('No matching transfers found for the selected filters.','fa-inbox');return;}const rows=filteredTransfers.map((tx,i)=>{const sent=tx.from===userAddress,dir=sent?'SENT':'RECEIVED',d=tx.date;const value=tx.value===null?'—':fmtUsd(tx.value);return `<tr><td>${i+1}</td><td><b>${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</b><div class="muted">${d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div></td><td><span class="badge ${sent?'sent':'received'}">${dir}</span></td><td><span class="badge ${tx.token==='SIGMA'?'sigma':'usdt'}">${tx.token}</span></td><td><span class="address" onclick="copyText('${tx.from}')">${short(tx.from)}</span></td><td><span class="address" onclick="copyText('${tx.to}')">${short(tx.to)}</span></td><td style="font-weight:800;color:${sent?'var(--red)':'var(--green)'}">${sent?'−':'+'}${fmt(tx.amount)} ${tx.token}</td><td>${value}</td><td><a class="hash" href="https://polygonscan.com/tx/${tx.hash}" target="_blank" rel="noopener">${short(tx.hash)} ↗</a> <button class="address" onclick="copyText('${tx.hash}')" title="Copy hash">⧉</button></td></tr>`;}).join('');body.innerHTML=rows;}
-async function copyText(text){try{await navigator.clipboard.writeText(text);const old=document.title;document.title='Copied!';setTimeout(()=>document.title=old,900);}catch(_){prompt('Copy:',text);}}
-function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"';}
-function exportData(){if(!userAddress){alert('Connect wallet first.');return;}const head=['Date','Time','Direction','Token','Sender','Receiver','Amount','Value USDT (estimated)','Tx Hash','Log Index'];const lines=[head.map(csvCell).join(',')];filteredTransfers.forEach(tx=>lines.push([tx.date.toLocaleDateString(),tx.date.toLocaleTimeString(),tx.from===userAddress?'SENT':'RECEIVED',tx.token,tx.from,tx.to,tx.amount,tx.value===null?'':tx.value,tx.hash,tx.logIndex].map(csvCell).join(',')));const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='sigma_usdt_transfers.csv';a.click();URL.revokeObjectURL(url);}
-async function autoConnect(){if(!window.ethereum)return;try{provider=new ethers.BrowserProvider(window.ethereum);const accounts=await provider.send('eth_accounts',[]);if(accounts.length){userAddress=accounts[0].toLowerCase();setWalletButton();const chain=await provider.send('eth_chainId',[]);if(chain.toLowerCase()===POLYGON_CHAIN_ID)await loadData();else{document.getElementById('scanSummary').textContent='Wallet connected. Switch to Polygon Mainnet and refresh to scan.';setState('Please switch your wallet to Polygon Mainnet.','fa-circle-exclamation');}}window.ethereum.on('accountsChanged',onAccountsChanged);window.ethereum.on('chainChanged',()=>location.reload());}catch(e){console.warn('Auto-connect skipped:',e);}}
-window.addEventListener('DOMContentLoaded',()=>{const end=new Date(),start=new Date();start.setDate(start.getDate()-30);document.getElementById('startDate').valueAsDate=start;document.getElementById('endDate').valueAsDate=end;autoConnect();});
-</script>
-</body>
-</html>
+const SIGMA='0xaf215838d156f7d348a6d56ca962cbc680a2153f';
+const USDT='0xc2132d05d31c914a87c6611c10748aeb04b58e8f';
+const TRANSFER_TOPIC=ethers.id('Transfer(address,address,uint256)');
+const START_BLOCK=85000998; // Sigma contract deployment-era scan start; wallet-indexed queries keep results narrow
+const CHUNK=4000;
+let provider=null, wallet=null, records=[], visible=[];
+const $=id=>document.getElementById(id);
+const padAddress=a=>'0x'+a.toLowerCase().replace(/^0x/,'').padStart(64,'0');
+const short=a=>a.slice(0,8)+'…'+a.slice(-6);
+function setStatus(s,p){$('status').textContent=s;if(Number.isFinite(p))$('bar').style.width=Math.max(0,Math.min(100,p))+'%';}
+function rowMessage(msg){$('tbody').innerHTML=`<tr><td colspan="8" class="empty">${msg}</td></tr>`;}
+async function connect(){if(!window.ethereum){alert('MetaMask or a compatible wallet is required.');return;}try{provider=new ethers.BrowserProvider(window.ethereum);const accounts=await provider.send('eth_requestAccounts',[]);wallet=accounts[0].toLowerCase();const net=await provider.getNetwork();if(Number(net.chainId)!==137){try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x89'}]});}catch(e){throw new Error('Please switch your wallet to Polygon Mainnet (Chain ID 137).');}provider=new ethers.BrowserProvider(window.ethereum);} $('connectBtn').textContent=short(wallet);$('walletLabel').textContent='Connected: '+wallet;$('refreshBtn').disabled=false;await scan();window.ethereum.removeListener?.('accountsChanged',accountChanged);window.ethereum.on?.('accountsChanged',accountChanged);}catch(e){console.error(e);setStatus('Connection failed: '+e.message);}}
+function accountChanged(a){if(a&&a[0]){wallet=a[0].toLowerCase();$('connectBtn').textContent=short(wallet);$('walletLabel').textContent='Connected: '+wallet;scan();}else{wallet=null;records=[];visible=[];rowMessage('Wallet disconnected');}}
+async function getLogsRange(address,topic1,topic2,from,to,depth=0){const filter={address,fromBlock:ethers.toQuantity(from),toBlock:ethers.toQuantity(to),topics:[TRANSFER_TOPIC,topic1,topic2]};try{return await provider.send('eth_getLogs',[filter]);}catch(e){if(from===to||depth>14)throw e;const mid=Math.floor((from+to)/2);const [a,b]=await Promise.all([getLogsRange(address,topic1,topic2,from,mid,depth+1),getLogsRange(address,topic1,topic2,mid+1,to,depth+1)]);return a.concat(b);}}
+async function scanToken(address,symbol,decimals,fromBlock,toBlock,progressOffset){const walletTopic=padAddress(wallet);let logs=[],chunks=Math.ceil((toBlock-fromBlock+1)/CHUNK),done=0;for(let start=fromBlock;start<=toBlock;start+=CHUNK){const end=Math.min(start+CHUNK-1,toBlock);const [sent,received]=await Promise.all([getLogsRange(address,walletTopic,null,start,end),getLogsRange(address,null,walletTopic,start,end)]);logs.push(...sent,...received);done++;setStatus(`Scanning ${symbol}: ${done}/${chunks} block ranges · ${logs.length} matching logs found`,progressOffset+(done/chunks)*42);}
+const seen=new Set();const out=[];for(const l of logs){const key=`${l.transactionHash}:${l.index??l.logIndex}`;if(seen.has(key))continue;seen.add(key);const from='0x'+l.topics[1].slice(26).toLowerCase(),to='0x'+l.topics[2].slice(26).toLowerCase();if(from===to)continue;let amount;try{amount=Number(ethers.formatUnits(BigInt(l.data),decimals));}catch{continue;}out.push({hash:l.transactionHash,logIndex:Number(l.index??l.logIndex??0),blockNumber:Number(BigInt(l.blockNumber)),from,to,amount,token:symbol,timestamp:0});}return out;}
+async function scan(){if(!wallet||!provider)return; $('refreshBtn').disabled=true;$('csvBtn').disabled=true;records=[];rowMessage('Scanning your wallet…');setStatus('Checking Polygon block height…',1);try{const latest=await provider.getBlockNumber();const from=Math.max(START_BLOCK,latest-500000);$('range').textContent=`Blocks ${from.toLocaleString()}–${latest.toLocaleString()}`;const [sigma,usdt]=await Promise.all([scanToken(SIGMA,'SIGMA',18,from,latest,2),scanToken(USDT,'USDT',6,from,latest,50)]);records=sigma.concat(usdt);setStatus(`Found ${records.length} matching token transfer events. Loading timestamps…`,94);const blocks=[...new Set(records.map(x=>x.blockNumber))];let cursor=0;const workers=Array.from({length:Math.min(8,blocks.length)},async()=>{while(cursor<blocks.length){const b=blocks[cursor++];try{const block=await provider.getBlock(b);if(block)records.filter(x=>x.blockNumber===b).forEach(x=>x.timestamp=Number(block.timestamp));}catch(err){console.warn('Timestamp lookup failed',b,err);}}});await Promise.all(workers);records=records.filter(x=>x.timestamp>0).sort((a,b)=>b.timestamp-a.timestamp||b.logIndex-a.logIndex);setStatus(`Scan complete · ${records.length} transfers found · blocks ${from.toLocaleString()}–${latest.toLocaleString()}`,100);$('csvBtn').disabled=records.length===0;applyFilters();}catch(e){console.error('Scan failed',e);setStatus('Scan failed: '+(e.shortMessage||e.message||'RPC error')+'. No incomplete results are being presented.');rowMessage('Scan failed. Check the scanner message above and retry.');}finally{$('refreshBtn').disabled=false;}}
+function applyFilters(){const token=$('token').value,dir=$('direction').value,search=$('search').value.trim().toLowerCase(),from=$('fromDate').value?new Date($('fromDate').value+'T00:00:00').getTime()/1000:0,to=$('toDate').value?new Date($('toDate').value+'T23:59:59').getTime()/1000:Infinity;visible=records.filter(x=>(token==='ALL'||x.token===token)&&(dir==='all'||(dir==='sent'?x.from===wallet:x.to===wallet))&&x.timestamp>=from&&x.timestamp<=to&&(!search||x.from.includes(search)||x.to.includes(search)));render();stats();}
+function fmt(n){return Number(n).toLocaleString('en-US',{maximumFractionDigits:6});}
+function render(){ $('shown').textContent=visible.length+' records';if(!visible.length){rowMessage(records.length?'No matching transfers for these filters.':'No SIGMA or USDT transfers found for this wallet in the scanned range.');return;}$('tbody').innerHTML=visible.map((x,i)=>{const sent=x.from===wallet;const date=new Date(x.timestamp*1000).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});return `<tr><td>${i+1}</td><td>${date}</td><td><span class="pill ${sent?'sent':'received'}">${sent?'SENT':'RECEIVED'}</span></td><td><span class="pill ${x.token==='SIGMA'?'sigma':'usdt'}">${x.token}</span></td><td class="addr" title="${x.from}" onclick="copyText('${x.from}')">${short(x.from)}</td><td class="addr" title="${x.to}" onclick="copyText('${x.to}')">${short(x.to)}</td><td>${sent?'-':'+'}${fmt(x.amount)} ${x.token}</td><td><a class="hash" target="_blank" rel="noopener" href="https://polygonscan.com/tx/${x.hash}">${short(x.hash)}</a></td></tr>`;}).join('');}
+function stats(){const token=$('token').value;const rows=visible;const sum=(arr)=>arr.reduce((s,x)=>s+x.amount,0);const sent=rows.filter(x=>x.from===wallet),received=rows.filter(x=>x.to===wallet);const s=sum(sent),r=sum(received);$('sent').textContent=fmt(s);$('received').textContent=fmt(r);$('count').textContent=rows.length;$('sentVal').textContent=token==='ALL'?'Selected records (mixed tokens)':token;$('receivedVal').textContent=token==='ALL'?'Selected records (mixed tokens)':token;$('net').textContent=fmt(r-s);$('netVal').textContent=token==='ALL'?'Mixed token units':token+' net flow';}
+function copyText(s){navigator.clipboard?.writeText(s).then(()=>setStatus('Copied: '+s)).catch(()=>{});}function csv(){if(!records.length)return;const cols=['date','token','direction','from','to','amount','txHash','block'];const lines=[cols.join(','),...visible.map(x=>[new Date(x.timestamp*1000).toISOString(),x.token,x.from===wallet?'SENT':'RECEIVED',x.from,x.to,x.amount,x.hash,x.blockNumber].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','))];const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sigma-usdt-transfers.csv';a.click();URL.revokeObjectURL(a.href);}
+$('connectBtn').addEventListener('click',connect);$('refreshBtn').addEventListener('click',scan);$('csvBtn').addEventListener('click',csv);$('applyBtn').addEventListener('click',applyFilters);$('clearBtn').addEventListener('click',()=>{$('token').value='SIGMA';$('direction').value='all';$('fromDate').value='';$('toDate').value='';$('search').value='';applyFilters();});$('token').addEventListener('change',applyFilters);$('direction').addEventListener('change',applyFilters);
+</script></body></html>
