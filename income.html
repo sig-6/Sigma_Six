@@ -1,304 +1,75 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SIGMA SIX | Income Report</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sigma Six Income Report</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-:root{--primary:#00ffcc;--secondary:#9d4edd;--bg:#0a0b10;--card:#161821;--text:#fff;--border:#2d2f3e;--success:#00ff88;--warning:#ffaa00;--danger:#ff4d4d;--gold:#ffd700;--gradient:linear-gradient(90deg,#00ffcc,#9d4edd,#ff2a6d,#00ffcc)}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:Inter,sans-serif;min-height:100vh;overflow-x:hidden}
-.rainbow-border{height:4px;background:var(--gradient);background-size:400% 400%;animation:rainbow 8s ease infinite}
-@keyframes rainbow{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
-.container{max-width:1400px;margin:auto;padding:16px}
-.header-actions{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:12px 0 20px}
-a,.back-btn{color:var(--primary);text-decoration:none}
-.back-btn,.refresh-btn,.connect-btn,.apply-btn,.reset-btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer}
-.back-btn{background:#00ffcc18;border:1px solid #00ffcc55}
-.refresh-btn,.apply-btn{background:linear-gradient(90deg,var(--secondary),#7b2cbf);color:#fff}
-.reset-btn{background:#ff4d4d18;color:var(--danger);border:1px solid var(--danger)}
-.connect-row{text-align:right}
-.connect-btn{background:linear-gradient(90deg,var(--primary),var(--secondary));color:#000}
-.connect-btn.connected{background:#00ffcc18;color:var(--primary);border:1px solid var(--primary)}
-.chain-warning{display:none;color:var(--warning);padding:12px;border:1px solid var(--warning);border-radius:10px;margin:10px 0}
-.chain-warning.show{display:block}
-.header{text-align:center;margin:22px 0 28px}
-.header h1{font-size:clamp(26px,5vw,42px);font-weight:800;letter-spacing:1px;background:var(--gradient);background-size:400% 400%;animation:rainbow 8s ease infinite;background-clip:text;color:transparent}
-.header p{color:#aaa;margin-top:8px}
-.filters-section,.main-card{background:#161821dd;border:1px solid #9d4edd33;border-radius:18px;padding:18px;margin-bottom:18px}
-.filters-title,.card-title{color:var(--primary);font-size:19px;margin-bottom:16px}
-.filter-row{display:flex;flex-wrap:wrap;gap:12px}
-.filter-group{flex:1;min-width:180px}
-.filter-label{display:block;color:#aaa;font-size:12px;margin-bottom:6px}
-.date-input,.type-select,.search-input{width:100%;padding:11px;background:#090a0f;border:1px solid #9d4edd66;border-radius:9px;color:#fff}
-.filter-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-.status{color:#aaa;font-size:12px;margin-top:12px;overflow-wrap:anywhere}
-.stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.stat-box{background:#ffffff08;border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
-.stat-label{color:#999;font-size:12px;margin-bottom:8px}
-.stat-value{font-size:clamp(17px,3vw,25px);font-weight:800;color:var(--primary);overflow-wrap:anywhere}
-.gold{color:var(--gold)}.positive{color:var(--success)}.negative{color:var(--danger)}
-.table-container{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:#0003}
-.desktop-table{width:100%;border-collapse:collapse;min-width:680px}
-th{background:#9d4edd20;color:var(--secondary);padding:12px 10px;text-align:left;font-size:11px;text-transform:uppercase;white-space:nowrap}
-td{padding:12px 10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
-tr:hover td{background:#ffffff08}
-.amount-positive{color:var(--success);font-weight:700}.amount-negative{color:var(--danger);font-weight:700}.amount-gold{color:var(--gold);font-weight:700}
-.wallet-address{font-family:monospace;font-size:12px;color:var(--primary);background:#00ffcc15;border:1px solid #00ffcc33;padding:6px 8px;border-radius:7px;cursor:pointer}
-.level-badge,.percent-badge,.reason-badge,.ico-badge{display:inline-block;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:700}
-.level-badge{color:var(--secondary);background:#9d4edd22}.percent-badge{color:var(--primary);background:#00ffcc18}.reason-badge{color:var(--danger);background:#ff4d4d18;max-width:220px;overflow-wrap:anywhere}.ico-badge{color:var(--gold);background:#ffd70020}
-.loading,.no-data{text-align:center;padding:25px 12px;color:#999}.loading{color:var(--primary)}
-.mobile-cards{display:none}.mobile-card{padding:14px;border:1px solid #00ffcc22;border-radius:12px;margin-bottom:10px;background:#ffffff06}
-.mobile-card-header{display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;color:var(--primary);font-weight:700}
-.mobile-card-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #ffffff12;font-size:12px}
-.mobile-card-label{color:#999}.mobile-card-value{text-align:right;overflow-wrap:anywhere}
-@media(max-width:768px){.container{padding:10px}.stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}.desktop-table{display:none}.mobile-cards{display:block}.filter-row{display:block}.filter-group{margin-bottom:10px}.header-actions{align-items:stretch}.back-btn,.refresh-btn{justify-content:center}.header{margin:20px 0}.card-title{font-size:17px}}
-@media(max-width:420px){.stats-row{grid-template-columns:1fr}.header-actions{flex-direction:column}.connect-row{text-align:center}.connect-btn{width:100%}}
-</style>
-</head>
-<body>
-<div class="rainbow-border"></div>
-<div class="container">
-  <div class="connect-row"><button class="connect-btn" id="connectBtn" onclick="handleConnectClick()"><i class="fas fa-wallet"></i> <span id="btn-text">Connect Wallet</span></button></div>
-  <div id="chainWarning" class="chain-warning"><i class="fas fa-exclamation-triangle"></i> Please switch to Polygon Mainnet (Chain ID 137).</div>
-  <div class="header-actions"><a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a><button class="refresh-btn" onclick="loadIncomeData()"><i class="fas fa-sync-alt"></i> Refresh</button></div>
-  <header class="header"><h1>SIGMA SIX | INCOME REPORT</h1><p>ICO Bonus (10%) • Team Referral • Lapsed Income</p></header>
-  <section class="filters-section">
-    <h2 class="filters-title"><i class="fas fa-filter"></i> Filter Income Data</h2>
-    <div class="filter-row">
-      <div class="filter-group"><label class="filter-label" for="startDate">Start Date</label><input type="date" id="startDate" class="date-input"></div>
-      <div class="filter-group"><label class="filter-label" for="endDate">End Date</label><input type="date" id="endDate" class="date-input"></div>
-      <div class="filter-group"><label class="filter-label" for="incomeType">Income Type</label><select id="incomeType" class="type-select"><option value="all">All Types</option><option value="ICO">ICO Bonus (10%)</option><option value="REFERRAL">Team Referral</option><option value="lapsed">Lapsed Income</option></select></div>
-      <div class="filter-group"><label class="filter-label" for="searchWallet">Search Wallet</label><input type="text" id="searchWallet" class="search-input" placeholder="Enter wallet address..."></div>
-    </div>
-    <div class="filter-buttons"><button class="apply-btn" onclick="applyFilters()"><i class="fas fa-check"></i> Apply Filters</button><button class="reset-btn" onclick="resetFilters()"><i class="fas fa-times"></i> Reset Filters</button></div>
-    <div id="loadStatus" class="status" aria-live="polite">Connect your wallet to view on-chain income history.</div>
-  </section>
-  <section class="main-card"><h2 class="card-title"><i class="fas fa-chart-line"></i> Income Overview</h2><div class="stats-row">
-    <div class="stat-box"><div class="stat-label">★ ICO Bonus (10%)</div><div id="total-ico" class="stat-value gold">0.000000 SIG6</div></div>
-    <div class="stat-box"><div class="stat-label">♟ Referral Income</div><div id="total-referral" class="stat-value positive">0.000000 SIG6</div></div>
-    <div class="stat-box"><div class="stat-label">⚠ Lapsed Income</div><div id="total-lapsed" class="stat-value negative">0.000000 SIG6</div></div>
-    <div class="stat-box"><div class="stat-label">Total Transactions</div><div id="total-transactions" class="stat-value">0</div></div>
-  </div></section>
-  <section class="main-card"><h2 class="card-title"><i class="fas fa-star"></i> ICO Bonus (10% on First Purchase)</h2><div class="table-container"><table class="desktop-table"><thead><tr><th>#</th><th>Date &amp; Time</th><th>Bonus Amount (SIG6)</th></tr></thead><tbody id="ico-body-desktop"><tr><td colspan="3" class="no-data">Connect wallet to load data</td></tr></tbody></table><div class="mobile-cards" id="ico-body-mobile"><div class="no-data">Connect wallet to load data</div></div></div></section>
-  <section class="main-card"><h2 class="card-title"><i class="fas fa-users"></i> Team Referral Income</h2><div class="table-container"><table class="desktop-table"><thead><tr><th>#</th><th>From Wallet</th><th>Level</th><th>Percentage</th><th>Amount (SIG6)</th><th>Date &amp; Time</th></tr></thead><tbody id="referral-body-desktop"><tr><td colspan="6" class="no-data">Connect wallet to load data</td></tr></tbody></table><div class="mobile-cards" id="referral-body-mobile"><div class="no-data">Connect wallet to load data</div></div></div></section>
-  <section class="main-card"><h2 class="card-title"><i class="fas fa-exclamation-triangle"></i> Lapsed Income</h2><div class="table-container"><table class="desktop-table"><thead><tr><th>#</th><th>From Wallet</th><th>Amount Lost (SIG6)</th><th>Reason</th><th>Date &amp; Time</th></tr></thead><tbody id="lapsed-body-desktop"><tr><td colspan="5" class="no-data">Connect wallet to load data</td></tr></tbody></table><div class="mobile-cards" id="lapsed-body-mobile"><div class="no-data">Connect wallet to load data</div></div></div></section>
-</div>
+:root{--bg:#090a0f;--panel:#151720;--line:#303342;--cyan:#00f5c8;--purple:#9b45df;--green:#00df8a;--red:#ff4e55;--gold:#ffd43b;--muted:#a7a9b8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Inter,Arial,sans-serif}.topline{height:4px;background:linear-gradient(90deg,var(--cyan),var(--purple),#ff4e91,var(--cyan))}.wrap{max-width:1400px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.btn{padding:11px 16px;border:0;border-radius:10px;font-weight:700;cursor:pointer}.connect{background:linear-gradient(100deg,var(--cyan),var(--purple));color:#080910}.primary{background:linear-gradient(100deg,#a34be3,#7628bd);color:white}.danger{background:#ff4e5515;border:1px solid var(--red);color:var(--red)}.outline{background:#00f5c814;border:1px solid #00f5c855;color:var(--cyan)}.hero{text-align:center;margin:28px 0}.hero h1{font-size:clamp(25px,4vw,40px);margin:0;background:linear-gradient(90deg,var(--cyan),#a64be4,#ff4e91);background-clip:text;color:transparent}.hero p,.muted{color:var(--muted)}.panel{background:var(--panel);border:1px solid #9b45df38;border-radius:18px;padding:20px;margin:18px 0}.panel h2{color:var(--cyan);font-size:20px;margin:0 0 17px}.filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:14px}.field label{display:block;color:var(--muted);font-size:13px;margin-bottom:8px}.field input,.field select{width:100%;background:#090a0f;color:white;border:1px solid #63358c;border-radius:10px;padding:13px;font:inherit}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.status{margin-top:14px;color:var(--muted);font-size:12px;line-height:1.6;overflow-wrap:anywhere}.warning{display:none;color:#ffd36a;border:1px solid #d69b29;border-radius:10px;padding:12px;margin:12px 0}.warning.show{display:block}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.stat{background:#1b1e29;border:1px solid var(--line);border-radius:15px;padding:19px 12px;text-align:center}.stat-label{color:var(--muted);font-size:13px;margin-bottom:12px}.stat-value{font-size:clamp(18px,2.4vw,29px);font-weight:800;overflow-wrap:anywhere}.gold{color:var(--gold)}.green{color:var(--green)}.red{color:var(--red)}.cyan{color:var(--cyan)}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:680px}th{background:#9b45df1b;color:#c58cf0;text-align:left;padding:13px;font-size:11px}td{padding:12px;border-top:1px solid var(--line);font-size:13px}a{color:var(--cyan)}.positive{color:var(--green);font-weight:700}.negative{color:var(--red);font-weight:700}.goldtext{color:var(--gold);font-weight:700}.wallet{background:#00f5c811;color:var(--cyan);border:1px solid #00f5c844;border-radius:7px;padding:6px;font-family:monospace;cursor:pointer}.pill{background:#9b45df22;color:#c58cf0;border-radius:20px;padding:4px 9px;font-size:11px}.empty,.loading{text-align:center;padding:24px;color:var(--muted)}.mobile{display:none}.mcard{background:#1b1e29;border:1px solid #ffffff18;border-radius:12px;padding:14px;margin:10px 0}.mrow{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #ffffff12;font-size:12px}.mrow span:first-child{color:var(--muted)}.mrow span:last-child{text-align:right;overflow-wrap:anywhere}
+@media(max-width:900px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.wrap{padding:11px}.top{flex-direction:column;align-items:stretch}.top button{width:100%}.filters{grid-template-columns:1fr}.panel{padding:15px}.desktop{display:none}.mobile{display:block}}@media(max-width:380px){.stats{grid-template-columns:1fr}}
+</style></head>
+<body><div class="topline"></div><main class="wrap">
+<div class="top"><b class="muted">SIGMA SIX · POLYGON NETWORK</b><button id="connectBtn" class="btn connect" onclick="connectWallet()">Connect Wallet</button></div>
+<div id="warning" class="warning">Please connect to Polygon Mainnet (Chain ID 137). <button class="btn outline" onclick="switchPolygon()">Switch Network</button></div>
+<header class="hero"><h1>SIGMA SIX | INCOME REPORT</h1><p>ICO Bonus (10%) · Team Referral · Lapsed Income</p></header>
+<section class="panel"><h2>⚑ Filter Income Data</h2><div class="filters">
+<div class="field"><label>Start Date</label><input type="date" id="startDate"></div><div class="field"><label>End Date</label><input type="date" id="endDate"></div>
+<div class="field"><label>Income Type</label><select id="incomeType"><option value="all">All Types</option><option value="ico">ICO Bonus (10%)</option><option value="referral">Team Referral</option><option value="lapsed">Lapsed Income</option></select></div>
+<div class="field"><label>Search Wallet</label><input id="searchWallet" placeholder="Enter wallet address..."></div></div>
+<div class="actions"><button class="btn primary" onclick="applyFilters()">✓ Apply Filters</button><button class="btn danger" onclick="resetFilters()">× Reset Filters</button><button class="btn outline" onclick="loadIncomeData()">↻ Refresh</button></div><div id="status" class="status">Connect your wallet to view income history.</div></section>
+<section class="panel"><h2>📈 Income Overview</h2><div class="stats">
+<div class="stat"><div class="stat-label">★ ICO Bonus (10%)</div><div id="totalIco" class="stat-value gold">0.000000 SIG6</div></div>
+<div class="stat"><div class="stat-label">♟ Referral Income</div><div id="totalReferral" class="stat-value green">0.000000 SIG6</div></div>
+<div class="stat"><div class="stat-label">⚠ Lapsed Income</div><div id="totalLapsed" class="stat-value red">0.000000 SIG6</div></div>
+<div class="stat"><div class="stat-label">Total Transactions</div><div id="totalTx" class="stat-value cyan">0</div></div></div></section>
+<section class="panel"><h2>★ ICO Bonus (10%)</h2><div class="table-wrap"><table class="desktop"><thead><tr><th>#</th><th>Date &amp; Time</th><th>Wallet</th><th>Bonus Amount</th><th>Block</th><th>Transaction</th></tr></thead><tbody id="icoTable"><tr><td colspan="6" class="empty">Connect wallet</td></tr></tbody></table></div><div id="icoMobile" class="mobile"></div></section>
+<section class="panel"><h2>♟ Team Referral Income</h2><div class="table-wrap"><table class="desktop"><thead><tr><th>#</th><th>Date &amp; Time</th><th>From Wallet</th><th>Level</th><th>Amount</th><th>Block</th><th>Transaction</th></tr></thead><tbody id="refTable"><tr><td colspan="7" class="empty">Connect wallet</td></tr></tbody></table></div><div id="refMobile" class="mobile"></div></section>
+<section class="panel"><h2>⚠ Lapsed Income</h2><div class="table-wrap"><table class="desktop"><thead><tr><th>#</th><th>Date &amp; Time</th><th>Wallet</th><th>Reason</th><th>Amount Lost</th><th>Block</th><th>Transaction</th></tr></thead><tbody id="lapTable"><tr><td colspan="7" class="empty">Connect wallet</td></tr></tbody></table></div><div id="lapMobile" class="mobile"></div></section>
+</main>
 <script>
 "use strict";
-
-// Contract and deployment configuration
-const SIGMA_CONTRACT_ADDRESS = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
-const POLYGON_CHAIN_ID = 137;
-const CONTRACT_START_BLOCK = 85000998;
-const INITIAL_CHUNK_SIZE = 80000;
-const MIN_CHUNK_SIZE = 1000;
-const levelPercent = [0,10,4,3,2,1,0.5,0.5,0.5,0.5,0.5];
-
-// These event signatures match the event definitions in the existing income.html.
-// If the verified contract ABI differs, these must be updated to the verified ABI.
-const sigmaABI = [
-  "event ICO(address indexed user, uint256 amount)",
-  "event TeamReferral(address indexed from, address indexed to, uint256 amount, uint256 level)",
-  "event IncomeLapsed(address indexed user, string reason, uint256 amount)"
+/* Event signatures and indexed fields below are copied from the ABI supplied by the user. */
+const CONTRACT_ADDRESS="0xaF215838d156F7d348A6d56cA962cbC680A2153F";
+const DEPLOYMENT_BLOCK=85000998, POLYGON_CHAIN_ID=137, CHUNK_START=10000, CHUNK_MIN=500;
+const ABI=[
+ "event ICO(address indexed user,uint256 amount)",
+ "event TeamReferral(address indexed from,address indexed to,uint256 amount,uint256 level)",
+ "event IncomeLapsed(address indexed user,string reason,uint256 amount)",
+ "function decimals() view returns (uint8)",
+ "function SIGMA_DECIMALS() view returns (uint256)"
 ];
-
-let provider, userAddress, sigmaContract;
-let allICOBonusEvents=[], allReferralEvents=[], allLapsedEvents=[];
-let isLoading=false;
+let provider=null,contract=null,wallet=null,decimals=18,busy=false;
+let data={ico:[],referral:[],lapsed:[]};const blockCache=new Map();
 const $=id=>document.getElementById(id);
-const setStatus=message=>{$("loadStatus").textContent=message;};
-function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
-function shortAddress(address){return address&&address.length>12?address.slice(0,6)+"..."+address.slice(-4):(address||"Unknown");}
-function formatAmount(value){return Number(ethers.formatUnits(value,18)).toFixed(6);}
-function dateTime(ev){const d=ev.dateObj||new Date(0);return {date:d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}),time:d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",second:"2-digit"})};}
-
-async function handleConnectClick(){
-  if(!window.ethereum){alert("Please install MetaMask or another Web3 wallet.");return;}
-  await connectWallet();
-}
-async function connectWallet(){
-  try{
-    provider=new ethers.BrowserProvider(window.ethereum);
-    const accounts=await provider.send("eth_requestAccounts",[]);
-    if(!accounts.length)throw new Error("No wallet account returned.");
-    userAddress=accounts[0].toLowerCase();
-    sigmaContract=new ethers.Contract(SIGMA_CONTRACT_ADDRESS,sigmaABI,provider);
-    $("btn-text").textContent="🦊 "+shortAddress(userAddress);
-    $("connectBtn").classList.add("connected");
-    await loadIncomeData();
-    if(!window.__sigmaIncomeListeners){
-      window.ethereum.on("accountsChanged",async accounts=>{
-        if(!accounts.length){location.reload();return;}
-        userAddress=accounts[0].toLowerCase();
-        $("btn-text").textContent="🦊 "+shortAddress(userAddress);
-        await loadIncomeData();
-      });
-      window.ethereum.on("chainChanged",()=>location.reload());
-      window.__sigmaIncomeListeners=true;
-    }
-  }catch(error){console.error(error);alert("Wallet connection failed: "+(error.shortMessage||error.message));}
-}
-async function checkChain(){
-  if(!provider)return false;
-  try{
-    const network=await provider.getNetwork();
-    const ok=Number(network.chainId)===POLYGON_CHAIN_ID;
-    $("chainWarning").classList.toggle("show",!ok);
-    if(!ok)setStatus("Please switch MetaMask to Polygon Mainnet (Chain ID 137).");
-    return ok;
-  }catch(error){$("chainWarning").classList.add("show");setStatus("Unable to check network: "+error.message);return false;}
-}
-
-// Queries logs emitted by this contract address only, starting at its deployment block.
-async function queryRange(filter,fromBlock,toBlock,chunkSize){
-  const output=[];
-  for(let start=fromBlock;start<=toBlock;){
-    const end=Math.min(start+chunkSize-1,toBlock);
-    try{
-      const logs=await sigmaContract.queryFilter(filter,start,end);
-      output.push(...logs);
-      start=end+1;
-      setStatus("Reading contract logs: block "+end.toLocaleString("en-IN")+" / "+toBlock.toLocaleString("en-IN")+" ...");
-    }catch(error){
-      const range=end-start+1;
-      if(range<=MIN_CHUNK_SIZE)throw new Error("RPC could not read blocks "+start+"–"+end+": "+(error.shortMessage||error.reason||error.message));
-      const smaller=Math.max(MIN_CHUNK_SIZE,Math.floor(range/2));
-      console.warn("Reducing RPC block range",start,end,error);
-      output.push(...await queryRange(filter,start,end,smaller));
-      start=end+1;
-    }
-  }
-  return output;
-}
-async function queryAllEvents(currentBlock){
-  const fromBlock=CONTRACT_START_BLOCK;
-  if(currentBlock<fromBlock)throw new Error("Current Polygon block is lower than the configured contract deployment block.");
-  const tasks=[
-    queryRange(sigmaContract.filters.ICO(userAddress),fromBlock,currentBlock,INITIAL_CHUNK_SIZE),
-    queryRange(sigmaContract.filters.TeamReferral(null,userAddress),fromBlock,currentBlock,INITIAL_CHUNK_SIZE),
-    queryRange(sigmaContract.filters.IncomeLapsed(userAddress),fromBlock,currentBlock,INITIAL_CHUNK_SIZE)
-  ];
-  const results=await Promise.allSettled(tasks);
-  return {
-    ico:results[0].status==="fulfilled"?results[0].value:[],
-    referral:results[1].status==="fulfilled"?results[1].value:[],
-    lapsed:results[2].status==="fulfilled"?results[2].value:[],
-    errors:results.map((r,i)=>r.status==="rejected"?["ICO Bonus","Team Referral","Lapsed Income"][i]+": "+r.reason.message:null).filter(Boolean),
-    fromBlock,currentBlock
-  };
-}
-
-// Get each unique block timestamp once; concurrent requests reduce waiting time.
-async function addTimestamps(events){
-  const blockNumbers=[...new Set(events.map(e=>Number(e.blockNumber)))];
-  const timestamps=new Map();let cursor=0;
-  const workers=Array.from({length:8},async()=>{
-    while(cursor<blockNumbers.length){
-      const number=blockNumbers[cursor++];
-      try{const block=await provider.getBlock(number);timestamps.set(number,block?Number(block.timestamp):0);}
-      catch(error){console.warn("Timestamp unavailable",number,error);timestamps.set(number,0);}
-    }
-  });
-  await Promise.all(workers);
-  for(const ev of events){const ts=timestamps.get(Number(ev.blockNumber))||0;ev.timestamp=ts;ev.dateObj=new Date(ts*1000);}
-}
-function showLoading(){
-  $("ico-body-desktop").innerHTML='<tr><td colspan="3" class="loading">Loading ICO history...</td></tr>';
-  $("referral-body-desktop").innerHTML='<tr><td colspan="6" class="loading">Loading referral history...</td></tr>';
-  $("lapsed-body-desktop").innerHTML='<tr><td colspan="5" class="loading">Loading lapsed history...</td></tr>';
-  $("ico-body-mobile").innerHTML='<div class="loading">Loading...</div>';
-  $("referral-body-mobile").innerHTML='<div class="loading">Loading...</div>';
-  $("lapsed-body-mobile").innerHTML='<div class="loading">Loading...</div>';
-}
-async function loadIncomeData(){
-  if(!userAddress){await handleConnectClick();return;}
-  if(isLoading)return;
-  isLoading=true;showLoading();
-  try{
-    if(!(await checkChain()))return;
-    setStatus("Getting latest Polygon block...");
-    const currentBlock=await provider.getBlockNumber();
-    setStatus("Searching only Sigma Six contract logs from deployment block "+CONTRACT_START_BLOCK.toLocaleString("en-IN")+"...");
-    const result=await queryAllEvents(currentBlock);
-    allICOBonusEvents=result.ico;allReferralEvents=result.referral;allLapsedEvents=result.lapsed;
-    const all=[...allICOBonusEvents,...allReferralEvents,...allLapsedEvents];
-    setStatus("Found "+all.length+" events. Loading dates...");
-    await addTimestamps(all);
-    applyFilters();
-    let message="Contract blocks "+result.fromBlock.toLocaleString("en-IN")+"–"+result.currentBlock.toLocaleString("en-IN")+
-      ". ICO: "+allICOBonusEvents.length+", Referral: "+allReferralEvents.length+", Lapsed: "+allLapsedEvents.length+".";
-    if(result.errors.length)message+=" Some sections failed: "+result.errors.join(" | ");
-    setStatus(message);
-    if(result.errors.length)console.error("Income report partial errors:",result.errors);
-  }catch(error){
-    console.error("Income report error:",error);
-    setStatus("Income report could not load: "+(error.shortMessage||error.message));
-    showSectionError("ico",error.message);showSectionError("referral",error.message);showSectionError("lapsed",error.message);
-  }finally{isLoading=false;}
-}
-function showSectionError(type,message){
-  const cfg={ico:["ico-body-desktop","ico-body-mobile",3],referral:["referral-body-desktop","referral-body-mobile",6],lapsed:["lapsed-body-desktop","lapsed-body-mobile",5]}[type];
-  $(cfg[0]).innerHTML='<tr><td colspan="'+cfg[2]+'" class="no-data">Error: '+escapeHTML(message)+'</td></tr>';
-  $(cfg[1]).innerHTML='<div class="no-data">Error: '+escapeHTML(message)+'</div>';
-}
-function displayICOData(events){
-  const desktop=$("ico-body-desktop"),mobile=$("ico-body-mobile");
-  if(!events.length){desktop.innerHTML='<tr><td colspan="3" class="no-data">No ICO bonus events found for this wallet.</td></tr>';mobile.innerHTML='<div class="no-data">No ICO bonus events found for this wallet.</div>';return;}
-  const sorted=[...events].sort((a,b)=>b.timestamp-a.timestamp);let rows="",cards="";
-  sorted.forEach((ev,i)=>{const amount=formatAmount(ev.args.amount),dt=dateTime(ev);
-    rows+=`<tr><td>${i+1}</td><td>${dt.date}<br><small>${dt.time}</small></td><td class="amount-gold">+${amount} SIG6</td></tr>`;
-    cards+=`<div class="mobile-card"><div class="mobile-card-header"><span>ICO Bonus</span><span class="ico-badge">10% Bonus</span></div><div class="mobile-card-row"><span class="mobile-card-label">Date &amp; Time</span><span class="mobile-card-value">${dt.date} ${dt.time}</span></div><div class="mobile-card-row"><span class="mobile-card-label">Bonus Amount</span><span class="mobile-card-value amount-gold">+${amount} SIG6</span></div></div>`;
-  });desktop.innerHTML=rows;mobile.innerHTML=cards;
-}
-function displayReferralData(events){
-  const desktop=$("referral-body-desktop"),mobile=$("referral-body-mobile");
-  if(!events.length){desktop.innerHTML='<tr><td colspan="6" class="no-data">No referral income events found for this wallet.</td></tr>';mobile.innerHTML='<div class="no-data">No referral income events found for this wallet.</div>';return;}
-  const sorted=[...events].sort((a,b)=>b.timestamp-a.timestamp);let rows="",cards="";
-  sorted.forEach((ev,i)=>{const from=String(ev.args.from).toLowerCase(),level=Number(ev.args.level),percent=level>=1&&level<levelPercent.length?levelPercent[level]:0,amount=formatAmount(ev.args.amount),dt=dateTime(ev),short=shortAddress(from);
-    rows+=`<tr><td>${i+1}</td><td><button class="wallet-address" onclick="copyToClipboard('${from}')">${short} <i class="fas fa-copy"></i></button></td><td><span class="level-badge">Level ${level}</span></td><td><span class="percent-badge">${percent}%</span></td><td class="amount-positive">${amount} SIG6</td><td>${dt.date}<br><small>${dt.time}</small></td></tr>`;
-    cards+=`<div class="mobile-card"><div class="mobile-card-header"><span>Level ${level}</span><span class="percent-badge">${percent}%</span></div><div class="mobile-card-row"><span class="mobile-card-label">From Wallet</span><span class="mobile-card-value"><button class="wallet-address" onclick="copyToClipboard('${from}')">${short}</button></span></div><div class="mobile-card-row"><span class="mobile-card-label">Amount</span><span class="mobile-card-value amount-positive">${amount} SIG6</span></div><div class="mobile-card-row"><span class="mobile-card-label">Date &amp; Time</span><span class="mobile-card-value">${dt.date} ${dt.time}</span></div></div>`;
-  });desktop.innerHTML=rows;mobile.innerHTML=cards;
-}
-function displayLapsedData(events){
-  const desktop=$("lapsed-body-desktop"),mobile=$("lapsed-body-mobile");
-  if(!events.length){desktop.innerHTML='<tr><td colspan="5" class="no-data">No lapsed income events found for this wallet.</td></tr>';mobile.innerHTML='<div class="no-data">No lapsed income events found for this wallet.</div>';return;}
-  const sorted=[...events].sort((a,b)=>b.timestamp-a.timestamp);let rows="",cards="";
-  sorted.forEach((ev,i)=>{const from=String(ev.args.user||"Unknown").toLowerCase(),reason=String(ev.args.reason||"Unknown"),amount=formatAmount(ev.args.amount),dt=dateTime(ev),short=shortAddress(from);
-    rows+=`<tr><td>${i+1}</td><td>${from==="unknown"?"Unknown":`<button class="wallet-address" onclick="copyToClipboard('${from}')">${short} <i class="fas fa-copy"></i></button>`}</td><td class="amount-negative">${amount} SIG6</td><td><span class="reason-badge" title="${escapeHTML(reason)}">${escapeHTML(reason)}</span></td><td>${dt.date}<br><small>${dt.time}</small></td></tr>`;
-    cards+=`<div class="mobile-card"><div class="mobile-card-header"><span>Lapsed Income</span></div><div class="mobile-card-row"><span class="mobile-card-label">Wallet</span><span class="mobile-card-value">${escapeHTML(short)}</span></div><div class="mobile-card-row"><span class="mobile-card-label">Amount Lost</span><span class="mobile-card-value amount-negative">${amount} SIG6</span></div><div class="mobile-card-row"><span class="mobile-card-label">Reason</span><span class="mobile-card-value">${escapeHTML(reason)}</span></div><div class="mobile-card-row"><span class="mobile-card-label">Date &amp; Time</span><span class="mobile-card-value">${dt.date} ${dt.time}</span></div></div>`;
-  });desktop.innerHTML=rows;mobile.innerHTML=cards;
-}
-function updateStats(ref,ico,lap){
-  const sum=events=>events.reduce((total,ev)=>total+Number(ethers.formatUnits(ev.args.amount,18)),0);
-  $("total-ico").textContent=sum(ico).toFixed(6)+" SIG6";$("total-referral").textContent=sum(ref).toFixed(6)+" SIG6";$("total-lapsed").textContent=sum(lap).toFixed(6)+" SIG6";$("total-transactions").textContent=ref.length+ico.length+lap.length;
-}
-function getFilteredEvents(){
-  const start=$("startDate").value,end=$("endDate").value,type=$("incomeType").value,search=$("searchWallet").value.toLowerCase().trim();
-  const startTime=start?new Date(start+"T00:00:00").getTime()/1000:null,endTime=end?new Date(end+"T23:59:59").getTime()/1000:null;
-  const inDate=ev=>(!startTime||ev.timestamp>=startTime)&&(!endTime||ev.timestamp<=endTime);
-  let ico=allICOBonusEvents.filter(inDate),ref=allReferralEvents.filter(inDate),lap=allLapsedEvents.filter(inDate);
-  if(search){ico=ico.filter(ev=>String(ev.args.user).toLowerCase().includes(search));ref=ref.filter(ev=>String(ev.args.from).toLowerCase().includes(search)||String(ev.args.to).toLowerCase().includes(search));lap=lap.filter(ev=>String(ev.args.user).toLowerCase().includes(search));}
-  if(type==="ICO"){ref=[];lap=[];}else if(type==="REFERRAL"){ico=[];lap=[];}else if(type==="lapsed"){ico=[];ref=[];}
-  return {ico,ref,lap};
-}
-function applyFilters(){const f=getFilteredEvents();displayICOData(f.ico);displayReferralData(f.ref);displayLapsedData(f.lap);updateStats(f.ref,f.ico,f.lap);}
-function resetFilters(){$("startDate").value="";$("endDate").value="";$("incomeType").value="all";$("searchWallet").value="";applyFilters();}
-async function copyToClipboard(value){try{await navigator.clipboard.writeText(value);setStatus("Wallet address copied.");}catch(error){prompt("Copy wallet address:",value);}}
-window.addEventListener("load",async()=>{
-  const end=new Date(),start=new Date();start.setDate(start.getDate()-30);$("startDate").valueAsDate=start;$("endDate").valueAsDate=end;
-  if(window.ethereum){
-    try{
-      provider=new ethers.BrowserProvider(window.ethereum);
-      const accounts=await provider.send("eth_accounts",[]);
-      if(accounts.length){userAddress=accounts[0].toLowerCase();sigmaContract=new ethers.Contract(SIGMA_CONTRACT_ADDRESS,sigmaABI,provider);$("btn-text").textContent="🦊 "+shortAddress(userAddress);$("connectBtn").classList.add("connected");await loadIncomeData();}
-      if(!window.__sigmaIncomeListeners){window.ethereum.on("accountsChanged",()=>location.reload());window.ethereum.on("chainChanged",()=>location.reload());window.__sigmaIncomeListeners=true;}
-    }catch(error){console.warn("Automatic wallet reconnect skipped:",error);setStatus("Click Connect Wallet to connect and load your report.");}
-  }
-});
-</script>
-</body>
-</html>
+function setStatus(s){$("status").textContent=s}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function short(a){return a&&a.length>12?a.slice(0,6)+"..."+a.slice(-4):a}
+function amount(v){return Number(ethers.formatUnits(v,decimals)).toFixed(6)}
+function dateLabel(ts){return new Date(ts*1000).toLocaleString("en-IN",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+function inputStart(s){return Math.floor(new Date(s+"T00:00:00").getTime()/1000)}
+function inputEnd(s){let d=new Date(s+"T00:00:00");d.setDate(d.getDate()+1);return Math.floor(d.getTime()/1000)}
+function defaultDates(){let e=new Date(),s=new Date();s.setDate(s.getDate()-29);const f=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;$("startDate").value=f(s);$("endDate").value=f(e)}
+async function getBlock(n){n=Number(n);if(!blockCache.has(n))blockCache.set(n,provider.getBlock(n).then(b=>{if(!b)throw Error("Block "+n+" unavailable from RPC");return {number:n,timestamp:Number(b.timestamp)}}));return blockCache.get(n)}
+async function checkNetwork(){const n=await provider.getNetwork();if(Number(n.chainId)!==POLYGON_CHAIN_ID){$("warning").classList.add("show");throw Error("Wrong network. Switch to Polygon Mainnet.")}$("warning").classList.remove("show")}
+async function switchPolygon(){try{await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:"0x89"}]})}catch(e){if(e.code===4902)await window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:"0x89",chainName:"Polygon Mainnet",nativeCurrency:{name:"POL",symbol:"POL",decimals:18},rpcUrls:["https://polygon-rpc.com"],blockExplorerUrls:["https://polygonscan.com"]}]});else setStatus(e.message)}}
+async function readDecimals(){try{let d=Number(await contract.decimals());if(Number.isInteger(d)&&d>=0&&d<=36){decimals=d;return}}catch(e){console.warn(e)}try{let d=Number(await contract.SIGMA_DECIMALS());if(Number.isInteger(d)&&d>=0&&d<=36)decimals=d}catch(e){console.warn("Could not read token decimals; using 18",e)}}
+async function connectWallet(){try{if(!window.ethereum)throw Error("Install MetaMask or open a Web3 wallet.");provider=new ethers.BrowserProvider(window.ethereum);let ac=await provider.send("eth_requestAccounts",[]);if(!ac.length)throw Error("No wallet account selected");wallet=ethers.getAddress(ac[0]);await checkNetwork();contract=new ethers.Contract(CONTRACT_ADDRESS,ABI,provider);await readDecimals();$("connectBtn").textContent="Connected: "+short(wallet);await loadIncomeData()}catch(e){console.error(e);setStatus("Wallet error: "+(e.shortMessage||e.message))}}
+async function firstBlockAtOrAfter(ts,latest){let lo=DEPLOYMENT_BLOCK,hi=latest+1;while(lo<hi){let mid=Math.floor((lo+hi)/2);if(mid>latest){hi=mid;continue}let b=await getBlock(mid);if(b.timestamp>=ts)hi=mid;else lo=mid+1}return lo}
+async function selectedRange(latest){let s=$("startDate").value,e=$("endDate").value;if(!s||!e)throw Error("Select Start Date and End Date.");let st=inputStart(s),et=inputEnd(e);if(!Number.isFinite(st)||!Number.isFinite(et)||st>=et)throw Error("Invalid date range.");let deployed=await getBlock(DEPLOYMENT_BLOCK);if(et<=deployed.timestamp)return {from:DEPLOYMENT_BLOCK,to:DEPLOYMENT_BLOCK-1};let from=Math.max(DEPLOYMENT_BLOCK,await firstBlockAtOrAfter(st,latest));let after=await firstBlockAtOrAfter(et,latest);return {from,to:Math.min(latest,after-1)}}
+async function queryChunks(filter,from,to,label){let out=[],cursor=from,chunk=CHUNK_START;if(from>to)return out;while(cursor<=to){let end=Math.min(to,cursor+chunk-1);try{let logs=await contract.queryFilter(filter,cursor,end);out.push(...logs);cursor=end+1;setStatus(`${label}: block ${end.toLocaleString("en-IN")} / ${to.toLocaleString("en-IN")} · ${out.length} events`);if(chunk<CHUNK_START)chunk=Math.min(CHUNK_START,chunk*2)}catch(e){if(chunk<=CHUNK_MIN)throw Error(`${label} RPC error at ${cursor}-${end}: ${e.shortMessage||e.message}`);chunk=Math.max(CHUNK_MIN,Math.floor(chunk/2));console.warn("Reduce chunk",chunk,e)}}return out}
+async function addDates(events){let nums=[...new Set(events.map(e=>Number(e.blockNumber)))],i=0;await Promise.all(Array.from({length:6},async()=>{while(i<nums.length){let n=nums[i++];await getBlock(n)}}));for(let ev of events)ev.timestamp=(await getBlock(ev.blockNumber)).timestamp}
+async function loadIncomeData(){if(busy)return;if(!wallet||!contract){setStatus("Connect wallet first.");return}busy=true;["icoTable","refTable","lapTable"].forEach((id,i)=>$(id).innerHTML=`<tr><td colspan="${[6,7,7][i]}" class="loading">Loading...</td></tr>`);try{await checkNetwork();let latest=await provider.getBlockNumber();setStatus("Finding block range for selected dates...");let r=await selectedRange(latest);if(r.from>r.to){data={ico:[],referral:[],lapsed:[]};render();setStatus("No blocks in selected date range.");return}setStatus(`Searching only this contract, blocks ${r.from.toLocaleString("en-IN")}–${r.to.toLocaleString("en-IN")}...`);let ico=await queryChunks(contract.filters.ICO(wallet),r.from,r.to,"ICO Bonus");let referral=await queryChunks(contract.filters.TeamReferral(null,wallet),r.from,r.to,"Team Referral");let lapsed=await queryChunks(contract.filters.IncomeLapsed(wallet),r.from,r.to,"Lapsed Income");data={ico,referral,lapsed};let all=[...ico,...referral,...lapsed];setStatus(`Found ${all.length} events. Loading timestamps...`);await addDates(all);render();setStatus(`Complete · blocks ${r.from.toLocaleString("en-IN")}–${r.to.toLocaleString("en-IN")} · ICO ${ico.length} · Referral ${referral.length} · Lapsed ${lapsed.length} · decimals ${decimals}.`)}catch(e){console.error(e);setStatus("Error: "+(e.shortMessage||e.message));$("icoTable").innerHTML=`<tr><td colspan="6" class="empty">${esc(e.message)}</td></tr>`;$("refTable").innerHTML=`<tr><td colspan="7" class="empty">${esc(e.message)}</td></tr>`;$("lapTable").innerHTML=`<tr><td colspan="7" class="empty">${esc(e.message)}</td></tr>`}finally{busy=false}}
+function tx(hash){return `<a href="https://polygonscan.com/tx/${hash}" target="_blank" rel="noopener">View Tx ↗</a>`}
+function block(n){return `<a href="https://polygonscan.com/block/${n}" target="_blank" rel="noopener">${Number(n).toLocaleString("en-IN")}</a>`}
+function walletBtn(a){return `<button class="wallet" onclick="copyWallet('${a}')">${short(a)} ⧉</button>`}
+function mobileCard(title,rows){return `<div class="mcard"><b>${title}</b>${rows.map(([k,v])=>`<div class="mrow"><span>${k}</span><span>${v}</span></div>`).join("")}</div>`}
+function renderTable(kind,events){let sorted=[...events].sort((a,b)=>b.timestamp-a.timestamp),table=$(kind+"Table"),mob=$(kind+"Mobile");if(!sorted.length){table.innerHTML=`<tr><td colspan="${kind==="ico"?6:7}" class="empty">No matching events found for this wallet and date range.</td></tr>`;mob.innerHTML='<div class="empty">No matching events.</div>';return}
+let rows=[],cards=[];sorted.forEach((e,i)=>{let dt=dateLabel(e.timestamp),a=e.args;if(kind==="ico"){rows.push(`<tr><td>${i+1}</td><td>${dt}</td><td>${walletBtn(a.user)}</td><td class="goldtext">+${amount(a.amount)} SIG6</td><td>${block(e.blockNumber)}</td><td>${tx(e.transactionHash)}</td></tr>`);cards.push(mobileCard("ICO Bonus #"+(i+1),[["Date",dt],["Wallet",short(a.user)],["Bonus","+ "+amount(a.amount)+" SIG6"],["Block",block(e.blockNumber)],["Transaction",tx(e.transactionHash)]]))}else if(kind==="ref"){rows.push(`<tr><td>${i+1}</td><td>${dt}</td><td>${walletBtn(a.from)}</td><td><span class="pill">Level ${a.level}</span></td><td class="positive">${amount(a.amount)} SIG6</td><td>${block(e.blockNumber)}</td><td>${tx(e.transactionHash)}</td></tr>`);cards.push(mobileCard("Referral #"+(i+1),[["Date",dt],["From",short(a.from)],["Level",a.level.toString()],["Amount",amount(a.amount)+" SIG6"],["Block",block(e.blockNumber)],["Transaction",tx(e.transactionHash)]]))}else{rows.push(`<tr><td>${i+1}</td><td>${dt}</td><td>${walletBtn(a.user)}</td><td>${esc(a.reason)}</td><td class="negative">${amount(a.amount)} SIG6</td><td>${block(e.blockNumber)}</td><td>${tx(e.transactionHash)}</td></tr>`);cards.push(mobileCard("Lapsed Income #"+(i+1),[["Date",dt],["Wallet",short(a.user)],["Reason",esc(a.reason)],["Lost",amount(a.amount)+" SIG6"],["Block",block(e.blockNumber)],["Transaction",tx(e.transactionHash)]]))}});table.innerHTML=rows.join("");mob.innerHTML=cards.join("")}
+function render(){let type=$("incomeType").value,search=$("searchWallet").value.trim().toLowerCase();let filter=(arr,fields)=>search?arr.filter(e=>fields.some(f=>String(e.args[f]||"").toLowerCase().includes(search))):arr;let ico=filter(data.ico,["user"]),ref=filter(data.referral,["from","to"]),lap=filter(data.lapsed,["user"]);if(type==="ico"){ref=[];lap=[]}if(type==="referral"){ico=[];lap=[]}if(type==="lapsed"){ico=[];ref=[]}renderTable("ico",ico);renderTable("ref",ref);renderTable("lap",lap);let sum=arr=>arr.reduce((n,e)=>n+Number(ethers.formatUnits(e.args.amount,decimals)),0);$("totalIco").textContent=sum(ico).toFixed(6)+" SIG6";$("totalReferral").textContent=sum(ref).toFixed(6)+" SIG6";$("totalLapsed").textContent=sum(lap).toFixed(6)+" SIG6";$("totalTx").textContent=ico.length+ref.length+lap.length}
+function applyFilters(){if(!wallet){setStatus("Connect wallet first.");return}loadIncomeData()}
+function resetFilters(){defaultDates();$("incomeType").value="all";$("searchWallet").value="";if(wallet)loadIncomeData()}
+async function copyWallet(a){try{await navigator.clipboard.writeText(a);setStatus("Wallet address copied.")}catch(e){prompt("Copy wallet address",a)}}
+window.addEventListener("load",async()=>{defaultDates();if(window.ethereum){try{provider=new ethers.BrowserProvider(window.ethereum);let ac=await provider.send("eth_accounts",[]);if(ac.length){wallet=ethers.getAddress(ac[0]);await checkNetwork();contract=new ethers.Contract(CONTRACT_ADDRESS,ABI,provider);await readDecimals();$("connectBtn").textContent="Connected: "+short(wallet);loadIncomeData()}window.ethereum.on("accountsChanged",()=>location.reload());window.ethereum.on("chainChanged",()=>location.reload())}catch(e){console.warn(e);setStatus("Click Connect Wallet to connect on Polygon.")}}});
+</script></body></html>
