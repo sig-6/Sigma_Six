@@ -3,1197 +3,787 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SIGMA SIX | Buy & Sell History</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box}
 body{
-    font-family:Inter,Arial,sans-serif;
-    background:#0b1020;
-    color:#f1f5f9;
-    padding:20px;
+ margin:0;background:#0b1020;color:#eef2ff;
+ font-family:Arial,sans-serif;padding:18px
 }
-.container{max-width:1200px;margin:auto}
+.container{max-width:1150px;margin:auto}
 .header{
-    display:flex;justify-content:space-between;
-    align-items:center;gap:12px;flex-wrap:wrap;
-    margin-bottom:25px;
+ display:flex;justify-content:space-between;align-items:center;
+ flex-wrap:wrap;gap:12px;margin-bottom:20px
 }
-.logo{font-size:25px;font-weight:800;color:#38bdf8}
-.logo span{color:#fff}
-button,.btn{
-    border:0;border-radius:9px;padding:11px 16px;
-    font-weight:700;cursor:pointer;font-size:13px;
-    text-decoration:none;display:inline-block;
+h1{font-size:25px;margin:0;color:#fff}
+.sub{color:#9ca9c8;font-size:13px;margin-top:7px}
+button{
+ border:0;border-radius:9px;padding:11px 16px;
+ font-weight:bold;cursor:pointer;background:#2563eb;color:white
 }
-.dashboard{background:#334155;color:white}
-.connect{background:#2563eb;color:white}
-.scan{background:#0891b2;color:white}
-.csv{background:#15803d;color:white}
 button:disabled{opacity:.5;cursor:not-allowed}
-h1{font-size:25px;margin-bottom:8px}
-.subtitle{color:#94a3b8;font-size:13px;margin-bottom:22px}
+.secondary{background:#26334f}
+.green{background:#059669}
+.cards{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+ gap:13px;margin:20px 0
+}
+.card{
+ background:#151e34;border:1px solid #293653;
+ border-radius:13px;padding:18px
+}
+.card small{color:#9ca9c8}
+.card h2{font-size:23px;margin:10px 0 0;overflow-wrap:anywhere}
 .panel{
-    background:#151d31;border:1px solid #26344d;
-    border-radius:14px;padding:20px;margin-bottom:18px;
+ background:#151e34;border:1px solid #293653;
+ border-radius:13px;padding:17px;margin-bottom:17px
 }
-.input-row{display:flex;gap:10px;flex-wrap:wrap}
-input{
-    flex:1;min-width:220px;padding:13px;
-    border-radius:8px;border:1px solid #334155;
-    background:#0b1020;color:white;font-size:14px;
-}
-.status{font-size:13px;color:#94a3b8;margin-top:12px;line-height:1.7}
-.status.error{color:#f87171}
-.status.success{color:#4ade80}
-.progress-wrap{
-    background:#26344d;height:8px;border-radius:20px;
-    overflow:hidden;margin-top:12px;
-}
+.status{font-size:13px;color:#aab7d3;line-height:1.7;overflow-wrap:anywhere}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
 .progress{
-    height:100%;width:0%;background:#22d3ee;
-    transition:width .2s;
+ height:9px;background:#26334f;border-radius:20px;
+ overflow:hidden;margin-top:12px
 }
-.stats{
-    display:grid;grid-template-columns:repeat(4,1fr);
-    gap:12px;margin-bottom:20px;
-}
-.stat{
-    background:#151d31;border:1px solid #26344d;
-    border-radius:12px;padding:17px;
-}
-.stat small{color:#94a3b8;font-size:11px}
-.stat strong{
-    display:block;font-size:20px;margin-top:9px;
-    overflow-wrap:anywhere;
-}
-.green{color:#4ade80}
-.red{color:#fb7185}
-.blue{color:#38bdf8}
-.tabs{display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap}
-.tab{
-    background:#26344d;color:#cbd5e1;
-}
-.tab.active{background:#0284c7;color:white}
+.bar{height:100%;width:0;background:#10b981;transition:width .2s}
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;min-width:750px}
 th,td{
-    padding:13px 11px;text-align:left;
-    border-bottom:1px solid #26344d;
-    font-size:12px;white-space:nowrap;
+ padding:12px 10px;border-bottom:1px solid #293653;
+ text-align:left;font-size:13px;white-space:nowrap
 }
-th{color:#7dd3fc;font-weight:700;background:#111a2d}
-td{color:#e2e8f0}
-a{color:#38bdf8;text-decoration:none}
-a:hover{text-decoration:underline}
-.empty{text-align:center;padding:35px;color:#94a3b8}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.footer{text-align:center;color:#64748b;font-size:11px;margin:25px 0}
-@media(max-width:800px){
-    .stats{grid-template-columns:repeat(2,1fr)}
+th{color:#9ca9c8;background:#111a2d}
+.buy{color:#34d399;font-weight:bold}
+.sell{color:#fb7185;font-weight:bold}
+a{color:#60a5fa;text-decoration:none}
+input{
+ background:#0b1020;color:white;border:1px solid #34425f;
+ padding:10px;border-radius:8px;width:100%;margin-top:8px
 }
-@media(max-width:480px){
-    body{padding:12px}
-    .stats{grid-template-columns:1fr 1fr}
-    .stat{padding:12px}
-    .stat strong{font-size:16px}
-    h1{font-size:21px}
-}
+.footer{color:#8290ae;font-size:12px;margin:18px 0}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-    <div class="header">
-        <div class="logo">SIGMA <span>SIX</span></div>
-        <a class="btn dashboard" href="index.html">← Back to Dashboard</a>
-    </div>
+ <div class="header">
+  <div>
+   <h1>💎 SIGMA SIX</h1>
+   <div class="sub">BUY / SELL TRANSACTION HISTORY</div>
+  </div>
+  <div class="actions">
+   <button class="secondary" onclick="goDashboard()">← Back to Dashboard</button>
+   <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+  </div>
+ </div>
 
-    <h1>Buy & Sell History</h1>
-    <p class="subtitle">
-        View your Sigma Six token purchase and selling transactions on Polygon.
-    </p>
+ <div class="panel">
+  <b>Wallet Connection</b>
+  <div class="status" id="walletStatus">Checking wallet...</div>
+  <div class="actions">
+   <button id="scanBtn" class="green" onclick="startScan()" disabled>Scan History</button>
+   <button class="secondary" onclick="downloadCSV()" id="csvBtn" disabled>Download CSV</button>
+  </div>
+ </div>
 
-    <div class="panel">
-        <div class="input-row">
-            <input
-                type="text"
-                id="walletInput"
-                placeholder="Enter your Polygon wallet address"
-                autocomplete="off"
-            >
-            <button class="connect" id="connectBtn" onclick="connectWallet()">
-                Connect Wallet
-            </button>
-            <button class="scan" id="scanBtn" onclick="startScan()">
-                Scan History
-            </button>
-        </div>
+ <div class="cards">
+  <div class="card">
+   <small>Total Buy Transactions</small>
+   <h2 id="buyCount">0</h2>
+  </div>
+  <div class="card">
+   <small>Total Sell Transactions</small>
+   <h2 id="sellCount">0</h2>
+  </div>
+  <div class="card">
+   <small>Total Sigma Bought</small>
+   <h2 id="totalBuy">0</h2>
+  </div>
+  <div class="card">
+   <small>Total Sigma Sold</small>
+   <h2 id="totalSell">0</h2>
+  </div>
+  <div class="card">
+   <small>Current Wallet Balance</small>
+   <h2 id="walletBalance">0</h2>
+  </div>
+  <div class="card">
+   <small>Current Buy Rate (USDT)</small>
+   <h2 id="currentRate">-</h2>
+  </div>
+ </div>
 
-        <div class="status" id="status">
-            Enter your wallet address and click Scan History.
-        </div>
+ <div class="panel">
+  <b>History Scanner</b>
+  <div class="status" id="scanStatus">Ready to scan.</div>
+  <div class="progress"><div class="bar" id="progressBar"></div></div>
+  <div class="status" id="rpcStatus" style="margin-top:9px">
+   RPC: Waiting
+  </div>
+ </div>
 
-        <div class="progress-wrap">
-            <div class="progress" id="progressBar"></div>
-        </div>
+ <div class="panel">
+  <b>Transaction History</b>
+  <div class="table-wrap" style="margin-top:12px">
+   <table>
+    <thead>
+     <tr>
+      <th>Type</th>
+      <th>Date & Time</th>
+      <th>Sigma Amount</th>
+      <th>Rate (USDT)</th>
+      <th>USDT Value</th>
+      <th>Transaction</th>
+      <th>Block</th>
+     </tr>
+    </thead>
+    <tbody id="historyBody">
+     <tr><td colspan="7" style="text-align:center;color:#9ca9c8">
+      Connect wallet and scan history
+     </td></tr>
+    </tbody>
+   </table>
+  </div>
+ </div>
 
-        <div class="status" id="scanInfo">
-            Scan not started.
-        </div>
-    </div>
+ <div class="panel">
+  <b>Contract Information</b>
+  <div class="status" style="margin-top:10px">
+   Network: Polygon Mainnet (137)<br>
+   Contract:
+   <a target="_blank" href="https://polygonscan.com/address/0xaF215838d156F7d348A6d56cA962cbC680A2153F">
+   0xaF215838d156F7d348A6d56cA962cbC680A2153F
+   </a><br>
+   Start Block: 85000998
+  </div>
+ </div>
 
-    <div class="stats">
-        <div class="stat">
-            <small>Total Buy Transactions</small>
-            <strong class="blue" id="buyCount">0</strong>
-        </div>
-        <div class="stat">
-            <small>Total Sell Transactions</small>
-            <strong class="blue" id="sellCount">0</strong>
-        </div>
-        <div class="stat">
-            <small>Total Sigma Bought</small>
-            <strong class="green" id="totalBought">0</strong>
-        </div>
-        <div class="stat">
-            <small>Total Sigma Sold</small>
-            <strong class="red" id="totalSold">0</strong>
-        </div>
-    </div>
-
-    <div class="stats">
-        <div class="stat">
-            <small>Total USDT Spent</small>
-            <strong id="totalSpent">0</strong>
-        </div>
-        <div class="stat">
-            <small>Total USDT Received</small>
-            <strong id="totalReceived">0</strong>
-        </div>
-        <div class="stat">
-            <small>Current Sigma Balance</small>
-            <strong class="green" id="currentBalance">0</strong>
-        </div>
-        <div class="stat">
-            <small>Current Buy Rate (USDT)</small>
-            <strong class="blue" id="currentRate">0</strong>
-        </div>
-    </div>
-
-    <div class="panel">
-        <div class="tabs">
-            <button class="tab active" id="buyTab" onclick="showTab('buy')">
-                Buy History
-            </button>
-            <button class="tab" id="sellTab" onclick="showTab('sell')">
-                Sell History
-            </button>
-        </div>
-
-        <div class="actions">
-            <button class="csv" onclick="downloadCSV()">Download CSV</button>
-            <button class="dashboard" onclick="startScan()">Refresh History</button>
-        </div>
-
-        <div class="table-wrap" style="margin-top:15px">
-            <table>
-                <thead id="tableHead"></thead>
-                <tbody id="tableBody">
-                    <tr><td class="empty">No transaction data loaded.</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="footer">
-        SIGMA SIX · Polygon Network · Transaction data from blockchain
-    </div>
-
+ <div class="footer">
+  SIGMA SIX | Blockchain transaction records are read directly from Polygon.
+ </div>
 </div>
 
 <script>
-"use strict";
-
-/* =====================================================
+/* ==========================================
    CONFIGURATION
-===================================================== */
+========================================== */
 
 const CONTRACT_ADDRESS =
-    "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
+ "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
 
 const START_BLOCK = 85000998;
 const CHAIN_ID = 137;
 
 const RPC_URLS = [
-    "https://polygon-bor-rpc.publicnode.com",
-    "https://polygon.drpc.org",
-    "https://polygon-rpc.com"
+ "https://polygon.drpc.org",
+ "https://polygon.gateway.tenderly.co",
+ "https://poly.api.pocket.network",
+ "https://matic.rpc.sentio.xyz"
 ];
 
-const POLYGONSCAN_TX =
-    "https://polygonscan.com/tx/";
-
-const POLYGONSCAN_ADDRESS =
-    "https://polygonscan.com/address/";
-
-const CONTRACT_ABI = [
-    "event Buy(address indexed user,uint256 amount,uint256 rate,uint256 usdtSpent)",
-    "event Sell(address indexed user,uint256 amount,uint256 rate,uint256 usdtReceived)",
-
-    "function decimals() view returns (uint8)",
-    "function usdt() view returns (address)",
-    "function balanceOf(address) view returns (uint256)",
-    "function getCurrentBuyRate() view returns (uint256)"
+const ABI = [
+ "event Buy(address indexed user,uint256 amount,uint256 rate,uint256 usdtSpent)",
+ "event Sell(address indexed user,uint256 amount,uint256 rate,uint256 usdtReceived)",
+ "function balanceOf(address) view returns (uint256)",
+ "function getCurrentBuyRate() view returns (uint256)",
+ "function SIGMA_DECIMALS() view returns (uint256)",
+ "function USDT_DECIMALS() view returns (uint256)",
+ "function decimals() view returns (uint8)",
+ "function usdt() view returns (address)"
 ];
 
 const ERC20_ABI = [
-    "function decimals() view returns (uint8)"
+ "function decimals() view returns (uint8)"
 ];
 
-const contractInterface = new ethers.Interface(CONTRACT_ABI);
+const iface = new ethers.Interface(ABI);
+const BUY_TOPIC = ethers.id(
+ "Buy(address,uint256,uint256,uint256)"
+);
+const SELL_TOPIC = ethers.id(
+ "Sell(address,uint256,uint256,uint256)"
+);
 
-const BUY_TOPIC =
-    contractInterface.getEvent("Buy").topicHash;
-
-const SELL_TOPIC =
-    contractInterface.getEvent("Sell").topicHash;
-
-
-/* =====================================================
-   GLOBAL VARIABLES
-===================================================== */
-
-let walletAddress = "";
-let buyHistory = [];
-let sellHistory = [];
-let allHistory = [];
-
+let walletAddress = null;
+let walletProvider = null;
 let sigmaDecimals = 18;
 let usdtDecimals = 6;
+let transactions = [];
+let scanning = false;
 
-let currentTab = "buy";
-let currentProvider = null;
-let scanRunning = false;
-
-
-/* =====================================================
-   UI HELPERS
-===================================================== */
-
-function setStatus(message, type = "") {
-    const el = document.getElementById("status");
-    el.textContent = message;
-    el.className = "status " + type;
-}
-
-function setScanInfo(message) {
-    document.getElementById("scanInfo").textContent = message;
-}
-
-function setProgress(percent) {
-    document.getElementById("progressBar").style.width =
-        Math.max(0, Math.min(100, percent)) + "%";
-}
-
-function formatNumber(value, digits = 6) {
-    const n = Number(value);
-
-    if (!Number.isFinite(n)) return "0";
-
-    return n.toLocaleString("en-IN", {
-        maximumFractionDigits: digits
-    });
-}
-
-function shortAddress(address) {
-    if (!address) return "";
-    return address.slice(0, 6) + "..." + address.slice(-4);
-}
-
-
-/* =====================================================
+/* ==========================================
    RPC PROVIDER
-===================================================== */
+========================================== */
 
-async function getProvider() {
-    let lastError = null;
+async function rpcRequest(callback) {
+ let lastError;
 
-    for (const url of RPC_URLS) {
-        try {
-            const provider = new ethers.JsonRpcProvider(
-                url,
-                CHAIN_ID,
-                { staticNetwork: true }
-            );
+ for (const url of RPC_URLS) {
+  let provider;
 
-            await provider.getBlockNumber();
+  try {
+   provider = new ethers.JsonRpcProvider(url, CHAIN_ID, {
+    staticNetwork: true
+   });
 
-            currentProvider = provider;
-            return provider;
+   const result = await callback(provider, url);
 
-        } catch (error) {
-            console.warn("RPC failed:", url, error);
-            lastError = error;
-        }
-    }
+   document.getElementById("rpcStatus").innerText =
+    "Connected RPC: " + url;
 
-    throw new Error(
-        "All Polygon RPC servers failed. " +
-        (lastError?.message || "")
-    );
+   return result;
+
+  } catch (error) {
+   lastError = error;
+   console.warn("RPC failed:", url, error);
+
+   document.getElementById("rpcStatus").innerText =
+    "Trying next RPC... (" + url + ")";
+  } finally {
+   if (provider) {
+    try { provider.destroy(); } catch(e) {}
+   }
+  }
+ }
+
+ throw lastError || new Error("All RPC endpoints failed.");
 }
 
+/* ==========================================
+   WALLET AUTO CONNECTION
+========================================== */
 
-/* =====================================================
-   CONNECT METAMASK
-===================================================== */
+async function checkWallet() {
+ if (!window.ethereum) {
+  document.getElementById("walletStatus").innerHTML =
+   "Wallet not detected. Please install MetaMask or another EVM wallet.";
+  return;
+ }
+
+ try {
+  const accounts = await window.ethereum.request({
+   method: "eth_accounts"
+  });
+
+  if (accounts && accounts.length > 0) {
+   walletAddress = ethers.getAddress(accounts[0]);
+   await setupWallet();
+  } else {
+   document.getElementById("walletStatus").innerText =
+    "Wallet detected. Click Connect Wallet to continue.";
+  }
+
+ } catch(error) {
+  console.error(error);
+  document.getElementById("walletStatus").innerText =
+   "Wallet check failed. Please connect manually.";
+ }
+}
 
 async function connectWallet() {
-    try {
-        if (!window.ethereum) {
-            setStatus(
-                "MetaMask not found. Please enter your wallet address manually.",
-                "error"
-            );
-            return;
-        }
+ if (!window.ethereum) {
+  alert("Please install MetaMask or an EVM wallet.");
+  return;
+ }
 
-        const accounts = await window.ethereum.request({
-            method: "eth_requestAccounts"
-        });
+ try {
+  const accounts = await window.ethereum.request({
+   method: "eth_requestAccounts"
+  });
 
-        if (!accounts || !accounts.length) {
-            throw new Error("No wallet account found.");
-        }
+  if (!accounts || !accounts.length) {
+   throw new Error("No wallet account selected.");
+  }
 
-        const network = await window.ethereum.request({
-            method: "eth_chainId"
-        });
+  walletAddress = ethers.getAddress(accounts[0]);
 
-        if (parseInt(network, 16) !== CHAIN_ID) {
-            try {
-                await window.ethereum.request({
-                    method: "wallet_switchEthereumChain",
-                    params: [{ chainId: "0x89" }]
-                });
-            } catch (switchError) {
-                throw new Error(
-                    "Please switch MetaMask to Polygon Mainnet."
-                );
-            }
-        }
+  await switchToPolygon();
+  await setupWallet();
 
-        walletAddress = ethers.getAddress(accounts[0]);
-
-        document.getElementById("walletInput").value =
-            walletAddress;
-
-        setStatus(
-            "Wallet connected: " + shortAddress(walletAddress),
-            "success"
-        );
-
-        await startScan();
-
-    } catch (error) {
-        console.error(error);
-        setStatus(error.message || "Wallet connection failed.", "error");
-    }
+ } catch(error) {
+  console.error(error);
+  alert("Wallet connection failed: " + error.message);
+ }
 }
 
+async function switchToPolygon() {
+ const chainId = await window.ethereum.request({
+  method: "eth_chainId"
+ });
 
-/* =====================================================
-   READ CONTRACT DATA
+ if (Number(chainId) === CHAIN_ID) return;
 
-   IMPORTANT:
-   Do not use SIGMA_DECIMALS() or USDT_DECIMALS().
-   Read Sigma decimals() directly and read USDT decimals()
-   from the token address returned by usdt().
-===================================================== */
-
-async function readContractData(provider, address) {
-
-    const sigmaContract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        CONTRACT_ABI,
-        provider
-    );
-
-    const [
-        balanceRaw,
-        rateRaw,
-        sigmaDecimalsRaw,
-        usdtAddress
-    ] = await Promise.all([
-        sigmaContract.balanceOf(address),
-        sigmaContract.getCurrentBuyRate(),
-        sigmaContract.decimals(),
-        sigmaContract.usdt()
-    ]);
-
-    if (!ethers.isAddress(usdtAddress)) {
-        throw new Error(
-            "Contract returned an invalid USDT token address: " +
-            usdtAddress
-        );
-    }
-
-    const usdtContract = new ethers.Contract(
-        usdtAddress,
-        ERC20_ABI,
-        provider
-    );
-
-    const usdtDecimalsRaw = await usdtContract.decimals();
-
-    const sigmaDec = Number(sigmaDecimalsRaw);
-    const usdtDec = Number(usdtDecimalsRaw);
-
-    if (
-        !Number.isInteger(sigmaDec) ||
-        sigmaDec < 0 || sigmaDec > 80
-    ) {
-        throw new Error(
-            "Invalid Sigma decimals(): " + sigmaDec
-        );
-    }
-
-    if (
-        !Number.isInteger(usdtDec) ||
-        usdtDec < 0 || usdtDec > 80
-    ) {
-        throw new Error(
-            "Invalid USDT decimals(): " + usdtDec
-        );
-    }
-
-    sigmaDecimals = sigmaDec;
-    usdtDecimals = usdtDec;
-
-    console.log("Sigma decimals:", sigmaDecimals);
-    console.log("USDT address:", usdtAddress);
-    console.log("USDT decimals:", usdtDecimals);
-
-    return {
-        balance: ethers.formatUnits(balanceRaw, sigmaDecimals),
-        rate: ethers.formatUnits(rateRaw, usdtDecimals)
-    };
+ try {
+  await window.ethereum.request({
+   method: "wallet_switchEthereumChain",
+   params: [{ chainId: "0x89" }]
+  });
+ } catch(error) {
+  if (error.code === 4902) {
+   await window.ethereum.request({
+    method: "wallet_addEthereumChain",
+    params: [{
+     chainId: "0x89",
+     chainName: "Polygon Mainnet",
+     nativeCurrency: {
+      name: "POL",
+      symbol: "POL",
+      decimals: 18
+     },
+     rpcUrls: ["https://polygon.drpc.org"],
+     blockExplorerUrls: ["https://polygonscan.com/"]
+    }]
+   });
+  } else {
+   throw error;
+  }
+ }
 }
 
+async function setupWallet() {
+ if (!walletAddress) return;
 
-/* =====================================================
-   EVENT LOG SCANNER
+ walletProvider = new ethers.BrowserProvider(window.ethereum);
 
-   The user address is indexed in both Buy and Sell.
-   Scan only these two event types for this wallet.
-===================================================== */
+ document.getElementById("walletStatus").innerHTML =
+  "Connected: <b>" + walletAddress + "</b>";
 
-function walletTopic(address) {
-    return ethers.zeroPadValue(address, 32).toLowerCase();
+ document.getElementById("connectBtn").innerText = "Wallet Connected";
+ document.getElementById("scanBtn").disabled = false;
+
+ await readContractData();
 }
-
-async function getLogsAdaptive(
-    provider,
-    fromBlock,
-    toBlock,
-    topics
-) {
-    try {
-        return await provider.getLogs({
-            address: CONTRACT_ADDRESS,
-            fromBlock,
-            toBlock,
-            topics
-        });
-
-    } catch (error) {
-
-        if (fromBlock >= toBlock) {
-            throw error;
-        }
-
-        const middle = Math.floor(
-            (fromBlock + toBlock) / 2
-        );
-
-        const first = await getLogsAdaptive(
-            provider,
-            fromBlock,
-            middle,
-            topics
-        );
-
-        const second = await getLogsAdaptive(
-            provider,
-            middle + 1,
-            toBlock,
-            topics
-        );
-
-        return first.concat(second);
-    }
-}
-
-
-/* =====================================================
-   DECODE EVENTS
-===================================================== */
-
-function decodeLogs(logs) {
-
-    const buys = [];
-    const sells = [];
-
-    for (const log of logs) {
-        try {
-            const parsed = contractInterface.parseLog({
-                topics: log.topics,
-                data: log.data
-            });
-
-            if (!parsed) continue;
-
-            const eventName = parsed.name;
-            const args = parsed.args;
-
-            const common = {
-                blockNumber: Number(log.blockNumber),
-                transactionHash: log.transactionHash,
-                logIndex: Number(log.index ?? log.logIndex ?? 0)
-            };
-
-            if (eventName === "Buy") {
-
-                buys.push({
-                    ...common,
-                    type: "BUY",
-                    user: args.user,
-                    amount: ethers.formatUnits(
-                        args.amount,
-                        sigmaDecimals
-                    ),
-                    rate: ethers.formatUnits(
-                        args.rate,
-                        usdtDecimals
-                    ),
-                    usdt: ethers.formatUnits(
-                        args.usdtSpent,
-                        usdtDecimals
-                    )
-                });
-
-            } else if (eventName === "Sell") {
-
-                sells.push({
-                    ...common,
-                    type: "SELL",
-                    user: args.user,
-                    amount: ethers.formatUnits(
-                        args.amount,
-                        sigmaDecimals
-                    ),
-                    rate: ethers.formatUnits(
-                        args.rate,
-                        usdtDecimals
-                    ),
-                    usdt: ethers.formatUnits(
-                        args.usdtReceived,
-                        usdtDecimals
-                    )
-                });
-            }
-
-        } catch (error) {
-            console.warn("Event decode skipped:", error);
-        }
-    }
-
-    return { buys, sells };
-}
-
-
-/* =====================================================
-   BLOCK TIMESTAMPS
-===================================================== */
-
-async function addTimestamps(provider, events) {
-
-    const blockNumbers = [
-        ...new Set(events.map(x => x.blockNumber))
-    ];
-
-    const timestampMap = new Map();
-
-    const concurrency = 6;
-
-    for (
-        let i = 0;
-        i < blockNumbers.length;
-        i += concurrency
-    ) {
-        const batch = blockNumbers.slice(
-            i,
-            i + concurrency
-        );
-
-        const results = await Promise.all(
-            batch.map(async blockNumber => {
-                try {
-                    const block = await provider.getBlock(blockNumber);
-
-                    return [
-                        blockNumber,
-                        block ? Number(block.timestamp) : null
-                    ];
-
-                } catch (error) {
-                    console.warn(
-                        "Timestamp error:",
-                        blockNumber,
-                        error
-                    );
-
-                    return [blockNumber, null];
-                }
-            })
-        );
-
-        for (const [number, timestamp] of results) {
-            timestampMap.set(number, timestamp);
-        }
-    }
-
-    for (const event of events) {
-        const timestamp = timestampMap.get(event.blockNumber);
-
-        event.timestamp = timestamp;
-        event.date = timestamp
-            ? new Date(timestamp * 1000).toLocaleString("en-IN")
-            : "Date unavailable";
-    }
-}
-
-
-/* =====================================================
-   REMOVE DUPLICATE EVENTS
-===================================================== */
-
-function removeDuplicates(events) {
-
-    const map = new Map();
-
-    for (const event of events) {
-        const key =
-            event.transactionHash + "-" + event.logIndex;
-
-        map.set(key, event);
-    }
-
-    return [...map.values()].sort((a, b) => {
-        if (a.blockNumber !== b.blockNumber) {
-            return a.blockNumber - b.blockNumber;
-        }
-
-        return a.logIndex - b.logIndex;
-    });
-}
-
-
-/* =====================================================
-   MAIN SCAN FUNCTION
-===================================================== */
-
-async function startScan() {
-
-    if (scanRunning) return;
-
-    const inputAddress =
-        document.getElementById("walletInput").value.trim();
-
-    if (!ethers.isAddress(inputAddress)) {
-        setStatus("Please enter a valid Polygon wallet address.", "error");
-        return;
-    }
-
-    walletAddress = ethers.getAddress(inputAddress);
-
-    scanRunning = true;
-
-    document.getElementById("scanBtn").disabled = true;
-    document.getElementById("connectBtn").disabled = true;
-
-    buyHistory = [];
-    sellHistory = [];
-    allHistory = [];
-
-    renderTable();
-    resetStats();
-
-    setProgress(0);
-    setStatus("Connecting to Polygon network...");
-    setScanInfo("Preparing blockchain scan...");
-
-    const startTime = Date.now();
-
-    try {
-
-        const provider = await getProvider();
-
-        setStatus("Reading Sigma and USDT contract information...");
-
-        const contractData = await readContractData(
-            provider,
-            walletAddress
-        );
-
-        document.getElementById("currentBalance").textContent =
-            formatNumber(contractData.balance);
-
-        document.getElementById("currentRate").textContent =
-            formatNumber(contractData.rate);
-
-        const latestBlock = await provider.getBlockNumber();
-
-        if (START_BLOCK > latestBlock) {
-            throw new Error(
-                "Start block " + START_BLOCK +
-                " is higher than the current Polygon block " +
-                latestBlock + ". Please verify START_BLOCK."
-            );
-        }
-
-        const totalBlocks =
-            latestBlock - START_BLOCK + 1;
-
-        const userTopic = walletTopic(walletAddress);
-
-        const topics = [
-            [BUY_TOPIC, SELL_TOPIC],
-            userTopic
-        ];
-
-        setStatus(
-            "Scanning Buy and Sell events for " +
-            shortAddress(walletAddress) + "..."
-        );
-
-        /*
-          Start with 20,000 block chunks.
-          If an RPC rejects a range, getLogsAdaptive()
-          automatically splits that range into smaller parts.
-        */
-
-        const CHUNK_SIZE = 20000;
-
-        let allLogs = [];
-        let scannedBlocks = 0;
-
-        for (
-            let fromBlock = START_BLOCK;
-            fromBlock <= latestBlock;
-            fromBlock += CHUNK_SIZE
-        ) {
-
-            const toBlock = Math.min(
-                fromBlock + CHUNK_SIZE - 1,
-                latestBlock
-            );
-
-            const logs = await getLogsAdaptive(
-                provider,
-                fromBlock,
-                toBlock,
-                topics
-            );
-
-            allLogs.push(...logs);
-
-            scannedBlocks +=
-                toBlock - fromBlock + 1;
-
-            const percent =
-                (scannedBlocks / totalBlocks) * 100;
-
-            setProgress(percent);
-
-            const elapsed =
-                Math.floor((Date.now() - startTime) / 1000);
-
-            setScanInfo(
-                "Scanned block " +
-                toBlock.toLocaleString("en-IN") +
-                " / " +
-                latestBlock.toLocaleString("en-IN") +
-                " · " +
-                percent.toFixed(1) +
-                "% · Events found: " +
-                allLogs.length +
-                " · Time: " +
-                elapsed +
-                " sec"
-            );
-
-            setStatus("Scanning blockchain history...");
-        }
-
-        const decoded = decodeLogs(allLogs);
-
-        buyHistory = removeDuplicates(decoded.buys);
-        sellHistory = removeDuplicates(decoded.sells);
-
-        allHistory = removeDuplicates(
-            buyHistory.concat(sellHistory)
-        );
-
-        setStatus(
-            "Loading transaction dates and timestamps..."
-        );
-
-        await addTimestamps(provider, allHistory);
-
-        /*
-          Copy timestamp details back into the individual
-          Buy and Sell lists.
-        */
-
-        const timestampLookup = new Map();
-
-        for (const event of allHistory) {
-            timestampLookup.set(
-                event.transactionHash + "-" + event.logIndex,
-                event
-            );
-        }
-
-        buyHistory = buyHistory.map(event =>
-            timestampLookup.get(
-                event.transactionHash + "-" + event.logIndex
-            ) || event
-        );
-
-        sellHistory = sellHistory.map(event =>
-            timestampLookup.get(
-                event.transactionHash + "-" + event.logIndex
-            ) || event
-        );
-
-        updateStats();
-
-        showTab("buy");
-
-        setProgress(100);
-
-        const elapsed =
-            Math.floor((Date.now() - startTime) / 1000);
-
-        setStatus(
-            "Scan completed successfully. " +
-            "Buy: " + buyHistory.length +
-            " · Sell: " + sellHistory.length,
-            "success"
-        );
-
-        setScanInfo(
-            "Completed · " +
-            latestBlock.toLocaleString("en-IN") +
-            " latest block · " +
-            elapsed + " seconds"
-        );
-
-    } catch (error) {
-
-        console.error("Scan error:", error);
-
-        setStatus(
-            "Loading failed: " +
-            (error.message || "Unknown error"),
-            "error"
-        );
-
-        setScanInfo("Scan stopped. Please try again.");
-
-    } finally {
-
-        scanRunning = false;
-
-        document.getElementById("scanBtn").disabled = false;
-        document.getElementById("connectBtn").disabled = false;
-    }
-}
-
-
-/* =====================================================
-   STATISTICS
-===================================================== */
-
-function resetStats() {
-
-    document.getElementById("buyCount").textContent = "0";
-    document.getElementById("sellCount").textContent = "0";
-    document.getElementById("totalBought").textContent = "0";
-    document.getElementById("totalSold").textContent = "0";
-    document.getElementById("totalSpent").textContent = "0";
-    document.getElementById("totalReceived").textContent = "0";
-    document.getElementById("currentBalance").textContent = "0";
-    document.getElementById("currentRate").textContent = "0";
-}
-
-function updateStats() {
-
-    const totalBought = buyHistory.reduce(
-        (sum, item) => sum + Number(item.amount),
-        0
-    );
-
-    const totalSold = sellHistory.reduce(
-        (sum, item) => sum + Number(item.amount),
-        0
-    );
-
-    const totalSpent = buyHistory.reduce(
-        (sum, item) => sum + Number(item.usdt),
-        0
-    );
-
-    const totalReceived = sellHistory.reduce(
-        (sum, item) => sum + Number(item.usdt),
-        0
-    );
-
-    document.getElementById("buyCount").textContent =
-        buyHistory.length;
-
-    document.getElementById("sellCount").textContent =
-        sellHistory.length;
-
-    document.getElementById("totalBought").textContent =
-        formatNumber(totalBought);
-
-    document.getElementById("totalSold").textContent =
-        formatNumber(totalSold);
-
-    document.getElementById("totalSpent").textContent =
-        formatNumber(totalSpent);
-
-    document.getElementById("totalReceived").textContent =
-        formatNumber(totalReceived);
-}
-
-
-/* =====================================================
-   TABLE DISPLAY
-===================================================== */
-
-function showTab(tab) {
-
-    currentTab = tab;
-
-    document.getElementById("buyTab").classList.toggle(
-        "active",
-        tab === "buy"
-    );
-
-    document.getElementById("sellTab").classList.toggle(
-        "active",
-        tab === "sell"
-    );
-
-    renderTable();
-}
-
-function renderTable() {
-
-    const head = document.getElementById("tableHead");
-    const body = document.getElementById("tableBody");
-
-    const events =
-        currentTab === "buy" ? buyHistory : sellHistory;
-
-    head.innerHTML = `
-        <tr>
-            <th>#</th>
-            <th>Date & Time</th>
-            <th>Sigma Amount</th>
-            <th>Rate (USDT)</th>
-            <th>USDT ${currentTab === "buy" ? "Spent" : "Received"}</th>
-            <th>Block</th>
-            <th>Transaction</th>
-        </tr>
-    `;
-
-    if (!events.length) {
-        body.innerHTML = `
-            <tr>
-                <td colspan="7" class="empty">
-                    No ${currentTab.toUpperCase()} transactions found.
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    const sorted = [...events].reverse();
-
-    body.innerHTML = sorted.map((event, index) => {
-
-        const txLink =
-            POLYGONSCAN_TX + event.transactionHash;
-
-        return `
-            <tr>
-                <td>${index + 1}</td>
-                <td>${escapeHTML(event.date || "Date unavailable")}</td>
-                <td>${formatNumber(event.amount)}</td>
-                <td>${formatNumber(event.rate)}</td>
-                <td>${formatNumber(event.usdt)}</td>
-                <td>${event.blockNumber.toLocaleString("en-IN")}</td>
-                <td>
-                    <a href="${txLink}" target="_blank" rel="noopener">
-                        ${shortAddress(event.transactionHash)}
-                    </a>
-                </td>
-            </tr>
-        `;
-    }).join("");
-}
-
-
-/* =====================================================
-   CSV EXPORT
-===================================================== */
-
-function downloadCSV() {
-
-    const events =
-        currentTab === "buy" ? buyHistory : sellHistory;
-
-    if (!events.length) {
-        alert("No transaction data available to download.");
-        return;
-    }
-
-    const rows = [
-        [
-            "Type",
-            "Date",
-            "Wallet",
-            "Sigma Amount",
-            "Rate USDT",
-            "USDT Amount",
-            "Block",
-            "Transaction Hash"
-        ]
-    ];
-
-    for (const event of events) {
-        rows.push([
-            event.type,
-            event.date || "",
-            walletAddress,
-            event.amount,
-            event.rate,
-            event.usdt,
-            event.blockNumber,
-            event.transactionHash
-        ]);
-    }
-
-    const csv = rows.map(row =>
-        row.map(value =>
-            '"' + String(value ?? "").replace(/"/g, '""') + '"'
-        ).join(",")
-    ).join("\n");
-
-    const blob = new Blob(
-        ["\uFEFF" + csv],
-        { type: "text/csv;charset=utf-8;" }
-    );
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download =
-        "sigma-six-" + currentTab + "-history.csv";
-
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    URL.revokeObjectURL(url);
-}
-
-
-/* =====================================================
-   HTML ESCAPE
-===================================================== */
-
-function escapeHTML(value) {
-    return String(value).replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-    })[char]);
-}
-
-
-/* =====================================================
-   AUTO WALLET ACCOUNT CHANGE
-===================================================== */
 
 if (window.ethereum) {
+ window.ethereum.on("accountsChanged", async accounts => {
+  if (!accounts || !accounts.length) {
+   walletAddress = null;
+   walletProvider = null;
+   document.getElementById("walletStatus").innerText =
+    "Wallet disconnected.";
+   document.getElementById("scanBtn").disabled = true;
+   return;
+  }
 
-    window.ethereum.on("accountsChanged", accounts => {
+  walletAddress = ethers.getAddress(accounts[0]);
+  transactions = [];
+  renderHistory();
+  await setupWallet();
+ });
 
-        if (accounts && accounts.length) {
-
-            walletAddress = ethers.getAddress(accounts[0]);
-
-            document.getElementById("walletInput").value =
-                walletAddress;
-
-            setStatus(
-                "Wallet changed. Click Scan History to refresh.",
-                "success"
-            );
-
-        } else {
-
-            walletAddress = "";
-
-            document.getElementById("walletInput").value = "";
-
-            setStatus("Wallet disconnected.");
-        }
-    });
+ window.ethereum.on("chainChanged", () => {
+  window.location.reload();
+ });
 }
 
+/* ==========================================
+   CONTRACT DATA
+========================================== */
 
-/* =====================================================
-   INITIAL PAGE SETUP
-===================================================== */
+async function readContractData() {
+ if (!walletAddress) return;
 
-document.getElementById("tableHead").innerHTML = `
-    <tr>
-        <th>#</th>
-        <th>Date & Time</th>
-        <th>Sigma Amount</th>
-        <th>Rate (USDT)</th>
-        <th>USDT Amount</th>
-        <th>Block</th>
-        <th>Transaction</th>
-    </tr>
-`;
+ try {
+  const data = await rpcRequest(async provider => {
+   const contract = new ethers.Contract(
+    CONTRACT_ADDRESS, ABI, provider
+   );
 
+   const [
+    balance,
+    rate,
+    sigmaDecRaw,
+    usdtDecRaw,
+    usdtAddress
+   ] = await Promise.all([
+    contract.balanceOf(walletAddress),
+    contract.getCurrentBuyRate(),
+    contract.SIGMA_DECIMALS(),
+    contract.USDT_DECIMALS(),
+    contract.usdt()
+   ]);
+
+   let sd = Number(sigmaDecRaw);
+   let ud = Number(usdtDecRaw);
+
+   if (!Number.isInteger(sd) || sd < 0 || sd > 80) {
+    sd = Number(await contract.decimals());
+   }
+
+   if (!Number.isInteger(ud) || ud < 0 || ud > 80) {
+    const usdtContract = new ethers.Contract(
+     usdtAddress, ERC20_ABI, provider
+    );
+    ud = Number(await usdtContract.decimals());
+   }
+
+   if (
+    !Number.isInteger(sd) || sd < 0 || sd > 80 ||
+    !Number.isInteger(ud) || ud < 0 || ud > 80
+   ) {
+    throw new Error(
+     "Invalid token decimals. Sigma: " + sd +
+     ", USDT: " + ud
+    );
+   }
+
+   return {
+    balance: ethers.formatUnits(balance, sd),
+    rate: ethers.formatUnits(rate, ud),
+    sigmaDecimals: sd,
+    usdtDecimals: ud
+   };
+  });
+
+  sigmaDecimals = data.sigmaDecimals;
+  usdtDecimals = data.usdtDecimals;
+
+  document.getElementById("walletBalance").innerText =
+   Number(data.balance).toLocaleString("en-IN", {
+    maximumFractionDigits: 6
+   });
+
+  document.getElementById("currentRate").innerText =
+   Number(data.rate).toLocaleString("en-IN", {
+    maximumFractionDigits: 8
+   });
+
+ } catch(error) {
+  console.error("Contract data error:", error);
+  document.getElementById("rpcStatus").innerText =
+   "Contract read error: " + error.message;
+ }
+}
+
+/* ==========================================
+   HISTORY SCANNER
+========================================== */
+
+async function startScan() {
+ if (!walletAddress || scanning) return;
+
+ scanning = true;
+ transactions = [];
+
+ document.getElementById("scanBtn").disabled = true;
+ document.getElementById("historyBody").innerHTML =
+  '<tr><td colspan="7">Scanning blockchain history...</td></tr>';
+
+ try {
+  const latestBlock = await rpcRequest(
+   provider => provider.getBlockNumber()
+  );
+
+  const totalBlocks = latestBlock - START_BLOCK + 1;
+
+  if (totalBlocks <= 0) {
+   throw new Error("Start block is ahead of current block.");
+  }
+
+  let fromBlock = START_BLOCK;
+  let chunkSize = 10000;
+  let scanned = 0;
+
+  const walletTopic =
+   "0x" + walletAddress.toLowerCase().replace("0x","").padStart(64,"0");
+
+  while (fromBlock <= latestBlock) {
+   let toBlock = Math.min(
+    fromBlock + chunkSize - 1,
+    latestBlock
+   );
+
+   let logs = null;
+   let lastError = null;
+
+   // Try available RPCs for this block range.
+   for (const url of RPC_URLS) {
+    let provider;
+
+    try {
+     provider = new ethers.JsonRpcProvider(
+      url, CHAIN_ID, { staticNetwork: true }
+     );
+
+     logs = await provider.getLogs({
+      address: CONTRACT_ADDRESS,
+      fromBlock,
+      toBlock,
+      topics: [
+       [BUY_TOPIC, SELL_TOPIC],
+       walletTopic
+      ]
+     });
+
+     document.getElementById("rpcStatus").innerText =
+      "History RPC: " + url;
+
+     break;
+
+    } catch(error) {
+     lastError = error;
+     console.warn("History RPC failed:", url, error);
+    } finally {
+     if (provider) {
+      try { provider.destroy(); } catch(e) {}
+     }
+    }
+   }
+
+   // If every RPC rejected the range, reduce the range.
+   if (logs === null) {
+    if (chunkSize > 250) {
+     chunkSize = Math.max(250, Math.floor(chunkSize / 2));
+     document.getElementById("scanStatus").innerText =
+      "Reducing scan range and retrying...";
+     continue;
+    }
+    throw lastError || new Error("Unable to read event logs.");
+   }
+
+   for (const log of logs) {
+    try {
+     const parsed = iface.parseLog({
+      topics: log.topics,
+      data: log.data
+     });
+
+     if (!parsed) continue;
+
+     const type = parsed.name;
+
+     const amount = parsed.args.amount;
+     const rate = parsed.args.rate;
+     const value = type === "Buy"
+      ? parsed.args.usdtSpent
+      : parsed.args.usdtReceived;
+
+     transactions.push({
+      type,
+      amount: ethers.formatUnits(amount, sigmaDecimals),
+      rateRaw: rate,
+      rate: null,
+      value: ethers.formatUnits(value, usdtDecimals),
+      blockNumber: Number(log.blockNumber),
+      transactionHash: log.transactionHash,
+      logIndex: Number(log.index ?? log.logIndex ?? 0),
+      timestamp: null
+     });
+
+    } catch(error) {
+     console.warn("Event decode failed:", error, log);
+    }
+   }
+
+   scanned += toBlock - fromBlock + 1;
+
+   const percent = Math.min(
+    100, (scanned / totalBlocks) * 100
+   );
+
+   document.getElementById("progressBar").style.width =
+    percent + "%";
+
+   document.getElementById("scanStatus").innerText =
+    "Scanned " + scanned.toLocaleString() +
+    " / " + totalBlocks.toLocaleString() +
+    " blocks (" + percent.toFixed(1) + "%)";
+
+   fromBlock = toBlock + 1;
+  }
+
+  transactions.sort((a,b) =>
+   b.blockNumber - a.blockNumber || b.logIndex - a.logIndex
+  );
+
+  await loadTimestamps();
+
+  renderHistory();
+  updateStats();
+
+  document.getElementById("scanStatus").innerText =
+   "Scan completed. " + transactions.length +
+   " transactions found.";
+
+  document.getElementById("csvBtn").disabled =
+   transactions.length === 0;
+
+ } catch(error) {
+  console.error(error);
+  document.getElementById("scanStatus").innerText =
+   "Loading failed: " + error.message;
+
+  alert(
+   "History scan failed.\n\n" + error.message +
+   "\n\nArchive RPC access may be required by the provider."
+  );
+
+ } finally {
+  scanning = false;
+  document.getElementById("scanBtn").disabled = false;
+ }
+}
+
+/* ==========================================
+   BLOCK TIMESTAMPS
+========================================== */
+
+async function loadTimestamps() {
+ const uniqueBlocks = [
+  ...new Set(transactions.map(tx => tx.blockNumber))
+ ];
+
+ for (let i = 0; i < uniqueBlocks.length; i += 10) {
+  const group = uniqueBlocks.slice(i, i + 10);
+
+  const results = await rpcRequest(async provider => {
+   return Promise.all(group.map(async blockNumber => {
+    const block = await provider.getBlock(blockNumber);
+    return {
+     blockNumber,
+     timestamp: block ? Number(block.timestamp) : null
+    };
+   }));
+  });
+
+  const timestampMap = new Map(
+   results.map(x => [x.blockNumber, x.timestamp])
+  );
+
+  transactions.forEach(tx => {
+   if (timestampMap.has(tx.blockNumber)) {
+    tx.timestamp = timestampMap.get(tx.blockNumber);
+   }
+  });
+ }
+}
+
+/* ==========================================
+   DISPLAY HISTORY
+========================================== */
+
+function renderHistory() {
+ const body = document.getElementById("historyBody");
+
+ if (!transactions.length) {
+  body.innerHTML =
+   '<tr><td colspan="7" style="text-align:center">No transactions found.</td></tr>';
+  return;
+ }
+
+ body.innerHTML = transactions.map(tx => {
+  const date = tx.timestamp
+   ? new Date(tx.timestamp * 1000).toLocaleString("en-IN")
+   : "Time unavailable";
+
+  const typeClass = tx.type === "Buy" ? "buy" : "sell";
+
+  return `
+   <tr>
+    <td class="${typeClass}">${tx.type}</td>
+    <td>${date}</td>
+    <td>${Number(tx.amount).toLocaleString("en-IN",{maximumFractionDigits:6})}</td>
+    <td>${Number(ethers.formatUnits(tx.rateRaw, usdtDecimals)).toLocaleString("en-IN",{maximumFractionDigits:8})}</td>
+    <td>${Number(tx.value).toLocaleString("en-IN",{maximumFractionDigits:6})}</td>
+    <td>
+     <a target="_blank" href="https://polygonscan.com/tx/${tx.transactionHash}">
+      View TX ↗
+     </a>
+    </td>
+    <td>
+     <a target="_blank" href="https://polygonscan.com/block/${tx.blockNumber}">
+      ${tx.blockNumber}
+     </a>
+    </td>
+   </tr>
+  `;
+ }).join("");
+}
+
+/* ==========================================
+   STATISTICS
+========================================== */
+
+function updateStats() {
+ const buys = transactions.filter(x => x.type === "Buy");
+ const sells = transactions.filter(x => x.type === "Sell");
+
+ const buyTotal = buys.reduce((sum,x) => sum + Number(x.amount), 0);
+ const sellTotal = sells.reduce((sum,x) => sum + Number(x.amount), 0);
+
+ document.getElementById("buyCount").innerText = buys.length;
+ document.getElementById("sellCount").innerText = sells.length;
+
+ document.getElementById("totalBuy").innerText =
+  buyTotal.toLocaleString("en-IN",{maximumFractionDigits:4});
+
+ document.getElementById("totalSell").innerText =
+  sellTotal.toLocaleString("en-IN",{maximumFractionDigits:4});
+}
+
+/* ==========================================
+   CSV EXPORT
+========================================== */
+
+function downloadCSV() {
+ if (!transactions.length) return;
+
+ const rows = [
+  ["Type","Date","Sigma Amount","Rate","USDT Value","Transaction Hash","Block"]
+ ];
+
+ transactions.forEach(tx => {
+  rows.push([
+   tx.type,
+   tx.timestamp ? new Date(tx.timestamp * 1000).toISOString() : "",
+   tx.amount,
+   ethers.formatUnits(tx.rateRaw, usdtDecimals),
+   tx.value,
+   tx.transactionHash,
+   tx.blockNumber
+  ]);
+ });
+
+ const csv = rows.map(row =>
+  row.map(value =>
+   '"' + String(value).replace(/"/g,'""') + '"'
+  ).join(",")
+ ).join("\n");
+
+ const blob = new Blob([csv], {
+  type:"text/csv;charset=utf-8;"
+ });
+
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement("a");
+
+ a.href = url;
+ a.download = "sigma-six-buy-sell-history.csv";
+ a.click();
+
+ URL.revokeObjectURL(url);
+}
+
+/* ==========================================
+   DASHBOARD
+========================================== */
+
+function goDashboard() {
+ window.location.href = "index.html";
+}
+
+/* ==========================================
+   START
+========================================== */
+
+window.addEventListener("load", () => {
+ checkWallet();
+});
 </script>
+
 </body>
 </html>
