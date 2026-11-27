@@ -82,52 +82,91 @@ function setWalletButton(){const el=document.getElementById('btnText');el.textCo
 async function connectWallet(){if(!window.ethereum){alert('MetaMask or a compatible wallet is required.');return;}try{provider=new ethers.BrowserProvider(window.ethereum);await provider.send('eth_requestAccounts',[]);await ensurePolygon();const signer=await provider.getSigner();userAddress=(await signer.getAddress()).toLowerCase();setWalletButton();await loadData();if(!window.__sigmaTransferListeners){window.ethereum.on('accountsChanged',onAccountsChanged);window.ethereum.on('chainChanged',()=>location.reload());window.__sigmaTransferListeners=true;}}catch(e){console.error(e);alert('Wallet connection failed: '+(e.shortMessage||e.message));}}
 async function onAccountsChanged(accounts){if(!accounts.length){userAddress=null;allTransfers=[];filteredTransfers=[];setWalletButton();setState('Wallet disconnected. Connect again to view transfers.','fa-wallet');updateStats([]);return;}userAddress=accounts[0].toLowerCase();setWalletButton();await loadData();}
 
-// Limit simultaneous RPC requests to avoid provider throttling.
-let activeRPC=0;const rpcQueue=[];
-async function rpcSlot(fn){if(activeRPC>=3)await new Promise(resolve=>rpcQueue.push(resolve));activeRPC++;try{return await fn();}finally{activeRPC--;const next=rpcQueue.shift();if(next)next();}}
+// Multi-RPC scanner: injected wallet RPC first, then public Polygon RPC fallbacks.
+const RPC_URLS = [
+ 'https://polygon-bor-rpc.publicnode.com',
+ 'https://polygon.drpc.org',
+ 'https://polygon-rpc.com'
+];
+let activeRPC=0;const rpcQueue=[];let rpcRequestId=1;
+async function rpcSlot(fn){if(activeRPC>=4)await new Promise(resolve=>rpcQueue.push(resolve));activeRPC++;try{return await fn();}finally{activeRPC--;const next=rpcQueue.shift();if(next)next();}}
+async function directRpc(url,method,params){
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),18000);
+ try{const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:rpcRequestId++,method,params}),signal:controller.signal});if(!res.ok)throw new Error(`${url} HTTP ${res.status}`);const data=await res.json();if(data.error)throw new Error(data.error.message||JSON.stringify(data.error));return data.result;}
+ finally{clearTimeout(timer);}
+}
+async function rpcAny(method,params){
+ const errors=[];
+ for(const url of RPC_URLS){try{return await rpcSlot(()=>directRpc(url,method,params));}catch(e){errors.push(e.message||String(e));}}
+ try{return await rpcSlot(()=>provider.send(method,params));}catch(e){errors.push(e.shortMessage||e.message||String(e));}
+ throw new Error(`All Polygon RPC endpoints failed: ${errors.slice(0,3).join(' | ')}`);
+}
 async function getLogsAdaptive(address,topicWallet,isOutgoing,fromBlock,toBlock,depth=0){
-  const topics=isOutgoing?[TRANSFER_TOPIC,topicWallet]:[TRANSFER_TOPIC,null,topicWallet];
-  try{return await rpcSlot(()=>provider.send('eth_getLogs',[{address,fromBlock:ethers.toQuantity(fromBlock),toBlock:ethers.toQuantity(toBlock),topics}]));}
-  catch(err){const msg=String(err?.shortMessage||err?.message||err).toLowerCase();const canSplit=/range|too many|more than|response size|limit exceeded|timeout|timed out|query returned|block span|exceeds/.test(msg);if(!canSplit||fromBlock>=toBlock||depth>18)throw err;const mid=Math.floor((fromBlock+toBlock)/2);const halves=await Promise.all([getLogsAdaptive(address,topicWallet,isOutgoing,fromBlock,mid,depth+1),getLogsAdaptive(address,topicWallet,isOutgoing,mid+1,toBlock,depth+1)]);return halves[0].concat(halves[1]);}
+ const topics=isOutgoing?[TRANSFER_TOPIC,topicWallet]:[TRANSFER_TOPIC,null,topicWallet];
+ try{return {logs:await rpcAny('eth_getLogs',[{address,fromBlock:ethers.toQuantity(fromBlock),toBlock:ethers.toQuantity(toBlock),topics}]),failures:[]};}
+ catch(err){
+  if(fromBlock>=toBlock||depth>=18)return {logs:[],failures:[{from:fromBlock,to:toBlock,message:err.message||String(err)}]};
+  const mid=Math.floor((fromBlock+toBlock)/2);
+  const halves=await Promise.all([getLogsAdaptive(address,topicWallet,isOutgoing,fromBlock,mid,depth+1),getLogsAdaptive(address,topicWallet,isOutgoing,mid+1,toBlock,depth+1)]);
+  return {logs:halves.flatMap(x=>x.logs),failures:halves.flatMap(x=>x.failures)};
+ }
 }
 async function mapLimit(items,limit,fn){const out=new Array(items.length);let next=0;const workers=Array.from({length:Math.min(limit,items.length)},async()=>{while(true){const i=next++;if(i>=items.length)return;out[i]=await fn(items[i],i);}});await Promise.all(workers);return out;}
+async function scanSide(address,topicWallet,isOutgoing,fromBlock,toBlock,onProgress,label){
+ const chunkSize=5000,chunks=[];for(let a=fromBlock;a<=toBlock;a+=chunkSize)chunks.push([a,Math.min(toBlock,a+chunkSize-1)]);
+ const output=[],failures=[];let completed=0;
+ await mapLimit(chunks,3,async(range)=>{try{const result=await getLogsAdaptive(address,topicWallet,isOutgoing,range[0],range[1]);output.push(...result.logs);failures.push(...result.failures);}catch(e){failures.push({from:range[0],to:range[1],message:e.message||String(e)});}finally{completed++;onProgress?.(completed,chunks.length,label);}});
+ return {logs:output,failures};
+}
+async function readBlockTimestamp(blockNumber){
+ try{const hex=ethers.toQuantity(blockNumber);const block=await rpcAny('eth_getBlockByNumber',[hex,false]);return block?.timestamp?Number(BigInt(block.timestamp)):0;}
+ catch(e){console.warn('Timestamp unavailable for block',blockNumber,e);return 0;}
+}
 async function readDecimals(address,abi,fallback){try{const c=new ethers.Contract(address,abi,provider);return Number(await c.decimals());}catch(_){return fallback;}}
 async function loadData(){
- if(loading)return;if(!userAddress){setState('Connect your wallet first.','fa-wallet');return;}loading=true;document.getElementById('scanSummary').textContent='Scanning only your wallet-matched SIGMA and USDT logs…';setState('Starting optimized wallet scan…','fa-spinner fa-spin');progress(2,'Connecting to Polygon RPC…');
+ if(loading)return;if(!userAddress){setState('Connect your wallet first.','fa-wallet');return;}loading=true;
+ allTransfers=[];filteredTransfers=[];document.getElementById('scanSummary').textContent='Scanning wallet-matched SIGMA and USDT logs using multiple Polygon RPCs…';setState('Starting optimized wallet scan…','fa-spinner fa-spin');progress(2,'Checking Polygon network…');
  try{
-  const [chain,currentBlock]=await Promise.all([provider.send('eth_chainId',[]),provider.getBlockNumber()]);if(chain.toLowerCase()!==POLYGON_CHAIN_ID)throw new Error('Please switch your wallet to Polygon Mainnet.');
-  const fromBlock=Math.max(0,currentBlock-SCAN_BLOCKS),walletTopic=topicAddress(userAddress);
-  progress(8,'Reading token settings…');
+  const chain=await provider.send('eth_chainId',[]);if(chain.toLowerCase()!==POLYGON_CHAIN_ID)throw new Error('Please switch your wallet to Polygon Mainnet.');
+  const currentBlock=Number(BigInt(await rpcAny('eth_blockNumber',[])));const fromBlock=Math.max(0,currentBlock-SCAN_BLOCKS),walletTopic=topicAddress(userAddress);
+  progress(7,'Reading token settings…');
   [sigmaDecimals,usdtDecimals]=await Promise.all([readDecimals(SIGMA_ADDRESS,sigmaABI,18),readDecimals(USDT_ADDRESS,erc20ABI,6)]);
   try{const sc=new ethers.Contract(SIGMA_ADDRESS,sigmaABI,provider);const rate=await sc.getCurrentBuyRate();currentBuyRate=Number(ethers.formatUnits(rate,6));if(!Number.isFinite(currentBuyRate)||currentBuyRate<=0)currentBuyRate=null;}catch(_){currentBuyRate=null;}
-  progress(15,'Searching indexed wallet logs for SIGMA and USDT…');
-  const tasks=[
-   getLogsAdaptive(SIGMA_ADDRESS,walletTopic,true,fromBlock,currentBlock),
-   getLogsAdaptive(SIGMA_ADDRESS,walletTopic,false,fromBlock,currentBlock),
-   getLogsAdaptive(USDT_ADDRESS,walletTopic,true,fromBlock,currentBlock),
-   getLogsAdaptive(USDT_ADDRESS,walletTopic,false,fromBlock,currentBlock)
+  const jobs=[
+   [SIGMA_ADDRESS,true,'SIGMA sent'],[SIGMA_ADDRESS,false,'SIGMA received'],
+   [USDT_ADDRESS,true,'USDT sent'],[USDT_ADDRESS,false,'USDT received']
   ];
-  const results=await Promise.all(tasks);progress(58,'Decoding matching transfers…');
-  const seen=new Set(),parsed=[];
-  const configs=[['SIGMA',SIGMA_ADDRESS,sigmaDecimals],['SIGMA',SIGMA_ADDRESS,sigmaDecimals],['USDT',USDT_ADDRESS,usdtDecimals],['USDT',USDT_ADDRESS,usdtDecimals]];
-  for(let k=0;k<results.length;k++)for(const log of results[k]){
-   const key=log.address.toLowerCase()+':'+log.transactionHash.toLowerCase()+':'+Number(log.index??log.logIndex);if(seen.has(key))continue;seen.add(key);
-   const decoded=iface.parseLog({topics:log.topics,data:log.data});if(!decoded)continue;
-   const from=decoded.args.from.toLowerCase(),to=decoded.args.to.toLowerCase();if(from!==userAddress&&to!==userAddress)continue;
-   const token=configs[k][0],amount=Number(ethers.formatUnits(decoded.args.value,configs[k][2]));
-   const value=token==='USDT'?amount:(currentBuyRate===null?null:amount*currentBuyRate);
-   parsed.push({hash:log.transactionHash,logIndex:Number(log.index??log.logIndex),blockNumber:Number(log.blockNumber),token,from,to,amount,value,timestamp:0,date:null});
+  const sideResults=[];let finishedSides=0;
+  progress(12,'Scanning SIGMA and USDT wallet logs…');
+  await mapLimit(jobs,4,async(job)=>{
+   const result=await scanSide(job[0],walletTopic,job[1],fromBlock,currentBlock,(done,total,label)=>{
+    const pct=12+38*((finishedSides+(done/Math.max(total,1)))/jobs.length);progress(pct,`${label}: ${done}/${total} block ranges`);
+   },job[2]);
+   sideResults.push({job,result});finishedSides++;
+  });
+  progress(53,'Decoding available transfer records…');
+  const seen=new Set(),parsed=[],failures=[];
+  for(const item of sideResults){failures.push(...item.result.failures);const token=item.job[0].toLowerCase()===SIGMA_ADDRESS.toLowerCase()?'SIGMA':'USDT';const decimals=token==='SIGMA'?sigmaDecimals:usdtDecimals;
+   for(const log of item.result.logs){
+    const logIndex=Number(log.index??log.logIndex??0);const key=log.address.toLowerCase()+':'+log.transactionHash.toLowerCase()+':'+logIndex;if(seen.has(key))continue;seen.add(key);
+    try{const decoded=iface.parseLog({topics:log.topics,data:log.data});if(!decoded)continue;const from=decoded.args.from.toLowerCase(),to=decoded.args.to.toLowerCase();if(from!==userAddress&&to!==userAddress)continue;
+     const amount=Number(ethers.formatUnits(decoded.args.value,decimals));const value=token==='USDT'?amount:(currentBuyRate===null?null:amount*currentBuyRate);
+     parsed.push({hash:log.transactionHash,logIndex,blockNumber:Number(BigInt(log.blockNumber)),token,from,to,amount,value,timestamp:0,date:null});
+    }catch(decodeError){console.warn('Skipped undecodable transfer log',decodeError);}
+   }
   }
-  progress(68,`Found ${parsed.length.toLocaleString()} matching logs. Loading block times…`);
+  progress(58,`Found ${parsed.length.toLocaleString()} transfers. Loading timestamps…`);
   const blockNumbers=[...new Set(parsed.map(x=>x.blockNumber))];let done=0;
-  const blocks=await mapLimit(blockNumbers,8,async n=>{const b=await provider.getBlock(n);done++;if(done%8===0||done===blockNumbers.length)progress(68+25*done/Math.max(blockNumbers.length,1),`Loading timestamps ${done}/${blockNumbers.length}…`);return [n,b?.timestamp??0];});
-  const timeMap=new Map(blocks);for(const tx of parsed){tx.timestamp=timeMap.get(tx.blockNumber)||0;tx.date=new Date(tx.timestamp*1000);}
-  allTransfers=parsed.sort((a,b)=>b.timestamp-a.timestamp||b.logIndex-a.logIndex);applyFilters();
-  document.getElementById('scanSummary').textContent=`Scan complete · blocks ${fromBlock.toLocaleString()}–${currentBlock.toLocaleString()} · ${allTransfers.length.toLocaleString()} SIGMA/USDT transfers found.`;
-  finishProgress('Scan complete');if(!allTransfers.length)setState('No SIGMA or USDT Transfer events found for this wallet in the scanned block range.','fa-magnifying-glass');
- }catch(e){console.error('Transfer scan failed:',e);document.getElementById('scanSummary').textContent='Scan failed. Please refresh and try again.';setState('Could not complete scan: '+(e.shortMessage||e.message||'RPC error'),'fa-triangle-exclamation');document.getElementById('progressText').textContent='Scan failed — no partial results shown';}
+  const blocks=await mapLimit(blockNumbers,6,async n=>{const ts=await readBlockTimestamp(n);done++;if(done%10===0||done===blockNumbers.length)progress(58+37*done/Math.max(blockNumbers.length,1),`Loading timestamps ${done}/${blockNumbers.length}…`);return [n,ts];});
+  const timeMap=new Map(blocks);for(const tx of parsed){tx.timestamp=timeMap.get(tx.blockNumber)||0;tx.date=new Date(tx.timestamp?tx.timestamp*1000:0);}
+  allTransfers=parsed.filter(x=>x.timestamp>0).sort((a,b)=>b.timestamp-a.timestamp||b.logIndex-a.logIndex);applyFilters();
+  const failedCount=failures.length;const summary=`${allTransfers.length.toLocaleString()} transfers found · blocks ${fromBlock.toLocaleString()}–${currentBlock.toLocaleString()}`;
+  if(failedCount){document.getElementById('scanSummary').textContent=`PARTIAL SCAN · ${summary} · ${failedCount} block ranges could not be read. Refresh to retry.`;finishProgress('Partial results loaded');setStateIfEmpty('Some RPC ranges failed. Displaying all successfully retrieved transfers.','fa-triangle-exclamation');}
+  else{document.getElementById('scanSummary').textContent=`Scan complete · ${summary}.`;finishProgress('Scan complete');if(!allTransfers.length)setState('No SIGMA or USDT Transfer events found for this wallet in the scanned block range.','fa-magnifying-glass');}
+ }catch(e){console.error('Transfer scan failed:',e);document.getElementById('scanSummary').textContent='Scan could not complete. Please check wallet network or RPC connection.';setState('Scan error: '+(e.shortMessage||e.message||'Unknown RPC error'),'fa-triangle-exclamation');document.getElementById('progressText').textContent='Scan failed';}
  finally{loading=false;}
 }
+function setStateIfEmpty(message,icon){if(!filteredTransfers.length)setState(message,icon);}
 function applyFilters(){const token=document.getElementById('tokenFilter').value,dir=document.getElementById('directionFilter').value,start=document.getElementById('startDate').value,end=document.getElementById('endDate').value,search=document.getElementById('searchWallet').value.trim().toLowerCase();let startTs=null,endTs=null;if(start)startTs=new Date(start+'T00:00:00').getTime()/1000;if(end)endTs=new Date(end+'T00:00:00').getTime()/1000+86400;
  filteredTransfers=allTransfers.filter(tx=>{if(tx.token!==token)return false;if(dir==='sent'&&tx.from!==userAddress)return false;if(dir==='received'&&tx.to!==userAddress)return false;if(startTs!==null&&tx.timestamp<startTs)return false;if(endTs!==null&&tx.timestamp>=endTs)return false;if(search&&!tx.from.includes(search)&&!tx.to.includes(search))return false;return true;});displayTransfers();updateStats(filteredTransfers,token);}
 function clearFilters(){document.getElementById('tokenFilter').value='SIGMA';document.getElementById('directionFilter').value='all';document.getElementById('startDate').value='';document.getElementById('endDate').value='';document.getElementById('searchWallet').value='';applyFilters();}
