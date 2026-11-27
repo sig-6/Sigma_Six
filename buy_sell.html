@@ -1,777 +1,796 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SIGMA SIX | Trade History</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<style>
-:root{
- --bg:#0a0b10;--card:#161821;--primary:#00ffcc;
- --secondary:#9d4edd;--text:#fff;--muted:#999;
- --green:#00ff88;--red:#ff5555;--border:#303342;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
-.rainbow{height:4px;background:linear-gradient(90deg,#00ffcc,#9d4edd,#ff2a6d,#00ffcc)}
-.container{max-width:1400px;margin:auto;padding:18px}
-button,a{font-family:inherit}
-.topbar{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
-.btn{
- border:1px solid #28564f;background:#12221f;color:var(--primary);
- padding:12px 17px;border-radius:10px;font-weight:700;cursor:pointer;
- text-decoration:none
-}
-.btn:hover{background:#193c35}
-.connect{
- position:fixed;right:20px;top:18px;z-index:10;
- background:linear-gradient(90deg,var(--primary),var(--secondary));
- color:#000;border:0;border-radius:10px;padding:12px 18px;
- font-weight:800;cursor:pointer
-}
-.connect.connected{background:#15382f;color:var(--primary);border:1px solid var(--primary)}
-.header{text-align:center;padding:25px 0}
-.header h1{
- font-size:clamp(28px,5vw,46px);margin:0;
- background:linear-gradient(90deg,var(--primary),var(--secondary),#ff2a6d);
- color:transparent;background-clip:text;-webkit-background-clip:text
-}
-.header p{color:var(--muted);font-size:13px}
-.wallet-info{
- background:#121820;border:1px solid #263b43;border-radius:10px;
- padding:12px;margin:15px 0;color:#aaa;font-size:12px;
- overflow-wrap:anywhere
-}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:15px;margin:20px 0}
-.stat,.panel{
- background:var(--card);border:1px solid rgba(0,255,204,.15);
- border-radius:15px;padding:20px
-}
-.stat-title{color:#aaa;font-size:13px;margin-bottom:12px}
-.stat-title i{color:var(--primary);margin-right:7px}
-.stat-value{font-size:25px;font-weight:800;color:var(--primary);overflow-wrap:anywhere}
-.stat-sub{font-size:12px;color:#999;margin-top:8px}
-.tabs{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
-.tab{
- padding:12px 17px;border-radius:10px;border:1px solid var(--border);
- background:#171923;color:#aaa;font-weight:700;cursor:pointer
-}
-.tab.active{background:linear-gradient(90deg,var(--primary),var(--secondary));color:#000;border:0}
-.panel{margin:18px 0}
-.panel h2{color:var(--primary);font-size:20px;margin:0 0 6px}
-.panel p{color:#999;font-size:12px}
-.table-wrap{overflow:auto;max-height:560px;margin-top:15px}
-table{border-collapse:collapse;width:100%;min-width:780px}
-thead{position:sticky;top:0;background:#222634;z-index:2}
-th,td{padding:13px 11px;border-bottom:1px solid var(--border);text-align:left;font-size:12px;white-space:nowrap}
-th{color:var(--primary)}
-tr:hover td{background:#20232d}
-.loading{text-align:center;padding:25px;color:#aaa}
-.progress-track{height:9px;background:#303342;border-radius:20px;overflow:hidden;margin:15px 0 8px}
-.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--secondary));transition:width .2s}
-.progress-text{font-size:12px;color:#aaa;text-align:center}
-.status{padding:5px 8px;border-radius:6px;font-weight:700;font-size:10px}
-.buy{background:#12392c;color:var(--green)}
-.sell{background:#421e26;color:var(--red)}
-.error{color:#ff7777;white-space:normal;overflow-wrap:anywhere}
-.small{font-size:11px;color:#888;margin-top:12px}
-.txlink{color:var(--primary);text-decoration:none}
-@media(max-width:700px){
- .connect{position:static;width:calc(100% - 36px);margin:15px 18px}
- .container{padding:10px}
- .stat{padding:15px}
- .stat-value{font-size:21px}
- .tab{flex:1}
-}
-</style>
-</head>
-
-<body>
-<div class="rainbow"></div>
-
-<button class="connect" id="connectBtn" onclick="connectWallet()">
- <i class="fas fa-wallet"></i> <span id="connectText">Connect Wallet</span>
-</button>
-
-<div class="container">
-
- <div class="topbar">
-  <a class="btn" href="index.html"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-  <button class="btn" onclick="loadData()"><i class="fas fa-sync"></i> Refresh</button>
-  <button class="btn" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
- </div>
-
- <div class="header">
-  <h1>SIGMA SIX TRADE HISTORY</h1>
-  <p>Complete Connected Wallet Buy & Sell History</p>
- </div>
-
- <div class="wallet-info" id="walletInfo">
-  Wallet: Not Connected<br>
-  Contract: 0xaF215838d156F7d348A6d56cA962cbC680A2153F
- </div>
-
- <div class="stats">
-  <div class="stat">
-   <div class="stat-title"><i class="fas fa-shopping-cart"></i> Total Bought</div>
-   <div class="stat-value" id="totalBought">0</div>
-   <div class="stat-sub" id="buyValue">$0 USDT</div>
-  </div>
-  <div class="stat">
-   <div class="stat-title"><i class="fas fa-coins"></i> Total Sold</div>
-   <div class="stat-value" id="totalSold">0</div>
-   <div class="stat-sub" id="sellValue">$0 USDT</div>
-  </div>
-  <div class="stat">
-   <div class="stat-title"><i class="fas fa-wallet"></i> Current Holdings</div>
-   <div class="stat-value" id="holdings">0</div>
-   <div class="stat-sub" id="holdingValue">$0 USDT</div>
-  </div>
-  <div class="stat">
-   <div class="stat-title"><i class="fas fa-chart-line"></i> Current Buy Rate</div>
-   <div class="stat-value" id="currentRate">$0</div>
-   <div class="stat-sub">USDT per Sigma</div>
-  </div>
- </div>
-
- <div class="tabs">
-  <button class="tab active" id="buyTab" onclick="showTab('buy')">Buy History</button>
-  <button class="tab" id="sellTab" onclick="showTab('sell')">Sell History</button>
- </div>
-
- <div class="panel" id="buyPanel">
-  <h2><i class="fas fa-shopping-cart"></i> BUY HISTORY</h2>
-  <p>All Buy events belonging to the connected wallet</p>
-  <div class="table-wrap">
-   <table>
-    <thead><tr>
-     <th>#</th><th>Date & Time</th><th>Sigma Quantity</th>
-     <th>Buy Rate</th><th>USDT Spent</th><th>Transaction</th>
-    </tr></thead>
-    <tbody id="buyBody">
-     <tr><td colspan="6" class="loading">Connect wallet to load history</td></tr>
-    </tbody>
-   </table>
-  </div>
- </div>
-
- <div class="panel" id="sellPanel" style="display:none">
-  <h2><i class="fas fa-coins"></i> SELL HISTORY</h2>
-  <p>All Sell events belonging to the connected wallet</p>
-  <div class="table-wrap">
-   <table>
-    <thead><tr>
-     <th>#</th><th>Date & Time</th><th>Sigma Quantity</th>
-     <th>Sell Rate</th><th>USDT Received</th><th>Transaction</th>
-    </tr></thead>
-    <tbody id="sellBody">
-     <tr><td colspan="6" class="loading">Connect wallet to load history</td></tr>
-    </tbody>
-   </table>
-  </div>
- </div>
-
- <div class="panel">
-  <h2><i class="fas fa-database"></i> SCAN STATUS</h2>
-  <div id="scanStatus" class="progress-text">Waiting for wallet connection</div>
-  <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
-  <div class="progress-text" id="progressText">0%</div>
-  <div class="small" id="scanDetail">
-   Contract start block: 85000998
-  </div>
- </div>
-
- <p class="small">
-  History is filtered by the connected wallet address and the Sigma contract address.
-  P&L is not shown as guaranteed profit.
- </p>
-</div>
-
 <script>
 "use strict";
 
-/* ---------------- CONFIGURATION ---------------- */
+/* =============== CONFIGURATION =============== */
 
-const CONTRACT_ADDRESS =
- "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
-
+const CONTRACT_ADDRESS = "0xaF215838d156F7d348A6d56cA962cbC680A2153F";
 const START_BLOCK = 85000998;
 const POLYGON_CHAIN_ID = 137n;
 
-const INITIAL_CHUNK = 10000;
-const MIN_CHUNK = 100;
-const PARALLEL_REQUESTS = 3;
-
-const ABI = [
- "function getCurrentBuyRate() view returns (uint256)",
- "function balanceOf(address) view returns (uint256)",
- "event Buy(address indexed user,uint256 amount,uint256 rate,uint256 usdtSpent)",
- "event Sell(address indexed user,uint256 amount,uint256 rate,uint256 usdtReceived)"
+// No API key required
+const RPC_URLS = [
+  "https://polygon-bor-rpc.publicnode.com",
+  "https://polygon.drpc.org"
 ];
 
-/* ---------------- GLOBAL VARIABLES ---------------- */
+// Scan settings
+const INITIAL_CHUNK = 10000;
+const MIN_CHUNK = 100;
+const PARALLEL_REQUESTS = 4;
+const TIMESTAMP_WORKERS = 8;
 
-let provider;
-let contract;
+const ABI = [
+  "function getCurrentBuyRate() view returns (uint256)",
+  "function balanceOf(address) view returns (uint256)",
+  "event Buy(address indexed user,uint256 amount,uint256 rate,uint256 usdtSpent)",
+  "event Sell(address indexed user,uint256 amount,uint256 rate,uint256 usdtReceived)"
+];
+
+/* =============== GLOBAL VARIABLES =============== */
+
+let rpcProviders = [];
+let walletProvider = null;
 let walletAddress = null;
+let contract = null;
+
 let buyData = [];
 let sellData = [];
+
 let currentRate = 0;
 let currentBalance = 0;
 let isLoading = false;
 let currentTab = "buy";
-let exportRows = [];
 
 const iface = new ethers.Interface(ABI);
-
 const BUY_TOPIC = iface.getEvent("Buy").topicHash;
 const SELL_TOPIC = iface.getEvent("Sell").topicHash;
 
 const $ = id => document.getElementById(id);
 
-function numberFormat(value, decimals=4) {
- return Number(value || 0).toLocaleString("en-US", {
-  minimumFractionDigits:decimals,
-  maximumFractionDigits:decimals
- });
+/* =============== RPC INITIALIZATION =============== */
+
+function initializeRPC() {
+  rpcProviders = RPC_URLS.map(url =>
+    new ethers.JsonRpcProvider(url, 137)
+  );
+}
+
+// Try each RPC until one succeeds
+async function rpcCall(callback) {
+  let lastError;
+
+  for (const rpc of rpcProviders) {
+    try {
+      return await callback(rpc);
+    } catch (error) {
+      lastError = error;
+      console.warn("RPC failed, trying backup:", error.message);
+    }
+  }
+
+  throw lastError || new Error("All Polygon RPC servers failed.");
+}
+
+/* =============== HELPERS =============== */
+
+function numberFormat(value, decimals = 4) {
+  return Number(value || 0).toLocaleString("en-US", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
 }
 
 function setStatus(message) {
- $("scanStatus").textContent = message;
+  $("scanStatus").textContent = message;
 }
 
 function setProgress(percent, message) {
- const p = Math.max(0,Math.min(100,percent));
- $("progressBar").style.width = p + "%";
- $("progressText").textContent = p.toFixed(1) + "%";
- if(message) setStatus(message);
+  const p = Math.max(0, Math.min(100, percent));
+
+  $("progressBar").style.width = p + "%";
+  $("progressText").textContent = p.toFixed(1) + "%";
+
+  if (message) setStatus(message);
 }
 
-function showMessage(id, columns, message, error=false) {
- const body = $(id);
- body.innerHTML = "";
- const tr = document.createElement("tr");
- const td = document.createElement("td");
- td.colSpan = columns;
- td.className = error ? "loading error" : "loading";
- td.textContent = message;
- tr.appendChild(td);
- body.appendChild(tr);
+function showMessage(id, columns, message, error = false) {
+  const body = $(id);
+  body.innerHTML = "";
+
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+
+  td.colSpan = columns;
+  td.className = error ? "loading error" : "loading";
+  td.textContent = message;
+
+  tr.appendChild(td);
+  body.appendChild(tr);
 }
 
-/* ---------------- WALLET CONNECTION ---------------- */
+/* =============== WALLET CONNECTION =============== */
 
 async function connectWallet() {
- try {
-  if(!window.ethereum) {
-   alert("Please install MetaMask or another compatible wallet.");
-   return;
+  try {
+    if (!window.ethereum) {
+      alert("Please install MetaMask or another compatible wallet.");
+      return;
+    }
+
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts"
+    });
+
+    if (!accounts.length) {
+      throw new Error("Wallet account not found.");
+    }
+
+    let network = await window.ethereum.request({
+      method: "eth_chainId"
+    });
+
+    if (network !== "0x89") {
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0x89" }]
+        });
+      } catch (switchError) {
+        throw new Error("Please switch your wallet to Polygon Mainnet.");
+      }
+    }
+
+    walletAddress = ethers.getAddress(accounts[0]);
+
+    walletProvider = new ethers.BrowserProvider(window.ethereum);
+
+    initializeRPC();
+
+    contract = new ethers.Contract(
+      CONTRACT_ADDRESS,
+      ABI,
+      rpcProviders[0]
+    );
+
+    $("connectText").textContent =
+      walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4);
+
+    $("connectBtn").classList.add("connected");
+
+    $("walletInfo").textContent =
+      "Connected Wallet: " + walletAddress +
+      " | Sigma Contract: " + CONTRACT_ADDRESS;
+
+    await loadData();
+
+  } catch (error) {
+    console.error(error);
+    alert("Wallet connection error: " + error.message);
   }
-
-  await window.ethereum.request({
-   method:"eth_requestAccounts"
-  });
-
-  let p = new ethers.BrowserProvider(window.ethereum);
-  let network = await p.getNetwork();
-
-  if(network.chainId !== POLYGON_CHAIN_ID) {
-   await window.ethereum.request({
-    method:"wallet_switchEthereumChain",
-    params:[{chainId:"0x89"}]
-   });
-  }
-
-  provider = new ethers.BrowserProvider(window.ethereum);
-
-  const accounts = await provider.send("eth_requestAccounts",[]);
-  if(!accounts.length) throw new Error("Wallet account not found.");
-
-  walletAddress = ethers.getAddress(accounts[0]);
-  contract = new ethers.Contract(CONTRACT_ADDRESS,ABI,provider);
-
-  $("connectText").textContent =
-   walletAddress.slice(0,6)+"..."+walletAddress.slice(-4);
-
-  $("connectBtn").classList.add("connected");
-
-  $("walletInfo").textContent =
-   "Connected Wallet: "+walletAddress+
-   " | Sigma Contract: "+CONTRACT_ADDRESS;
-
-  await loadData();
-
- } catch(error) {
-  console.error(error);
-  alert("Wallet connection error: "+error.message);
- }
 }
 
-/* ---------------- CACHE ---------------- */
+/* =============== CACHE =============== */
 
 function cacheKey() {
- return "SIGMA_HISTORY_V2_"+walletAddress.toLowerCase();
+  return "SIGMA_HISTORY_V3_" + walletAddress.toLowerCase();
 }
 
 function readCache() {
- try {
-  const raw = localStorage.getItem(cacheKey());
-  if(!raw) return null;
+  try {
+    const raw = localStorage.getItem(cacheKey());
 
-  const data = JSON.parse(raw);
-  if(!data || !Array.isArray(data.buy) || !Array.isArray(data.sell)) {
-   return null;
+    if (!raw) return null;
+
+    const data = JSON.parse(raw);
+
+    if (
+      !data ||
+      !Array.isArray(data.buy) ||
+      !Array.isArray(data.sell) ||
+      data.startBlock !== START_BLOCK
+    ) {
+      return null;
+    }
+
+    return data;
+
+  } catch (error) {
+    console.warn("Cache read failed:", error);
+    return null;
   }
-  if(data.startBlock !== START_BLOCK) return null;
-
-  return data;
- } catch(error) {
-  console.warn("Cache read failed:",error);
-  return null;
- }
 }
 
 function saveCache(lastBlock) {
- try {
-  const data = {
-   startBlock:START_BLOCK,
-   lastBlock:lastBlock,
-   buy:buyData,
-   sell:sellData
+  try {
+    const data = {
+      startBlock: START_BLOCK,
+      lastBlock,
+      buy: buyData,
+      sell: sellData
+    };
+
+    localStorage.setItem(cacheKey(), JSON.stringify(data));
+
+  } catch (error) {
+    console.warn("Cache could not be saved:", error);
+    setStatus("History loaded, but browser cache could not be saved.");
+  }
+}
+
+/* =============== CONTRACT EVENT FILTER =============== */
+
+function makeFilter(fromBlock, toBlock) {
+  return {
+    address: CONTRACT_ADDRESS,
+
+    fromBlock: ethers.toQuantity(fromBlock),
+    toBlock: ethers.toQuantity(toBlock),
+
+    topics: [
+      [BUY_TOPIC, SELL_TOPIC],
+      ethers.zeroPadValue(walletAddress, 32)
+    ]
   };
-  localStorage.setItem(cacheKey(),JSON.stringify(data));
- } catch(error) {
-  console.warn("Cache could not be saved:",error);
-  setStatus("History loaded. Browser storage is full; next scan may take longer.");
- }
 }
 
-/* ---------------- CONTRACT LOG SCANNER ---------------- */
-
-/*
- One getLogs request searches both event types.
- address = Sigma contract only
- topic0 = Buy OR Sell
- topic1 = connected wallet address
-
- It does NOT scan all Polygon transactions.
-*/
-
-function makeFilter(fromBlock,toBlock) {
- return {
-  address:CONTRACT_ADDRESS,
-  fromBlock:ethers.toQuantity(fromBlock),
-  toBlock:ethers.toQuantity(toBlock),
-  topics:[
-   [BUY_TOPIC,SELL_TOPIC],
-   ethers.zeroPadValue(walletAddress,32)
-  ]
- };
-}
+/* =============== EVENT DECODING =============== */
 
 function decodeLog(log) {
- const parsed = iface.parseLog({
-  topics:log.topics,
-  data:log.data
- });
-
- if(!parsed) return null;
-
- const isBuy = parsed.name === "Buy";
- const a = parsed.args;
-
- return {
-  type:isBuy ? "buy" : "sell",
-  hash:log.transactionHash,
-  blockNumber:Number(log.blockNumber),
-  index:Number(log.index ?? log.logIndex ?? 0),
-  sigmaAmount:Number(ethers.formatUnits(a.amount,18)),
-  rate:Number(ethers.formatUnits(a.rate,6)),
-  usdtAmount:Number(ethers.formatUnits(
-   isBuy ? a.usdtSpent : a.usdtReceived,6
-  )),
-  timestamp:0
- };
-}
-
-async function fetchRange(from,to) {
- const logs = await provider.getLogs(makeFilter(from,to));
- return logs.map(decodeLog).filter(Boolean);
-}
-
-/*
- Scan full range in parallel batches.
- If RPC rejects a range, split that range into smaller pieces.
- No failed range is silently skipped.
-*/
-
-async function scanFullHistory(fromBlock,toBlock) {
- let ranges = [];
-
- for(let start=fromBlock;start<=toBlock;start+=INITIAL_CHUNK) {
-  ranges.push({
-   from:start,
-   to:Math.min(start+INITIAL_CHUNK-1,toBlock)
+  const parsed = iface.parseLog({
+    topics: log.topics,
+    data: log.data
   });
- }
 
- let completedBlocks = 0;
- let allLogs = [];
- const totalBlocks = toBlock-fromBlock+1;
+  if (!parsed) return null;
 
- while(ranges.length) {
-  const batch = ranges.splice(0,PARALLEL_REQUESTS);
+  const isBuy = parsed.name === "Buy";
+  const a = parsed.args;
 
-  const results = await Promise.all(
-   batch.map(async range => {
-    try {
-     const logs = await fetchRange(range.from,range.to);
-     return {ok:true,range,logs};
-    } catch(error) {
-     return {ok:false,range,error};
-    }
-   })
-  );
+  return {
+    type: isBuy ? "buy" : "sell",
+    hash: log.transactionHash,
+    blockNumber: Number(log.blockNumber),
+    index: Number(log.index ?? log.logIndex ?? 0),
 
-  for(const result of results) {
-   const r = result.range;
-   const size = r.to-r.from+1;
+    sigmaAmount: Number(
+      ethers.formatUnits(a.amount, 18)
+    ),
 
-   if(result.ok) {
-    allLogs.push(...result.logs);
-    completedBlocks += size;
-   } else {
-    if(size <= MIN_CHUNK) {
-     throw new Error(
-      "RPC failed near block "+r.from+
-      ". Please try again or use another Polygon RPC."
-     );
-    }
+    rate: Number(
+      ethers.formatUnits(a.rate, 6)
+    ),
 
-    const mid = Math.floor((r.from+r.to)/2);
+    usdtAmount: Number(
+      ethers.formatUnits(
+        isBuy ? a.usdtSpent : a.usdtReceived,
+        6
+      )
+    ),
 
-    ranges.push(
-     {from:r.from,to:mid},
-     {from:mid+1,to:r.to}
-    );
-   }
+    timestamp: 0
+  };
+}
+
+/* =============== FAST RPC LOG REQUEST =============== */
+
+async function fetchRange(from, to) {
+  const filter = makeFilter(from, to);
+
+  return await rpcCall(async rpc => {
+    const logs = await rpc.getLogs(filter);
+
+    return logs
+      .map(decodeLog)
+      .filter(Boolean);
+  });
+}
+
+/* =============== PARALLEL HISTORY SCAN =============== */
+
+async function scanFullHistory(fromBlock, toBlock) {
+  let ranges = [];
+
+  for (
+    let start = fromBlock;
+    start <= toBlock;
+    start += INITIAL_CHUNK
+  ) {
+    ranges.push({
+      from: start,
+      to: Math.min(start + INITIAL_CHUNK - 1, toBlock)
+    });
   }
 
-  const percent = completedBlocks/totalBlocks*100;
+  const totalBlocks = toBlock - fromBlock + 1;
 
-  setProgress(
-   percent,
-   "Scanning contract events: "+completedBlocks.toLocaleString()+
-   " / "+totalBlocks.toLocaleString()+" blocks"
-  );
- }
+  let completedBlocks = 0;
+  let allLogs = [];
 
- return allLogs;
+  while (ranges.length > 0) {
+    const batch = ranges.splice(0, PARALLEL_REQUESTS);
+
+    const results = await Promise.all(
+      batch.map(async range => {
+        try {
+          const logs = await fetchRange(range.from, range.to);
+
+          return {
+            success: true,
+            range,
+            logs
+          };
+
+        } catch (error) {
+          return {
+            success: false,
+            range,
+            error
+          };
+        }
+      })
+    );
+
+    for (const result of results) {
+      const r = result.range;
+      const size = r.to - r.from + 1;
+
+      if (result.success) {
+        allLogs.push(...result.logs);
+        completedBlocks += size;
+
+      } else {
+        // Split a rejected range into smaller ranges
+        if (size <= MIN_CHUNK) {
+          throw new Error(
+            "RPC failed near block " + r.from +
+            ". Please refresh and try again."
+          );
+        }
+
+        const mid = Math.floor((r.from + r.to) / 2);
+
+        ranges.push(
+          { from: r.from, to: mid },
+          { from: mid + 1, to: r.to }
+        );
+      }
+    }
+
+    const percent = (completedBlocks / totalBlocks) * 100;
+
+    setProgress(
+      percent,
+      "Scanning Sigma events: " +
+      completedBlocks.toLocaleString() +
+      " / " +
+      totalBlocks.toLocaleString() +
+      " blocks"
+    );
+  }
+
+  return allLogs;
 }
 
-/* ---------------- BLOCK TIMESTAMPS ---------------- */
+/* =============== BLOCK TIMESTAMPS =============== */
 
 async function addTimestamps(events) {
- const blocks = [...new Set(events.map(x=>x.blockNumber))];
- const timestamps = new Map();
+  const blocks = [
+    ...new Set(events.map(x => x.blockNumber))
+  ];
 
- let next = 0;
- const workers = Array.from({length:8},async()=>{
-  while(next < blocks.length) {
-   const blockNo = blocks[next++];
+  const timestamps = new Map();
 
-   try {
-    const block = await provider.getBlock(blockNo);
-    timestamps.set(blockNo,block ? Number(block.timestamp) : 0);
-   } catch(error) {
-    timestamps.set(blockNo,0);
-    console.warn("Block timestamp unavailable:",blockNo);
-   }
+  let next = 0;
+
+  const workers = Array.from(
+    { length: TIMESTAMP_WORKERS },
+    async () => {
+      while (next < blocks.length) {
+        const blockNo = blocks[next++];
+
+        try {
+          const block = await rpcCall(
+            rpc => rpc.getBlock(blockNo)
+          );
+
+          timestamps.set(
+            blockNo,
+            block ? Number(block.timestamp) : 0
+          );
+
+        } catch (error) {
+          timestamps.set(blockNo, 0);
+          console.warn("Timestamp unavailable:", blockNo);
+        }
+      }
+    }
+  );
+
+  await Promise.all(workers);
+
+  for (const event of events) {
+    event.timestamp = timestamps.get(event.blockNumber) || 0;
   }
- });
-
- await Promise.all(workers);
-
- for(const event of events) {
-  event.timestamp = timestamps.get(event.blockNumber) || 0;
- }
 }
 
-/* ---------------- MAIN LOAD ---------------- */
+/* =============== MAIN HISTORY LOADER =============== */
 
 async function loadData() {
- if(!walletAddress || !provider || !contract) {
-  alert("Please connect wallet first.");
-  return;
- }
-
- if(isLoading) return;
- isLoading = true;
-
- try {
-  showMessage("buyBody",6,"Loading Buy History...");
-  showMessage("sellBody",6,"Loading Sell History...");
-  setProgress(0,"Preparing contract history scan");
-
-  const network = await provider.getNetwork();
-
-  if(network.chainId !== POLYGON_CHAIN_ID) {
-   throw new Error("Please connect to Polygon Mainnet.");
+  if (!walletAddress || !rpcProviders.length || !contract) {
+    alert("Please connect wallet first.");
+    return;
   }
 
-  const latestBlock = await provider.getBlockNumber();
+  if (isLoading) return;
 
-  const [rateRaw,balanceRaw] = await Promise.all([
-   contract.getCurrentBuyRate(),
-   contract.balanceOf(walletAddress)
-  ]);
+  isLoading = true;
 
-  currentRate = Number(ethers.formatUnits(rateRaw,6));
-  currentBalance = Number(ethers.formatUnits(balanceRaw,18));
+  try {
+    showMessage("buyBody", 6, "Loading Buy History...");
+    showMessage("sellBody", 6, "Loading Sell History...");
 
-  $("currentRate").textContent = "$"+numberFormat(currentRate,6);
+    setProgress(0, "Connecting to Polygon RPC...");
 
-  const cache = readCache();
+    const walletNetwork = await walletProvider.getNetwork();
 
-  if(cache) {
-   buyData = cache.buy || [];
-   sellData = cache.sell || [];
-  } else {
-   buyData = [];
-   sellData = [];
+    if (walletNetwork.chainId !== POLYGON_CHAIN_ID) {
+      throw new Error("Please connect to Polygon Mainnet.");
+    }
+
+    const latestBlock = await rpcCall(
+      rpc => rpc.getBlockNumber()
+    );
+
+    // Read contract values
+    const [rateRaw, balanceRaw] = await rpcCall(
+      async rpc => {
+        const readContract = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          ABI,
+          rpc
+        );
+
+        return await Promise.all([
+          readContract.getCurrentBuyRate(),
+          readContract.balanceOf(walletAddress)
+        ]);
+      }
+    );
+
+    currentRate = Number(
+      ethers.formatUnits(rateRaw, 6)
+    );
+
+    currentBalance = Number(
+      ethers.formatUnits(balanceRaw, 18)
+    );
+
+    $("currentRate").textContent =
+      "$" + numberFormat(currentRate, 6);
+
+    // Load cached history
+    const cache = readCache();
+
+    if (cache) {
+      buyData = cache.buy || [];
+      sellData = cache.sell || [];
+    } else {
+      buyData = [];
+      sellData = [];
+    }
+
+    const scanFrom = cache
+      ? Math.max(START_BLOCK, Number(cache.lastBlock) + 1)
+      : START_BLOCK;
+
+    if (scanFrom <= latestBlock) {
+      $("scanDetail").textContent =
+        "Scanning from block " +
+        scanFrom.toLocaleString() +
+        " to " +
+        latestBlock.toLocaleString();
+
+      const newEvents = await scanFullHistory(
+        scanFrom,
+        latestBlock
+      );
+
+      const newBuys = newEvents.filter(
+        x => x.type === "buy"
+      );
+
+      const newSells = newEvents.filter(
+        x => x.type === "sell"
+      );
+
+      // Fetch timestamps only for new event blocks
+      await addTimestamps(newEvents);
+
+      buyData.push(...newBuys);
+      sellData.push(...newSells);
+
+      // Save only after successful scan
+      saveCache(latestBlock);
+
+    } else {
+      setProgress(100, "History already up to date");
+
+      $("scanDetail").textContent =
+        "Cached history is up to date at block " +
+        latestBlock.toLocaleString();
+    }
+
+    // Sort old to new
+    buyData.sort(
+      (a, b) => a.blockNumber - b.blockNumber || a.index - b.index
+    );
+
+    sellData.sort(
+      (a, b) => a.blockNumber - b.blockNumber || a.index - b.index
+    );
+
+    updateStats();
+    renderTables();
+
+    setProgress(100, "Complete");
+    setStatus("History loaded successfully.");
+
+    $("scanDetail").textContent =
+      "Contract start: " + START_BLOCK.toLocaleString() +
+      " | Latest block: " + latestBlock.toLocaleString() +
+      " | Buy events: " + buyData.length +
+      " | Sell events: " + sellData.length;
+
+  } catch (error) {
+    console.error("History loading error:", error);
+
+    setStatus("History scan failed");
+
+    showMessage("buyBody", 6, error.message, true);
+    showMessage("sellBody", 6, error.message, true);
+
+  } finally {
+    isLoading = false;
   }
-
-  const scanFrom = cache
-   ? Math.max(START_BLOCK,Number(cache.lastBlock)+1)
-   : START_BLOCK;
-
-  if(scanFrom <= latestBlock) {
-   $("scanDetail").textContent =
-    "Scanning from block "+scanFrom.toLocaleString()+
-    " to "+latestBlock.toLocaleString();
-
-   const newEvents = await scanFullHistory(scanFrom,latestBlock);
-
-   const newBuys = newEvents.filter(x=>x.type==="buy");
-   const newSells = newEvents.filter(x=>x.type==="sell");
-
-   const timestampEvents = [...newBuys,...newSells];
-   await addTimestamps(timestampEvents);
-
-   buyData.push(...newBuys);
-   sellData.push(...newSells);
-
-   saveCache(latestBlock);
-  } else {
-   setProgress(100,"History already up to date");
-   $("scanDetail").textContent =
-    "Cached history is up to date at block "+latestBlock.toLocaleString();
-  }
-
-  buyData.sort((a,b)=>a.blockNumber-b.blockNumber || a.index-b.index);
-  sellData.sort((a,b)=>a.blockNumber-b.blockNumber || a.index-b.index);
-
-  updateStats();
-  renderTables();
-
-  setProgress(100,"Complete");
-  setStatus("History loaded successfully.");
-
-  $("scanDetail").textContent =
-   "Contract start: "+START_BLOCK.toLocaleString()+
-   " | Latest block: "+latestBlock.toLocaleString()+
-   " | Buy events: "+buyData.length+
-   " | Sell events: "+sellData.length;
-
- } catch(error) {
-  console.error("History loading error:",error);
-  setStatus("History scan failed");
-  showMessage("buyBody",6,error.message,true);
-  showMessage("sellBody",6,error.message,true);
- } finally {
-  isLoading = false;
- }
 }
 
-/* ---------------- STATISTICS ---------------- */
+/* =============== STATISTICS =============== */
 
 function updateStats() {
- const totalBuy = buyData.reduce((s,x)=>s+x.sigmaAmount,0);
- const totalBuyUSDT = buyData.reduce((s,x)=>s+x.usdtAmount,0);
+  const totalBuy = buyData.reduce(
+    (s, x) => s + x.sigmaAmount, 0
+  );
 
- const totalSell = sellData.reduce((s,x)=>s+x.sigmaAmount,0);
- const totalSellUSDT = sellData.reduce((s,x)=>s+x.usdtAmount,0);
+  const totalBuyUSDT = buyData.reduce(
+    (s, x) => s + x.usdtAmount, 0
+  );
 
- $("totalBought").textContent=numberFormat(totalBuy,2)+" SIG6";
- $("buyValue").textContent="$"+numberFormat(totalBuyUSDT,2)+" USDT";
+  const totalSell = sellData.reduce(
+    (s, x) => s + x.sigmaAmount, 0
+  );
 
- $("totalSold").textContent=numberFormat(totalSell,2)+" SIG6";
- $("sellValue").textContent="$"+numberFormat(totalSellUSDT,2)+" USDT";
+  const totalSellUSDT = sellData.reduce(
+    (s, x) => s + x.usdtAmount, 0
+  );
 
- $("holdings").textContent=numberFormat(currentBalance,4)+" SIG6";
+  $("totalBought").textContent =
+    numberFormat(totalBuy, 2) + " SIG6";
 
- $("holdingValue").textContent=
-  "$"+numberFormat(currentBalance*currentRate,2)+" USDT";
+  $("buyValue").textContent =
+    "$" + numberFormat(totalBuyUSDT, 2) + " USDT";
+
+  $("totalSold").textContent =
+    numberFormat(totalSell, 2) + " SIG6";
+
+  $("sellValue").textContent =
+    "$" + numberFormat(totalSellUSDT, 2) + " USDT";
+
+  $("holdings").textContent =
+    numberFormat(currentBalance, 4) + " SIG6";
+
+  $("holdingValue").textContent =
+    "$" + numberFormat(currentBalance * currentRate, 2) + " USDT";
 }
 
-/* ---------------- TABLES ---------------- */
+/* =============== TABLE HELPERS =============== */
 
 function txLink(hash) {
- return '<a class="txlink" target="_blank" rel="noopener" href="https://polygonscan.com/tx/'+hash+'">View Tx <i class="fas fa-external-link-alt"></i></a>';
+  const a = document.createElement("a");
+
+  a.className = "txlink";
+  a.target = "_blank";
+  a.rel = "noopener";
+  a.href = "https://polygonscan.com/tx/" + hash;
+  a.textContent = "View Tx";
+
+  return a;
 }
 
 function formatDate(timestamp) {
- if(!timestamp) return "Date unavailable";
- return new Date(timestamp*1000).toLocaleString();
+  if (!timestamp) return "Date unavailable";
+
+  return new Date(timestamp * 1000).toLocaleString();
+}
+
+/* =============== BUY TABLE =============== */
+
+function renderBuyTable() {
+  const body = $("buyBody");
+  body.innerHTML = "";
+
+  if (!buyData.length) {
+    showMessage("buyBody", 6, "No Buy events found for this wallet.");
+    return;
+  }
+
+  [...buyData].reverse().forEach((x, i) => {
+    const tr = document.createElement("tr");
+
+    const values = [
+      i + 1,
+      formatDate(x.timestamp),
+      numberFormat(x.sigmaAmount, 4) + " SIG6",
+      "$" + numberFormat(x.rate, 6),
+      "$" + numberFormat(x.usdtAmount, 4)
+    ];
+
+    values.forEach(value => {
+      const td = document.createElement("td");
+      td.textContent = value;
+      tr.appendChild(td);
+    });
+
+    const txTd = document.createElement("td");
+    txTd.appendChild(txLink(x.hash));
+    tr.appendChild(txTd);
+
+    body.appendChild(tr);
+  });
+}
+
+/* =============== SELL TABLE =============== */
+
+function renderSellTable() {
+  const body = $("sellBody");
+  body.innerHTML = "";
+
+  if (!sellData.length) {
+    showMessage("sellBody", 6, "No Sell events found for this wallet.");
+    return;
+  }
+
+  [...sellData].reverse().forEach((x, i) => {
+    const tr = document.createElement("tr");
+
+    const values = [
+      i + 1,
+      formatDate(x.timestamp),
+      numberFormat(x.sigmaAmount, 4) + " SIG6",
+      "$" + numberFormat(x.rate, 6),
+      "$" + numberFormat(x.usdtAmount, 4)
+    ];
+
+    values.forEach(value => {
+      const td = document.createElement("td");
+      td.textContent = value;
+      tr.appendChild(td);
+    });
+
+    const txTd = document.createElement("td");
+    txTd.appendChild(txLink(x.hash));
+    tr.appendChild(txTd);
+
+    body.appendChild(tr);
+  });
 }
 
 function renderTables() {
- renderBuyTable();
- renderSellTable();
+  renderBuyTable();
+  renderSellTable();
 }
 
-function renderBuyTable() {
- const body=$("buyBody");
- body.innerHTML="";
-
- if(!buyData.length) {
-  showMessage("buyBody",6,"No Buy events found for this wallet.");
-  return;
- }
-
- const rows=[...buyData].reverse();
-
- rows.forEach((x,i)=>{
-  const tr=document.createElement("tr");
-  tr.innerHTML=`
-   <td>${i+1}</td>
-   <td>${formatDate(x.timestamp)}</td>
-   <td>${numberFormat(x.sigmaAmount,4)} SIG6</td>
-   <td>$${numberFormat(x.rate,6)}</td>
-   <td>$${numberFormat(x.usdtAmount,4)}</td>
-   <td>${txLink(x.hash)}</td>`;
-  body.appendChild(tr);
- });
-}
-
-function renderSellTable() {
- const body=$("sellBody");
- body.innerHTML="";
-
- if(!sellData.length) {
-  showMessage("sellBody",6,"No Sell events found for this wallet.");
-  return;
- }
-
- const rows=[...sellData].reverse();
-
- rows.forEach((x,i)=>{
-  const tr=document.createElement("tr");
-  tr.innerHTML=`
-   <td>${i+1}</td>
-   <td>${formatDate(x.timestamp)}</td>
-   <td>${numberFormat(x.sigmaAmount,4)} SIG6</td>
-   <td>$${numberFormat(x.rate,6)}</td>
-   <td>$${numberFormat(x.usdtAmount,4)}</td>
-   <td>${txLink(x.hash)}</td>`;
-  body.appendChild(tr);
- });
-}
-
-/* ---------------- TABS ---------------- */
+/* =============== TABS =============== */
 
 function showTab(tab) {
- currentTab=tab;
+  currentTab = tab;
 
- $("buyPanel").style.display=tab==="buy"?"block":"none";
- $("sellPanel").style.display=tab==="sell"?"block":"none";
+  $("buyPanel").style.display =
+    tab === "buy" ? "block" : "none";
 
- $("buyTab").classList.toggle("active",tab==="buy");
- $("sellTab").classList.toggle("active",tab==="sell");
+  $("sellPanel").style.display =
+    tab === "sell" ? "block" : "none";
+
+  $("buyTab").classList.toggle("active", tab === "buy");
+  $("sellTab").classList.toggle("active", tab === "sell");
 }
 
-/* ---------------- CSV EXPORT ---------------- */
+/* =============== CSV EXPORT =============== */
 
 function exportCSV() {
- if(!walletAddress) {
-  alert("Connect wallet first.");
-  return;
- }
+  if (!walletAddress) {
+    alert("Connect wallet first.");
+    return;
+  }
 
- const data=currentTab==="buy"?buyData:sellData;
+  const data = currentTab === "buy" ? buyData : sellData;
 
- if(!data.length) {
-  alert("No history available to export.");
-  return;
- }
+  if (!data.length) {
+    alert("No history available to export.");
+    return;
+  }
 
- const headers=[
-  "Type","Date","Block Number","Sigma Quantity",
-  "Rate USDT","USDT Amount","Transaction Hash"
- ];
+  const headers = [
+    "Type",
+    "Date",
+    "Block Number",
+    "Sigma Quantity",
+    "Rate USDT",
+    "USDT Amount",
+    "Transaction Hash"
+  ];
 
- const rows=data.map(x=>[
-  x.type,
-  formatDate(x.timestamp),
-  x.blockNumber,
-  x.sigmaAmount,
-  x.rate,
-  x.usdtAmount,
-  x.hash
- ]);
+  const rows = data.map(x => [
+    x.type,
+    formatDate(x.timestamp),
+    x.blockNumber,
+    x.sigmaAmount,
+    x.rate,
+    x.usdtAmount,
+    x.hash
+  ]);
 
- const csv=[headers,...rows]
-  .map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(","))
-  .join("\n");
+  const csv = [headers, ...rows]
+    .map(row =>
+      row.map(v =>
+        '"' + String(v).replace(/"/g, '""') + '"'
+      ).join(",")
+    )
+    .join("\n");
 
- const blob=new Blob(["\uFEFF"+csv],{
-  type:"text/csv;charset=utf-8;"
- });
-
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
-
- a.href=url;
- a.download="Sigma_"+currentTab+"_History.csv";
- a.click();
-
- URL.revokeObjectURL(url);
-}
-
-/* ---------------- AUTO CONNECT ---------------- */
-
-async function autoConnect() {
- if(!window.ethereum) return;
-
- try {
-  const accounts=await window.ethereum.request({
-   method:"eth_accounts"
+  const blob = new Blob(["\uFEFF" + csv], {
+    type: "text/csv;charset=utf-8;"
   });
 
-  if(accounts && accounts.length) {
-   await connectWallet();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = "Sigma_" + currentTab + "_History.csv";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+/* =============== AUTO CONNECT =============== */
+
+async function autoConnect() {
+  if (!window.ethereum) return;
+
+  try {
+    const accounts = await window.ethereum.request({
+      method: "eth_accounts"
+    });
+
+    if (accounts && accounts.length) {
+      await connectWallet();
+    }
+  } catch (error) {
+    console.warn("Auto connection:", error);
   }
- } catch(error) {
-  console.warn("Auto connection:",error);
- }
 }
 
-if(window.ethereum) {
- window.ethereum.on("accountsChanged",()=>location.reload());
- window.ethereum.on("chainChanged",()=>location.reload());
+if (window.ethereum) {
+  window.ethereum.on("accountsChanged", () => location.reload());
+  window.ethereum.on("chainChanged", () => location.reload());
 }
 
-window.addEventListener("load",()=>{
- if(typeof ethers==="undefined") {
-  setStatus("Ethers library failed to load. Check internet connection.");
-  return;
- }
- autoConnect();
+window.addEventListener("load", () => {
+  if (typeof ethers === "undefined") {
+    setStatus("Ethers library failed to load. Check internet connection.");
+    return;
+  }
+
+  autoConnect();
 });
 </script>
-</body>
-</html>
